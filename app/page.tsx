@@ -1,6 +1,11 @@
+import type { Metadata } from 'next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CreateUserForm } from '@/features/user';
-import { UserList } from '@/features/user';
+import { CreateUserForm, UserList } from '@/features/user';
+
+export const metadata: Metadata = {
+  title: 'User Management | Thai Rap',
+  description: 'Manage users and roles',
+};
 
 export default function Home() {
   return (

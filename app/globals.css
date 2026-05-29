@@ -4,6 +4,13 @@
 
 @layer base {
   :root {
+    /* Brand tokens */
+    --color-orange: #F97316;
+    --color-purple: #7C3AED;
+    --color-dark-nav: #1F2937;
+    --color-text-main: #111827;
+    --color-score-green: #10B981;
+    --color-score-red: #EF4444;
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;

@@ -11,13 +11,12 @@ import {
   Tooltip,
 } from 'recharts';
 import type { RadarChartSeries } from '@/types';
+import { chartColors } from '@/styles/tokens';
 
 interface RadarChartProps {
   series: RadarChartSeries[];
   height?: number;
 }
-
-const DEFAULT_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
 export function RadarChart({ series, height = 300 }: RadarChartProps) {
   // Merge all series into a single flat array keyed by subject
@@ -43,8 +42,8 @@ export function RadarChart({ series, height = 300 }: RadarChartProps) {
             key={s.key}
             name={s.label}
             dataKey={s.key}
-            stroke={s.color ?? DEFAULT_COLORS[i % DEFAULT_COLORS.length]}
-            fill={s.color ?? DEFAULT_COLORS[i % DEFAULT_COLORS.length]}
+            stroke={s.color ?? chartColors[i % chartColors.length]}
+            fill={s.color ?? chartColors[i % chartColors.length]}
             fillOpacity={0.2}
           />
         ))}

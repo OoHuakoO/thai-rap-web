@@ -15,7 +15,17 @@ const config: Config = {
       screens: { '2xl': '1400px' },
     },
     extend: {
+      fontFamily: {
+        sans: ['var(--font-inter)', 'var(--font-sarabun)', 'sans-serif'],
+        thai: ['var(--font-sarabun)', 'sans-serif'],
+      },
       colors: {
+        orange: 'var(--color-orange)',
+        purple: 'var(--color-purple)',
+        'dark-nav': 'var(--color-dark-nav)',
+        'text-main': 'var(--color-text-main)',
+        'score-green': 'var(--color-score-green)',
+        'score-red': 'var(--color-score-red)',
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',

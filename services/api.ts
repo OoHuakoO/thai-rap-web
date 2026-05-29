@@ -1,9 +1,10 @@
 import axios from 'axios';
+import { API_URL, API_TIMEOUT_MS, ROUTES } from '@/constants';
 
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001',
+  baseURL: API_URL,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 10_000,
+  timeout: API_TIMEOUT_MS,
 });
 
 api.interceptors.request.use((config) => {
@@ -28,7 +29,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
       localStorage.removeItem('auth-storage');
-      window.location.href = '/login';
+      window.location.href = ROUTES.LOGIN;
     }
     return Promise.reject(error);
   }
