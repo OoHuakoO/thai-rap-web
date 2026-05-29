@@ -1,7 +1,36 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(npm install *)",
+      "Bash(gh repo *)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(curl -fsSL https://raw.githubusercontent.com/JuliusBrussee/caveman/main/install.sh)",
+      "Bash(bash)",
+      "Bash(npx -y skills add kerlos/pordee --yes --all)",
+      "Bash(find /tmp/pordee -type f | head -60 && echo \"---\" && ls /tmp/pordee)",
+      "Read(//private/tmp/pordee/**)",
+      "Bash(claude plugin *)",
+      "Bash(ls ~/.claude/ 2>&1)",
+      "Read(//Users/khomsarkkornprakit/.claude/**)",
+      "Bash(mkdir -p ~/.claude/skills/pordee ~/.claude/skills/pordee-stats ~/.claude/plugins/pordee)",
+      "Bash(cp /tmp/pordee/skills/pordee/SKILL.md ~/.claude/skills/pordee/SKILL.md)",
+      "Bash(cp /tmp/pordee/skills/pordee-stats/SKILL.md ~/.claude/skills/pordee-stats/SKILL.md)",
+      "Bash(cp -r /tmp/pordee/hooks ~/.claude/plugins/pordee/)",
+      "Bash(cp -r /tmp/pordee/benchmarks ~/.claude/plugins/pordee/)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(node \"/Users/khomsarkkornprakit/.claude/plugins/pordee/hooks/pordee-activate.js\")",
+      "Bash(echo \"exit: $?\")",
+      "Bash(node \"/Users/khomsarkkornprakit/.claude/plugins/pordee/hooks/pordee-mode-tracker.js\")",
+      "Bash(mkdir -p /Users/khomsarkkornprakit/thai-rap/thai-rap-web/.claude/skills/pordee /Users/khomsarkkornprakit/thai-rap/thai-rap-web/.claude/skills/pordee-stats)",
+      "Bash(cp /tmp/pordee/skills/pordee/SKILL.md /Users/khomsarkkornprakit/thai-rap/thai-rap-web/.claude/skills/pordee/SKILL.md)",
+      "Bash(cp /tmp/pordee/skills/pordee-stats/SKILL.md /Users/khomsarkkornprakit/thai-rap/thai-rap-web/.claude/skills/pordee-stats/SKILL.md)",
+      "Bash(git clone *)",
+      "Read(//tmp/**)",
+      "Bash(node ~/.claude/plugins/caveman/src/hooks/caveman-activate.js)",
+      "Bash(node ~/.claude/plugins/caveman/src/hooks/caveman-mode-tracker.js)"
     ]
   }
 }
