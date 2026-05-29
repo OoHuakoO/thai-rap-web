@@ -30,7 +30,9 @@
       "Bash(git clone *)",
       "Read(//tmp/**)",
       "Bash(node ~/.claude/plugins/caveman/src/hooks/caveman-activate.js)",
-      "Bash(node ~/.claude/plugins/caveman/src/hooks/caveman-mode-tracker.js)"
+      "Bash(node ~/.claude/plugins/caveman/src/hooks/caveman-mode-tracker.js)",
+      "Bash(npx msw *)",
+      "Bash(npx next *)"
     ]
   }
 }
