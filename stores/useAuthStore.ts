@@ -7,8 +7,7 @@ interface AuthState {
   user: AuthUser | null
   token: string | null
   isAuthenticated: boolean
-  setUser: (user: AuthUser) => void
-  setToken: (token: string) => void
+  login: (user: AuthUser, token: string) => void
   logout: () => void
   can: (permission: Permission) => boolean
   hasRole: (role: Role | Role[]) => boolean
@@ -21,8 +20,7 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       isAuthenticated: false,
 
-      setUser: (user) => set({ user, isAuthenticated: true }),
-      setToken: (token) => set({ token }),
+      login: (user, token) => set({ user, token, isAuthenticated: true }),
       logout: () => set({ user: null, token: null, isAuthenticated: false }),
 
       can: (permission) => {

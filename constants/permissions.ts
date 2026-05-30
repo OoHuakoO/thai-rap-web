@@ -58,33 +58,34 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     'reports:export',
   ],
 
+  // viewer: read-only dashboard, restaurants, analytics, reports only
+  // assessment + scoring require evaluator role minimum
   viewer: [
     'dashboard:read',
     'restaurant:read',
-    'assessment:read',
     'analytics:read',
-    'scoring:read',
     'reports:read',
   ],
 }
 
-// ─── Route → Allowed Roles ────────────────────────────────────────────────────
+// ─── Route → Required Permission ─────────────────────────────────────────────
+// Single source of truth. canAccessRoute derives from hasPermission — no
+// separate allowedRoles array to keep in sync.
 
 export interface RoutePermissionConfig {
   path: string
-  allowedRoles: Role[]
-  requiredPermission?: Permission
+  requiredPermission: Permission
 }
 
 export const ROUTE_PERMISSIONS: RoutePermissionConfig[] = [
-  { path: ROUTES.HOME,        allowedRoles: ['super_admin', 'admin', 'evaluator', 'viewer'], requiredPermission: 'dashboard:read' },
-  { path: ROUTES.RESTAURANTS, allowedRoles: ['super_admin', 'admin', 'evaluator', 'viewer'], requiredPermission: 'restaurant:read' },
-  { path: ROUTES.ASSESSMENT,  allowedRoles: ['super_admin', 'admin', 'evaluator'],           requiredPermission: 'assessment:read' },
-  { path: ROUTES.ANALYTICS,   allowedRoles: ['super_admin', 'admin', 'evaluator', 'viewer'], requiredPermission: 'analytics:read' },
-  { path: ROUTES.SCORING,     allowedRoles: ['super_admin', 'admin', 'evaluator'],           requiredPermission: 'scoring:read' },
-  { path: ROUTES.REPORTS,     allowedRoles: ['super_admin', 'admin', 'evaluator', 'viewer'], requiredPermission: 'reports:read' },
-  { path: ROUTES.USERS,       allowedRoles: ['super_admin', 'admin'],                        requiredPermission: 'users:read' },
-  { path: ROUTES.SETTINGS,    allowedRoles: ['super_admin', 'admin'],                        requiredPermission: 'settings:read' },
+  { path: ROUTES.HOME,        requiredPermission: 'dashboard:read' },
+  { path: ROUTES.RESTAURANTS, requiredPermission: 'restaurant:read' },
+  { path: ROUTES.ASSESSMENT,  requiredPermission: 'assessment:read' },
+  { path: ROUTES.ANALYTICS,   requiredPermission: 'analytics:read' },
+  { path: ROUTES.SCORING,     requiredPermission: 'scoring:read' },
+  { path: ROUTES.REPORTS,     requiredPermission: 'reports:read' },
+  { path: ROUTES.USERS,       requiredPermission: 'users:read' },
+  { path: ROUTES.SETTINGS,    requiredPermission: 'settings:read' },
 ]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -94,7 +95,12 @@ export function hasPermission(role: Role, permission: Permission): boolean {
 }
 
 export function canAccessRoute(role: Role, path: string): boolean {
-  const config = ROUTE_PERMISSIONS.find((r) => path === r.path || path.startsWith(`${r.path}/`))
-  if (!config) return true
-  return config.allowedRoles.includes(role)
+  const config = ROUTE_PERMISSIONS.find((r) => {
+    // Root '/' must be exact-matched only — every path starts with '/'
+    if (r.path === '/') return path === '/'
+    return path === r.path || path.startsWith(`${r.path}/`)
+  })
+  // Deny by default — unregistered routes require explicit permission entry
+  if (!config) return false
+  return hasPermission(role, config.requiredPermission)
 }

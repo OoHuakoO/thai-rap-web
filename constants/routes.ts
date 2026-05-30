@@ -29,4 +29,7 @@ export const ROUTES = {
 
   // Settings
   SETTINGS: '/settings',
+
+  // Help
+  MANUAL: '/manual',
 } as const

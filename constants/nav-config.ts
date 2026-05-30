@@ -86,7 +86,7 @@ export const NAV_BOTTOM_ITEMS: NavItem[] = [
   {
     label: 'User Manual',
     labelTh: 'คู่มือผู้ใช้งาน',
-    href: '/manual',
+    href: ROUTES.MANUAL,
     icon: BookOpen,
     allowedRoles: ['super_admin', 'admin', 'evaluator', 'viewer'],
   },

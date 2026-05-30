@@ -1,24 +1,23 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { cn } from '@/utils/cn';
-import { ROUTES } from '@/constants/routes';
-import { LayoutDashboard, Users, BarChart3, Settings } from 'lucide-react';
-
-const navItems = [
-  { label: 'Dashboard', href: ROUTES.HOME, icon: LayoutDashboard },
-  { label: 'Users', href: ROUTES.USERS, icon: Users },
-  { label: 'Analytics', href: ROUTES.ANALYTICS, icon: BarChart3 },
-  { label: 'Settings', href: ROUTES.SETTINGS, icon: Settings },
-];
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { cn } from '@/utils/cn'
+import { ROUTES } from '@/constants/routes'
+import { getNavItemsForRole, getBottomNavItemsForRole } from '@/constants/nav-config'
+import { useAuthStore } from '@/stores/useAuthStore'
+import { Separator } from '@/components/ui/separator'
 
 interface SidebarProps {
-  className?: string;
+  className?: string
 }
 
 export function Sidebar({ className }: SidebarProps) {
-  const pathname = usePathname();
+  const pathname = usePathname()
+  const user = useAuthStore((s) => s.user)
+
+  const navItems = user ? getNavItemsForRole(user.role) : []
+  const bottomItems = user ? getBottomNavItemsForRole(user.role) : []
 
   return (
     <aside
@@ -31,9 +30,9 @@ export function Sidebar({ className }: SidebarProps) {
         <h1 className="text-xl font-bold tracking-tight text-orange">Thai Rap</h1>
       </div>
 
-      <nav aria-label="Main navigation" className="flex flex-col gap-1">
-        {navItems.map(({ label, href, icon: Icon }) => {
-          const isActive = href === ROUTES.HOME ? pathname === href : pathname.startsWith(href);
+      <nav aria-label="Main navigation" className="flex flex-1 flex-col gap-1">
+        {navItems.map(({ labelTh, href, icon: Icon }) => {
+          const isActive = href === ROUTES.HOME ? pathname === href : pathname.startsWith(href)
           return (
             <Link
               key={href}
@@ -45,12 +44,30 @@ export function Sidebar({ className }: SidebarProps) {
                   : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
               )}
             >
-              <Icon className="h-4 w-4" />
-              {label}
+              <Icon className="h-4 w-4 shrink-0" />
+              {labelTh}
             </Link>
-          );
+          )
         })}
       </nav>
+
+      {bottomItems.length > 0 && (
+        <>
+          <Separator className="my-2" />
+          <nav aria-label="Help navigation" className="flex flex-col gap-1">
+            {bottomItems.map(({ labelTh, href, icon: Icon }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                {labelTh}
+              </Link>
+            ))}
+          </nav>
+        </>
+      )}
     </aside>
-  );
+  )
 }

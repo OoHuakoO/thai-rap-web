@@ -1,65 +1,97 @@
-'use client';
+'use client'
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useCreateUser } from '../hooks/use-users';
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useCreateUser } from '../hooks/use-users'
 
-const schema = z.object({
+const createUserSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
-  role: z.enum(['admin', 'user']),
-});
+  role: z.enum(['super_admin', 'admin', 'evaluator', 'viewer']),
+})
 
-type FormValues = z.infer<typeof schema>;
+type CreateUserFormValues = z.infer<typeof createUserSchema>
+
+const ROLE_OPTIONS: { value: CreateUserFormValues['role']; label: string }[] = [
+  { value: 'viewer',      label: 'ผู้ดูข้อมูล (Viewer)' },
+  { value: 'evaluator',   label: 'ผู้ประเมิน (Evaluator)' },
+  { value: 'admin',       label: 'ผู้ดูแลระบบ (Admin)' },
+  { value: 'super_admin', label: 'ผู้ดูแลระบบสูงสุด (Super Admin)' },
+]
 
 export function CreateUserForm() {
-  const { mutate: createUser, isPending } = useCreateUser();
+  const { mutate: createUser, isPending, isError, error } = useCreateUser()
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors },
-  } = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: { role: 'user' },
-  });
+  } = useForm<CreateUserFormValues>({
+    resolver: zodResolver(createUserSchema),
+    defaultValues: { role: 'viewer' },
+  })
 
-  const onSubmit = (data: FormValues) => {
-    createUser(data, { onSuccess: () => reset() });
-  };
+  const onSubmit = (data: CreateUserFormValues) => {
+    createUser(data, { onSuccess: () => reset() })
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="space-y-1">
-        <label className="text-sm font-medium">Name</label>
-        <Input {...register('name')} placeholder="John Doe" />
+      {isError && (
+        <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+          {error instanceof Error ? error.message : 'เกิดข้อผิดพลาด'}
+        </p>
+      )}
+
+      <div className="space-y-1.5">
+        <Label htmlFor="name">ชื่อ</Label>
+        <Input id="name" {...register('name')} placeholder="John Doe" />
         {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
       </div>
 
-      <div className="space-y-1">
-        <label className="text-sm font-medium">Email</label>
-        <Input {...register('email')} type="email" placeholder="john@example.com" />
+      <div className="space-y-1.5">
+        <Label htmlFor="email">อีเมล</Label>
+        <Input id="email" {...register('email')} type="email" placeholder="john@example.com" />
         {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
       </div>
 
-      <div className="space-y-1">
-        <label className="text-sm font-medium">Role</label>
-        <select
-          {...register('role')}
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      <div className="space-y-1.5">
+        <Label htmlFor="role">บทบาท</Label>
+        <Select
+          value={watch('role')}
+          onValueChange={(val) => setValue('role', val as CreateUserFormValues['role'])}
         >
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
-        </select>
+          <SelectTrigger id="role">
+            <SelectValue placeholder="เลือกบทบาท" />
+          </SelectTrigger>
+          <SelectContent>
+            {ROLE_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors.role && <p className="text-sm text-destructive">{errors.role.message}</p>}
       </div>
 
       <Button type="submit" disabled={isPending} className="w-full">
-        {isPending ? 'Creating...' : 'Create User'}
+        {isPending ? 'กำลังสร้าง...' : 'สร้างผู้ใช้งาน'}
       </Button>
     </form>
-  );
+  )
 }
