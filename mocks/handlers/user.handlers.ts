@@ -3,8 +3,9 @@ import { userDb } from '../fixtures/user.fixtures';
 import { createUserFromDto } from '../factories/user.factory';
 import type { User, CreateUserDto } from '@/features/user/types/user.types';
 import type { ApiError, PaginatedResponse } from '@/types/api.types';
+import { API_URL } from '@/constants';
 
-const BASE_URL = '/users';
+const BASE_URL = `${API_URL}/users`;
 
 // Read the scenario header to simulate specific error states without changing
 // the actual request URL. Set X-Mock-Scenario on Axios config.headers for

@@ -1,7 +1,11 @@
 // ─── Colors ──────────────────────────────────────────────────────────────────
 
 export const colors = {
-  orange: '#F97316',      // primary CTA, active nav
+  orange: '#F17128',      // primary CTA, active nav
+  orangeLight: '#F58544', // hover states, secondary CTA
+  cream: '#FFF0E5',       // tinted backgrounds, highlights
+  charcoal: '#58595B',    // body text, secondary labels
+  white: '#FFFFFF',       // page background, card bg
   purple: '#7C3AED',      // secondary badges
   darkNav: '#1F2937',     // sidebar bg
   textMain: '#111827',    // body text

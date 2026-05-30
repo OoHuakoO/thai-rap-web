@@ -21,6 +21,9 @@ const config: Config = {
       },
       colors: {
         orange: 'var(--color-orange)',
+        'orange-light': 'var(--color-orange-light)',
+        cream: 'var(--color-cream)',
+        charcoal: 'var(--color-charcoal)',
         purple: 'var(--color-purple)',
         'dark-nav': 'var(--color-dark-nav)',
         'text-main': 'var(--color-text-main)',

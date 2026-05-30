@@ -1,8 +1,32 @@
 export const ROUTES = {
-  HOME: '/',
+  // Auth
   LOGIN: '/login',
+
+  // Main
+  HOME: '/',
+
+  // Restaurant
+  RESTAURANTS: '/restaurants',
+  RESTAURANT_DETAIL: (id: string) => `/restaurants/${id}`,
+
+  // Assessment
+  ASSESSMENT: '/assessment',
+  ASSESSMENT_DETAIL: (id: string) => `/assessment/${id}`,
+
+  // Analytics
+  ANALYTICS: '/analytics',
+
+  // Scoring
+  SCORING: '/scoring',
+  SCORING_DETAIL: (id: string) => `/scoring/${id}`,
+
+  // Reports
+  REPORTS: '/reports',
+
+  // User management
   USERS: '/users',
   USER_DETAIL: (id: string) => `/users/${id}`,
-  ANALYTICS: '/analytics',
+
+  // Settings
   SETTINGS: '/settings',
-} as const;
+} as const

@@ -32,7 +32,7 @@ export function StatCard({ title, value, description, icon, trend, className }: 
           <div
             className={cn(
               'mt-3 flex items-center gap-1 text-xs font-medium',
-              isPositive ? 'text-emerald-600' : 'text-red-500'
+              isPositive ? 'text-score-green' : 'text-score-red'
             )}
           >
             {isPositive ? (

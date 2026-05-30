@@ -10,10 +10,10 @@ interface ProgressBarProps {
 }
 
 const colorMap: Record<ProgressColor, string> = {
-  default: 'bg-primary',
-  success: 'bg-emerald-500',
+  default: 'bg-orange',
+  success: 'bg-score-green',
   warning: 'bg-amber-500',
-  danger:  'bg-red-500',
+  danger:  'bg-score-red',
 };
 
 export function ProgressBar({

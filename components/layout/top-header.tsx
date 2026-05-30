@@ -2,6 +2,7 @@
 
 import { useAuthStore } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/utils/cn';
 import { Bell, LogOut } from 'lucide-react';
 
@@ -30,9 +31,11 @@ export function TopHeader({ title, className }: TopHeaderProps) {
         {user && (
           <>
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                {user.name.charAt(0).toUpperCase()}
-              </div>
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-orange text-xs font-bold text-white">
+                  {user.name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
               <span className="text-sm font-medium">{user.name}</span>
             </div>
             <Button variant="ghost" size="icon" onClick={logout} aria-label="Log out">

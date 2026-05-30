@@ -28,7 +28,7 @@ export function Sidebar({ className }: SidebarProps) {
       )}
     >
       <div className="mb-6 px-2">
-        <h1 className="text-xl font-bold tracking-tight">Thai Rap</h1>
+        <h1 className="text-xl font-bold tracking-tight text-orange">Thai Rap</h1>
       </div>
 
       <nav aria-label="Main navigation" className="flex flex-col gap-1">

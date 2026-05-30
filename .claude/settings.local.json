@@ -32,7 +32,14 @@
       "Bash(node ~/.claude/plugins/caveman/src/hooks/caveman-activate.js)",
       "Bash(node ~/.claude/plugins/caveman/src/hooks/caveman-mode-tracker.js)",
       "Bash(npx msw *)",
-      "Bash(npx next *)"
+      "Bash(npx next *)",
+      "Bash(npx shadcn@latest add badge select table dialog tabs dropdown-menu calendar --yes)",
+      "Bash(npx shadcn@latest add badge select table dialog tabs dropdown-menu calendar --overwrite)",
+      "WebFetch(domain:ui.shadcn.com)",
+      "Bash(npx shadcn@latest add alert chart avatar skeleton tooltip popover separator scroll-area pagination sonner sheet label textarea breadcrumb --overwrite)",
+      "Bash(node -e ' *)",
+      "Bash(xargs cat)",
+      "Bash(grep -E '\\\\.\\(ts|tsx\\)$')"
     ]
   }
 }
