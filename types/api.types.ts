@@ -12,7 +12,8 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
-export interface ApiError {
+/** Raw server error response shape — use ApiError class from services/api-error.ts in app code */
+export interface ApiErrorResponse {
   message: string;
   statusCode: number;
   errors?: Record<string, string[]>;

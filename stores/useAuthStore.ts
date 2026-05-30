@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { AuthUser, Role, Permission } from '@/types/auth.types'
@@ -36,6 +37,25 @@ export const useAuthStore = create<AuthState>()(
         return roles.includes(user.role)
       },
     }),
-    { name: 'auth-storage' }
+    {
+      name: 'auth-storage',
+      partialize: (state) => ({
+        user: state.user,
+        token: state.token,
+        isAuthenticated: state.isAuthenticated,
+      }),
+    }
   )
 )
+
+export function useHasHydrated() {
+  const [hasHydrated, setHasHydrated] = useState(false)
+
+  useEffect(() => {
+    const unsub = useAuthStore.persist.onFinishHydration(() => setHasHydrated(true))
+    setHasHydrated(useAuthStore.persist.hasHydrated())
+    return unsub
+  }, [])
+
+  return hasHydrated
+}

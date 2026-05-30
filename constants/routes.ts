@@ -5,20 +5,19 @@ export const ROUTES = {
   // Main
   HOME: '/',
 
-  // Restaurant
-  RESTAURANTS: '/restaurants',
-  RESTAURANT_DETAIL: (id: string) => `/restaurants/${id}`,
+  // Stores
+  STORES: '/stores',
+  STORE_DETAIL: (id: string) => `/stores/${id}`,
 
   // Assessment
   ASSESSMENT: '/assessment',
-  ASSESSMENT_DETAIL: (id: string) => `/assessment/${id}`,
+  ASSESSMENT_DETAIL: (storeId: string, round: string) => `/assessment/${storeId}/${round}`,
 
   // Analytics
   ANALYTICS: '/analytics',
 
-  // Scoring
-  SCORING: '/scoring',
-  SCORING_DETAIL: (id: string) => `/scoring/${id}`,
+  // Pitching
+  PITCHING: '/pitching',
 
   // Reports
   REPORTS: '/reports',
@@ -32,4 +31,10 @@ export const ROUTES = {
 
   // Help
   MANUAL: '/manual',
+
+  // Error pages
+  ERROR_403: '/errors/403',
+  ERROR_429: '/errors/429',
+  ERROR_500: '/errors/500',
+  ERROR_503: '/errors/503',
 } as const

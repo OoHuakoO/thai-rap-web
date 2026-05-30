@@ -2,7 +2,7 @@ import { http, HttpResponse } from 'msw';
 import { userDb } from '../fixtures/user.fixtures';
 import { createUserFromDto } from '../factories/user.factory';
 import type { User, CreateUserDto } from '@/features/user/types/user.types';
-import type { ApiError, PaginatedResponse } from '@/types/api.types';
+import type { ApiErrorResponse, PaginatedResponse } from '@/types/api.types';
 import { API_URL } from '@/constants';
 
 const BASE_URL = `${API_URL}/users`;
@@ -15,28 +15,28 @@ function getScenario(request: Request): string {
 }
 
 function unauthorized(): Response {
-  return HttpResponse.json<ApiError>(
+  return HttpResponse.json<ApiErrorResponse>(
     { message: 'Unauthorized', statusCode: 401 },
     { status: 401 }
   );
 }
 
 function forbidden(): Response {
-  return HttpResponse.json<ApiError>(
+  return HttpResponse.json<ApiErrorResponse>(
     { message: 'Forbidden resource', statusCode: 403 },
     { status: 403 }
   );
 }
 
 function serverError(): Response {
-  return HttpResponse.json<ApiError>(
+  return HttpResponse.json<ApiErrorResponse>(
     { message: 'Internal server error', statusCode: 500 },
     { status: 500 }
   );
 }
 
 function notFound(entity = 'Resource'): Response {
-  return HttpResponse.json<ApiError>(
+  return HttpResponse.json<ApiErrorResponse>(
     { message: `${entity} not found`, statusCode: 404 },
     { status: 404 }
   );
@@ -109,7 +109,7 @@ export const userHandlers = [
     const body = (await request.json()) as CreateUserDto;
 
     if (scenario === 'validation-error' || !body.name || !body.email) {
-      return HttpResponse.json<ApiError>(
+      return HttpResponse.json<ApiErrorResponse>(
         {
           message: 'Validation failed',
           statusCode: 422,

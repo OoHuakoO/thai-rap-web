@@ -3,7 +3,7 @@ import {
   UtensilsCrossed,
   ClipboardList,
   BarChart3,
-  Star,
+  Trophy,
   FileText,
   Users,
   Settings,
@@ -19,7 +19,6 @@ export interface NavItem {
   href: string
   icon: LucideIcon
   allowedRoles: Role[]
-  children?: Omit<NavItem, 'icon' | 'children'>[]
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -28,67 +27,66 @@ export const NAV_ITEMS: NavItem[] = [
     labelTh: 'ภาพรวมโครงการ',
     href: ROUTES.HOME,
     icon: LayoutDashboard,
-    allowedRoles: ['super_admin', 'admin', 'evaluator', 'viewer'],
+    allowedRoles: ['admin', 'assessor', 'mentor', 'me_team', 'judge'],
   },
   {
-    label: 'Restaurants',
+    label: 'Stores',
     labelTh: 'ข้อมูลร้านอาหาร',
-    href: ROUTES.RESTAURANTS,
+    href: ROUTES.STORES,
     icon: UtensilsCrossed,
-    allowedRoles: ['super_admin', 'admin', 'evaluator', 'viewer'],
+    allowedRoles: ['admin', 'assessor', 'mentor', 'me_team', 'entrepreneur'],
   },
   {
     label: 'Assessment',
     labelTh: 'แบบประเมินร้าน',
     href: ROUTES.ASSESSMENT,
     icon: ClipboardList,
-    allowedRoles: ['super_admin', 'admin', 'evaluator'],
+    allowedRoles: ['admin', 'assessor'],
   },
   {
     label: 'Analytics',
-    labelTh: 'วิเคราะห์ผลคะแนน',
+    labelTh: 'วิเคราะห์ศักยภาพ',
     href: ROUTES.ANALYTICS,
     icon: BarChart3,
-    allowedRoles: ['super_admin', 'admin', 'evaluator', 'viewer'],
+    allowedRoles: ['admin', 'assessor', 'mentor', 'me_team', 'entrepreneur'],
   },
   {
-    label: 'Scoring',
-    labelTh: 'คะแนนผล',
-    href: ROUTES.SCORING,
-    icon: Star,
-    allowedRoles: ['super_admin', 'admin', 'evaluator'],
+    label: 'Pitching',
+    labelTh: 'คะแนนพิชชิ่ง',
+    href: ROUTES.PITCHING,
+    icon: Trophy,
+    allowedRoles: ['admin', 'assessor', 'judge', 'me_team'],
   },
   {
     label: 'Reports',
-    labelTh: 'รายงาน & ส่งออก',
+    labelTh: 'รายงานและส่งออก',
     href: ROUTES.REPORTS,
     icon: FileText,
-    allowedRoles: ['super_admin', 'admin', 'evaluator', 'viewer'],
+    allowedRoles: ['admin', 'assessor', 'mentor', 'me_team'],
   },
   {
     label: 'Users',
-    labelTh: 'ผู้ใช้งาน & Links',
+    labelTh: 'ผู้ใช้งานและสิทธิ์',
     href: ROUTES.USERS,
     icon: Users,
-    allowedRoles: ['super_admin', 'admin'],
+    allowedRoles: ['admin', 'me_team'],
   },
   {
     label: 'Settings',
     labelTh: 'ตั้งค่า',
     href: ROUTES.SETTINGS,
     icon: Settings,
-    allowedRoles: ['super_admin', 'admin'],
+    allowedRoles: ['admin'],
   },
 ]
 
-// Bottom nav (help/manual — accessible by all)
 export const NAV_BOTTOM_ITEMS: NavItem[] = [
   {
     label: 'User Manual',
     labelTh: 'คู่มือผู้ใช้งาน',
     href: ROUTES.MANUAL,
     icon: BookOpen,
-    allowedRoles: ['super_admin', 'admin', 'evaluator', 'viewer'],
+    allowedRoles: ['admin', 'assessor', 'mentor', 'entrepreneur', 'judge', 'me_team'],
   },
 ]
 

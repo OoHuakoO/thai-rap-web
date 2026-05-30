@@ -39,7 +39,8 @@
       "Bash(npx shadcn@latest add alert chart avatar skeleton tooltip popover separator scroll-area pagination sonner sheet label textarea breadcrumb --overwrite)",
       "Bash(node -e ' *)",
       "Bash(xargs cat)",
-      "Bash(grep -E '\\\\.\\(ts|tsx\\)$')"
+      "Bash(grep -E '\\\\.\\(ts|tsx\\)$')",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({**d.get\\('devDependencies',{}\\), **d.get\\('dependencies',{}\\)}, indent=2\\)\\)\")"
     ]
   }
 }

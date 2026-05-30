@@ -10,7 +10,7 @@ export function createUser(overrides: Partial<User> = {}): User {
     id,
     name: `User ${id}`,
     email: `user${id}@example.com`,
-    role: 'viewer',
+    role: 'entrepreneur',
     createdAt: now,
     updatedAt: now,
     ...overrides,
