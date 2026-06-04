@@ -1,6 +1,14 @@
 # THAI-RAP Full-Stack Spec (FE + BE)
-> อ้างอิง: 7 รูปหน้าจอจริง + Story Doc + แบบ 50 ข้อ
-> Version: 1.0 | ใช้ให้ AI dev ได้ทันที
+> อ้างอิง: 7 รูปหน้าจอจริง + Story Doc + แบบ 50 ข้อ + ระบบ THAI-RAP Restaurant Survival Diagnostic System
+> Version: 1.1 | ใช้ให้ AI dev ได้ทันที
+
+## ภาพรวมระบบ
+
+**THAI-RAP Restaurant Survival + Digital Portfolio + Export Product + OKR System**
+
+ระบบดิจิทัลสำหรับบริหารจัดการและติดตามการพัฒนาผู้ประกอบการร้านอาหารไทยภาคตะวันออก ภายใต้แนวคิด "ทำร้านให้รอด → ทำร้านให้โต → ทำสินค้าให้ไปตลาด → ทำธุรกิจให้ขยายได้"
+
+กระบวนการหลัก: **เช็ค → วิเคราะห์ → พัฒนา → พิสูจน์ → รายงาน**
 
 ---
 
@@ -54,7 +62,12 @@
 | `/stores` | ข้อมูลร้านอาหาร | Image 4 |
 | `/assessment/[storeId]/[round]` | แบบประเมินร้าน | Image 1 |
 | `/analytics` | วิเคราะห์ศักยภาพ | Image 6 |
+| `/field-audit/[storeId]` | Field Audit ลงพื้นที่ | — |
+| `/portfolio/[storeId]` | Digital Portfolio 8 มิติ | — |
+| `/export-products/[storeId]` | ผลิตภัณฑ์ส่งออก | — |
 | `/pitching` | คะแนน Pitching | Image 7 |
+| `/ranking` | Ranking คัดเลือก | — |
+| `/okr` | OKR/KR Dashboard | — |
 | `/reports` | รายงานและส่งออก | Image 3 |
 | `/users` | ผู้ใช้งานและสิทธิ์ | Image 5 |
 
@@ -90,13 +103,18 @@
   <Logo src="/thai-rap-logo.svg" />
   <IconGrid icons={[...4 category icons]} />
 
-  <NavItem icon={HomeIcon}      label="ภาพรวมโครงการ"     href="/"           />
-  <NavItem icon={StoreIcon}     label="ข้อมูลร้านอาหาร"    href="/stores"     />
-  <NavItem icon={ClipboardIcon} label="แบบประเมินร้าน"     href="/assessment" />
-  <NavItem icon={ChartIcon}     label="วิเคราะห์ศักยภาพ"  href="/analytics"  />
-  <NavItem icon={TrophyIcon}    label="คะแนนพิชชิ่ง"       href="/pitching"   />
-  <NavItem icon={FileIcon}      label="รายงานและส่งออก"    href="/reports"    />
-  <NavItem icon={UsersIcon}     label="ผู้ใช้งานและสิทธิ์" href="/users"      />
+  <NavItem icon={HomeIcon}      label="ภาพรวมโครงการ"     href="/"                />
+  <NavItem icon={StoreIcon}     label="ข้อมูลร้านอาหาร"    href="/stores"          />
+  <NavItem icon={ClipboardIcon} label="แบบประเมินร้าน"     href="/assessment"      />
+  <NavItem icon={ChartIcon}     label="วิเคราะห์ศักยภาพ"  href="/analytics"       />
+  <NavItem icon={SearchIcon}    label="Field Audit"         href="/field-audit"     />
+  <NavItem icon={FolderIcon}    label="Digital Portfolio"   href="/portfolio"       />
+  <NavItem icon={BoxIcon}       label="ผลิตภัณฑ์ส่งออก"    href="/export-products" />
+  <NavItem icon={TrophyIcon}    label="คะแนนพิชชิ่ง"       href="/pitching"        />
+  <NavItem icon={MedalIcon}     label="Ranking"             href="/ranking"         />
+  <NavItem icon={TargetIcon}    label="OKR Dashboard"       href="/okr"             />
+  <NavItem icon={FileIcon}      label="รายงานและส่งออก"    href="/reports"         />
+  <NavItem icon={UsersIcon}     label="ผู้ใช้งานและสิทธิ์" href="/users"           />
 
   <SidebarFooter>
     <ManualLink href="/manual" />
@@ -360,14 +378,14 @@ interface Dimension {
 }
 
 const DIMENSIONS: Dimension[] = [
-  { id:1, name:'การบริหารจัดการ',            nameEn:'Management',              questionCount:7, weight:12, color:'blue'   },
-  { id:2, name:'การตลาดและการขาย',           nameEn:'Marketing & Sales',       questionCount:7, weight:13, color:'orange' },
-  { id:3, name:'การปฏิบัติการ',              nameEn:'Operations',              questionCount:7, weight:18, color:'purple' },
-  { id:4, name:'การเงินและต้นทุน',           nameEn:'Finance & Cost',          questionCount:7, weight:20, color:'red'    },
-  { id:5, name:'คุณภาพอาหารและบริการ',       nameEn:'Food & Service Quality',  questionCount:7, weight:15, color:'green'  },
-  { id:6, name:'บุคลากรและการพัฒนา',         nameEn:'People & Development',    questionCount:5, weight:7,  color:'teal'   },
-  { id:7, name:'นวัตกรรมและเทคโนโลยี',      nameEn:'Innovation & Technology', questionCount:5, weight:5,  color:'yellow' },
-  { id:8, name:'ความยั่งยืนและสิ่งแวดล้อม', nameEn:'Sustainability',          questionCount:4, weight:10, color:'olive'  },
+  { id:1, name:'คุณภาพอาหารและนวัตกรรมเมนู',        nameEn:'Food Quality & Menu Innovation',        questionCount:7, weight:12, color:'blue'   },
+  { id:2, name:'ความปลอดภัยอาหารและมาตรฐาน',        nameEn:'Food Safety & Standards',               questionCount:7, weight:15, color:'orange' },
+  { id:3, name:'แบรนด์และโมเดลธุรกิจ',              nameEn:'Brand & Business Model',                questionCount:6, weight:10, color:'purple' },
+  { id:4, name:'การตลาดและฐานลูกค้า',               nameEn:'Marketing & Customer Base',             questionCount:7, weight:13, color:'red'    },
+  { id:5, name:'การเงิน ต้นทุน และกำไร',            nameEn:'Finance, Cost & Profit',                questionCount:7, weight:20, color:'green'  },
+  { id:6, name:'ระบบปฏิบัติการร้านและการบริการ',    nameEn:'Restaurant Operations & Service',       questionCount:7, weight:18, color:'teal'   },
+  { id:7, name:'เครือข่าย วัตถุดิบ และห่วงโซ่อุปทาน', nameEn:'Network, Ingredients & Supply Chain', questionCount:5, weight:5,  color:'yellow' },
+  { id:8, name:'ความพร้อมเติบโตและเข้าร่วมโครงการ', nameEn:'Growth Readiness & Program Participation', questionCount:4, weight:7, color:'olive' },
 ];
 ```
 
@@ -402,9 +420,88 @@ const DIMENSIONS: Dimension[] = [
 </SectionHeader>
 ```
 
+**50 คำถามแบบประเมินจริง (คะแนน 0–4 ต่อข้อ):**
+
+```typescript
+// มิติที่ 1: คุณภาพอาหารและนวัตกรรมเมนู (ข้อ 1-7, weight 12%)
+const Q1 = [
+  { no: 1,  text: 'ร้านมีเมนูหลักที่ขายดีและลูกค้าจดจำได้ชัดเจน' },
+  { no: 2,  text: 'รสชาติอาหารมีความสม่ำเสมอ' },
+  { no: 3,  text: 'มีสูตรมาตรฐานหรือวิธีทำที่บันทึกไว้' },
+  { no: 4,  text: 'วัตถุดิบหลักมีคุณภาพและควบคุมความสดได้' },
+  { no: 5,  text: 'เมนูมีจุดเด่นหรืออัตลักษณ์เฉพาะของร้าน' },
+  { no: 6,  text: 'มีการรับฟังความคิดเห็นลูกค้าเพื่อนำมาปรับเมนู' },
+  { no: 7,  text: 'มีโอกาสพัฒนาเมนู Signature หรือเมนูใหม่เพื่อเพิ่มยอดขาย' },
+]
+// มิติที่ 2: ความปลอดภัยอาหารและมาตรฐาน (ข้อ 8-14, weight 15%)
+const Q2 = [
+  { no: 8,  text: 'พื้นที่ครัวสะอาด เป็นระเบียบ และแยกโซนเหมาะสม' },
+  { no: 9,  text: 'มีการจัดเก็บวัตถุดิบสด แห้ง และปรุงสุกอย่างถูกสุขลักษณะ' },
+  { no: 10, text: 'เจ้าของร้านหรือพนักงานมีความรู้พื้นฐานด้านสุขอนามัยอาหาร' },
+  { no: 11, text: 'มีการควบคุมวันหมดอายุของวัตถุดิบ' },
+  { no: 12, text: 'อุปกรณ์ครัว ภาชนะ และพื้นที่บริการสะอาดพร้อมใช้งาน' },
+  { no: 13, text: 'ร้านมีใบอนุญาตหรือเอกสารที่เกี่ยวข้องกับการจำหน่ายอาหาร' },
+  { no: 14, text: 'มีแนวทางป้องกันความเสี่ยง เช่น อาหารเสีย ปนเปื้อน หรือข้อร้องเรียนด้านสุขภาพ' },
+]
+// มิติที่ 3: แบรนด์และโมเดลธุรกิจ (ข้อ 15-20, weight 10%)
+const Q3 = [
+  { no: 15, text: 'ร้านมีชื่อ แบรนด์ หรือภาพจำที่ชัดเจน' },
+  { no: 16, text: 'ร้านอธิบายได้ว่าลูกค้ามากินร้านนี้เพราะอะไร' },
+  { no: 17, text: 'กลุ่มลูกค้าเป้าหมายของร้านมีความชัดเจน' },
+  { no: 18, text: 'ร้านมีเรื่องเล่าที่เชื่อมโยงกับอาหาร ท้องถิ่น หรือเจ้าของร้าน' },
+  { no: 19, text: 'รูปแบบรายได้ของร้านชัดเจน เช่น หน้าร้าน เดลิเวอรี Catering หรือออกบูธ' },
+  { no: 20, text: 'ร้านมีแนวคิดในการต่อยอด เช่น สินค้าพร้อมขาย แพ็กเกจจิ้ง หรือแฟรนไชส์' },
+]
+// มิติที่ 4: การตลาดและฐานลูกค้า (ข้อ 21-27, weight 13%)
+const Q4 = [
+  { no: 21, text: 'ร้านมีช่องทางออนไลน์ เช่น Facebook, TikTok, LINE OA หรือ Google Maps' },
+  { no: 22, text: 'ข้อมูลร้านออนไลน์ถูกต้อง เช่น เวลาเปิด-ปิด เบอร์โทร พิกัด และเมนู' },
+  { no: 23, text: 'มีภาพอาหารหรือคอนเทนต์ที่ช่วยกระตุ้นยอดขาย' },
+  { no: 24, text: 'ร้านมีฐานลูกค้าประจำหรือมีวิธีทำให้ลูกค้ากลับมาซื้อซ้ำ' },
+  { no: 25, text: 'มีการทำโปรโมชันหรือกิจกรรมการตลาดอย่างเหมาะสม' },
+  { no: 26, text: 'ร้านรู้ว่าช่องทางใดสร้างยอดขายดีที่สุด' },
+  { no: 27, text: 'ร้านมีโอกาสขยายตลาดใหม่ เช่น เดลิเวอรี ออกงาน หน่วยงาน โรงแรม หรือการท่องเที่ยว' },
+]
+// มิติที่ 5: การเงิน ต้นทุน และกำไร (ข้อ 28-34, weight 20%)
+const Q5 = [
+  { no: 28, text: 'ร้านรู้ต้นทุนวัตถุดิบของเมนูหลัก' },
+  { no: 29, text: 'ร้านตั้งราคาขายโดยอิงต้นทุนและกำไร' },
+  { no: 30, text: 'ร้านแยกเงินร้านกับเงินส่วนตัวออกจากกัน' },
+  { no: 31, text: 'มีการบันทึกรายรับ-รายจ่ายอย่างสม่ำเสมอ' },
+  { no: 32, text: 'ร้านรู้ยอดขายเฉลี่ยต่อวันและต่อเดือน' },
+  { no: 33, text: 'ร้านรู้ว่าเมนูใดกำไรดี และเมนูใดควรปรับราคา' },
+  { no: 34, text: 'ร้านมีเงินหมุนเวียนเพียงพอสำหรับวัตถุดิบ ค่าแรง ค่าเช่า และค่าใช้จ่ายจำเป็น' },
+]
+// มิติที่ 6: ระบบปฏิบัติการร้านและการบริการ (ข้อ 35-41, weight 18%)
+const Q6 = [
+  { no: 35, text: 'ร้านมีขั้นตอนการเปิดร้าน-ปิดร้านที่ชัดเจน' },
+  { no: 36, text: 'มีการแบ่งหน้าที่ของเจ้าของร้าน พนักงานครัว และพนักงานบริการ' },
+  { no: 37, text: 'เวลาการออกอาหารเหมาะสม ไม่ทำให้ลูกค้ารอนานเกินไป' },
+  { no: 38, text: 'มีมาตรฐานการบริการ เช่น ต้อนรับ รับออเดอร์ เสิร์ฟอาหาร และรับชำระเงิน' },
+  { no: 39, text: 'มีระบบจัดการสต็อกวัตถุดิบเพื่อลดของเสีย' },
+  { no: 40, text: 'ร้านรับมือช่วงลูกค้าเยอะได้โดยคุณภาพไม่ตก' },
+  { no: 41, text: 'มีระบบจัดการข้อร้องเรียนของลูกค้า' },
+]
+// มิติที่ 7: เครือข่าย วัตถุดิบ และห่วงโซ่อุปทาน (ข้อ 42-46, weight 5%)
+const Q7 = [
+  { no: 42, text: 'ร้านมีแหล่งวัตถุดิบประจำที่เชื่อถือได้' },
+  { no: 43, text: 'มีการใช้วัตถุดิบท้องถิ่นหรือวัตถุดิบเด่นของพื้นที่' },
+  { no: 44, text: 'ร้านมีซัพพลายเออร์สำรอง หากวัตถุดิบหลักขาดตลาด' },
+  { no: 45, text: 'มีความร่วมมือกับชุมชน กลุ่มเกษตรกร หรือผู้ผลิตท้องถิ่น' },
+  { no: 46, text: 'ร้านมีความเชื่อมโยงกับหน่วยงาน ภาคี หรือเครือข่ายธุรกิจในพื้นที่' },
+]
+// มิติที่ 8: ความพร้อมเติบโตและเข้าร่วมโครงการ (ข้อ 47-50, weight 7%)
+const Q8 = [
+  { no: 47, text: 'เจ้าของร้านมีความตั้งใจและเปิดรับการเปลี่ยนแปลง' },
+  { no: 48, text: 'ร้านพร้อมให้ทีมโครงการลงพื้นที่ ตรวจประเมิน และให้คำปรึกษาแบบ 1-on-1' },
+  { no: 49, text: 'ร้านสามารถจัดเตรียมข้อมูลสำคัญ เช่น รูปเมนู รูปร้าน ยอดขาย ต้นทุน และปัญหาหลัก' },
+  { no: 50, text: 'ร้านมีเป้าหมายการพัฒนาภายใน 3-6 เดือน เช่น เพิ่มยอดขาย ลดต้นทุน ปรับเมนู ทำแบรนด์ หรือขยายช่องทางขาย' },
+]
+```
+
 **Assessment Table columns:**
 ```
-ข้อที่ | ตำถามประเมิน | คะแนน (0-100) | หลักฐาน/ไฟล์ | บันทึกผู้ประเมิน | ข้อเสนอแนะเพิ่มเติม | สถานะ
+ข้อที่ | คำถามประเมิน | คะแนน (0-4) | Display (0-100) | หลักฐาน/ไฟล์ | บันทึกผู้ประเมิน | ข้อเสนอแนะเพิ่มเติม | สถานะ
 ```
 
 **คะแนน cell:** Select dropdown 0–100 (step 10) หรือ number input
@@ -529,9 +626,9 @@ const DIMENSIONS: Dimension[] = [
 **Left — Radar Chart: ภาพรวมศักยภาพ 8 มิติ**
 ```tsx
 <RadarChart
-  axes={['1.การจัดการองค์กร','2.การตลาด','3.ผลิตภัณฑ์และเมนู',
-         '4.การปฏิบัติการ','5.การเงิน','6.การบริหารทรัพยากรบุคคล',
-         '7.นวัตกรรมและเทคโนโลยี','8.ความยั่งยืน']}
+  axes={['1.คุณภาพอาหารและนวัตกรรมเมนู','2.ความปลอดภัยอาหารและมาตรฐาน','3.แบรนด์และโมเดลธุรกิจ',
+         '4.การตลาดและฐานลูกค้า','5.การเงินต้นทุนและกำไร','6.ระบบปฏิบัติการร้านและการบริการ',
+         '7.เครือข่ายวัตถุดิบและห่วงโซ่อุปทาน','8.ความพร้อมเติบโต']}
   series={[
     { name:'T0 (เริ่มต้น)', color:'#8E44AD', dashed:true },
     { name:'T1 (ปัจจุบัน)', color:'#F17128' },
@@ -786,7 +883,206 @@ T1 values: 82, 70, 78, 74, 71, 69, 58, 56
 
 ---
 
-### C6. รายงานและส่งออก — Reports & Export (Image 3)
+### C6. Field Audit — ลงพื้นที่ตรวจร้าน
+
+#### C6.1 Filter Bar
+
+```tsx
+<FieldAuditFilterBar>
+  <StoreSelect value="บ้านริมน้ำ จันทบุรี" />
+  <RoundSelect options={['T0','T1','T2','T3','T4']} />
+  <AuditorInfo name="ศิริวรรณ จันทร์ดี" />
+  <SaveButton />
+</FieldAuditFilterBar>
+```
+
+#### C6.2 Checklist Items
+
+รายการตรวจ (แต่ละ item: label + result + note + file upload):
+
+```typescript
+const FIELD_AUDIT_ITEMS = [
+  { id: 'kitchen_photo',    label: 'ภาพครัว' },
+  { id: 'storage_zone',     label: 'โซนจัดเก็บวัตถุดิบ' },
+  { id: 'food_permit',      label: 'ใบอนุญาตร้านอาหาร' },
+  { id: 'sop_open_close',   label: 'SOP เปิด-ปิดร้าน' },
+  { id: 'stock_system',     label: 'ระบบสต็อก' },
+  { id: 'costing_sheet',    label: 'Costing Sheet' },
+  { id: 'food_safety_plan', label: 'Food Safety Action Plan' },
+  { id: 'standard_menu',    label: 'หลักฐานเมนูมาตรฐาน' },
+  { id: 'sales_channels',   label: 'หลักฐานช่องทางขาย' },
+  { id: 'before_after',     label: 'รูปภาพก่อน-หลังการปรับปรุง' },
+]
+```
+
+**Result options per item:**
+```
+ผ่าน        → green badge (มีหลักฐานครบและทำได้จริง)
+รอตรวจ      → amber badge (ต้องส่งหลักฐานเพิ่มเติม)
+ไม่ผ่าน    → red badge (ต้องแก้ไขและติดตามซ้ำ)
+```
+
+#### C6.3 Summary Panel
+
+```tsx
+<FieldAuditSummary>
+  <PassCount /> <PendingCount /> <FailCount />
+  <RedFlagsDetected />
+  <AuditorNote placeholder="บันทึกสรุปการลงพื้นที่..." />
+  <SubmitButton>บันทึกผล Field Audit</SubmitButton>
+</FieldAuditSummary>
+```
+
+---
+
+### C7. Digital Portfolio — แฟ้มผลงาน 8 มิติ
+
+#### C7.1 Portfolio Overview (8 dimension cards)
+
+แต่ละการ์ด: icon + ชื่อมิติ + สถานะ (Complete/Pending) + % completeness + คลิกเพื่อแก้ไข
+
+#### C7.2 Portfolio Detail per Dimension
+
+```tsx
+<PortfolioDetail dimension={dim}>
+  <SummaryField label="สรุปผลงาน" />
+  <ResultsField label="หลักฐาน / ผลลัพธ์" />
+  <FileUploadSection label="ลิงก์ไฟล์ / รูปภาพ / เอกสาร" />
+  <MentorNoteField label="หมายเหตุ Mentor" readOnly />
+  <StatusToggle options={['Pending','Complete']} />
+</PortfolioDetail>
+```
+
+**8 มิติ + หลักฐานที่ควรมี:**
+
+| มิติ | หลักฐานที่ควรมี |
+|---|---|
+| 1. อาหารและเมนู | เมนู Signature, สูตรมาตรฐาน, รูปอาหาร, ผลทดสอบรสชาติ |
+| 2. Food Safety | Food Safety Action Plan, รูปครัว, ใบอนุญาต, Checklist สุขอนามัย |
+| 3. แบรนด์ | Brand Story, CI, Key Visual, Business Model Canvas |
+| 4. การตลาด | ช่องทางออนไลน์, แผนคอนเทนต์, Customer Persona, CRM |
+| 5. การเงิน | Costing Sheet, ราคาขาย, ยอดขายก่อน-หลัง, บัญชีรายรับรายจ่าย |
+| 6. ระบบร้าน | SOP เปิด-ปิดร้าน, SOP ครัว, SOP บริการ, ระบบสต็อก |
+| 7. Supply Chain | ซัพพลายเออร์, วัตถุดิบท้องถิ่น, ภาคีชุมชน, คู่ค้า |
+| 8. การเติบโต | Pitch Deck, Scaling Plan, ช่องทางขายใหม่, Roadmap 90 วัน |
+
+---
+
+### C8. Export Products — ผลิตภัณฑ์ส่งออก
+
+#### C8.1 Product Info Form
+
+```tsx
+<ExportProductForm>
+  <Field label="ชื่อสินค้า" />
+  <Field label="กลุ่มสินค้า / ประเภทสินค้า" />
+  <Field label="จุดขาย" />
+  <Field label="วัตถุดิบหลัก / วัตถุดิบเด่นภาคตะวันออก" />
+  <Field label="อายุสินค้า / รูปแบบสินค้า" />
+  <MultiSelect label="ตลาดเป้าหมาย / ประเทศเป้าหมาย" />
+  <MultiSelect label="ช่องทางจำหน่ายที่ต้องการ" />
+</ExportProductForm>
+```
+
+#### C8.2 Export Readiness Checklist
+
+หมวดการประเมิน + checkbox + หมายเหตุ + upload หลักฐาน:
+
+| หมวด | สิ่งที่ตรวจ |
+|---|---|
+| สูตรและกระบวนการผลิต | สูตรมาตรฐาน ขั้นตอนผลิต กำลังการผลิต |
+| Shelf-life | อายุสินค้า การทดสอบความคงตัว การเก็บรักษา |
+| บรรจุภัณฑ์ | ความแข็งแรง น้ำหนัก ขนาด การขนส่ง |
+| ฉลาก | ฉลากไทย-อังกฤษ, Nutrition Facts, วันผลิต-หมดอายุ |
+| มาตรฐาน | อย., GMP, HACCP, Halal หรือมาตรฐานที่เกี่ยวข้อง |
+| เอกสารส่งออก | Barcode, HS Code, Commercial Invoice, Packing List |
+| ตลาดเป้าหมาย | ประเทศเป้าหมาย ลูกค้าเป้าหมาย ช่องทางขาย คู่ค้า |
+| การทดสอบตลาด | Pilot Sale, Consumer Acceptance, Feedback |
+
+#### C8.3 Export Readiness Score
+
+```
+คะแนน    | ระดับ
+0–39     | Not Ready
+40–59    | Early Stage
+60–74    | Ready with Conditions
+75–84    | Market Ready
+85–100   | Export Ready
+```
+
+---
+
+### C9. Ranking — คัดเลือกร้าน
+
+#### C9.1 Ranking Table
+
+**Columns:** อันดับ | ชื่อร้าน | จังหวัด | T1 Score | พัฒนาการ | Pitching | Mindset | Evidence | **Incubation Readiness** | สถานะ
+
+**สูตร Incubation Readiness Score:**
+```
+= (T1 Score × 0.40) + (Improvement Score × 0.25)
++ (Pitching Score × 0.20) + (Mindset Score × 0.10)
++ (Evidence Score × 0.05)
+```
+
+**Status badges:**
+
+| เงื่อนไข | สถานะ |
+|---|---|
+| อันดับ 1–20, ไม่มี Red Flag รุนแรง | ผ่านเข้า Incubation — green |
+| อันดับ 1–20, มี Red Flag รุนแรง | ผ่านแบบมีเงื่อนไข — amber |
+| อันดับ 21–30 | สำรอง — blue |
+| ต่ำกว่าอันดับ 30 | ยังไม่ผ่าน — red |
+
+#### C9.2 Summary KPI Row
+
+```
+คัดเลือกแล้ว: 20/50 | ผ่านแบบมีเงื่อนไข: 3 | สำรอง: 10 | ยังไม่ผ่าน: 17
+```
+
+---
+
+### C10. OKR Dashboard — ติดตามผลโครงการ
+
+#### C10.1 Objectives Overview (7 O-cards)
+
+แต่ละ card: Objective label + overall % progress + KR list + progress bars
+
+**OKR Structure:**
+
+| Objective | ตัวอย่าง KR |
+|---|---|
+| O1 สร้างเครือข่ายผู้ประกอบการอาหารภาคตะวันออก | ผู้เข้าอบรม 1,200 คน / จบ 1,000 ราย |
+| O2 ปั้นธุรกิจต้นแบบที่โตได้จริง | ธุรกิจต้นแบบ 10 กิจการ / รายได้เพิ่มขึ้น |
+| O3 เปลี่ยนวัตถุดิบท้องถิ่นเป็นนวัตกรรมอาหาร | นวัตกรรม 15 รายการ / ใช้วัตถุดิบภาคตะวันออก 70% |
+| O4 ระบบบริหารโครงการด้วยข้อมูลดิจิทัล | Single Database 100% / Portfolio 100% |
+| O5 ขายเก่งขึ้น แบรนด์ชัดขึ้น | Signature Menu / Food Safety Plan / Brand Kit |
+| O6 สร้างการมองเห็นตลาด | คอนเทนต์ 100 ชิ้น / Impressions 1,000,000 |
+| O7 สร้างกลไกเครือข่ายและทุนมนุษย์ | Mentor Pool 24 คน / Peer Mentor 5 ราย |
+
+#### C10.2 OKR–Store Data Linkage
+
+ข้อมูลรายร้านที่เชื่อมกับ KR อัตโนมัติ:
+
+```typescript
+const OKR_TRIGGERS: Record<string, string[]> = {
+  'portfolio_complete_8_dims':   ['O2', 'O4'],
+  'has_pitch_deck':             ['O2'],
+  'has_scaling_plan':           ['O2'],
+  'revenue_increased':          ['O2', 'O3'],
+  'has_innovation_product':     ['O3'],
+  'uses_local_ingredients':     ['O3'],
+  'has_brand_kit':              ['O5'],
+  'has_food_safety_plan':       ['O5'],
+  'has_new_sales_channel':      ['O2', 'O6'],
+  'has_brand_content':          ['O6'],
+  'is_peer_mentor':             ['O7'],
+}
+```
+
+---
+
+### C11. รายงานและส่งออก — Reports & Export (Image 3)
 
 #### C6.1 Filter + Action Bar
 
@@ -884,7 +1180,7 @@ Each card: icon + name + format badges (PDF/XLSX) + "ใช้ล่าสุด
 
 ---
 
-### C7. ผู้ใช้งานและสิทธิ์ — Users & Roles (Image 5)
+### C12. ผู้ใช้งานและสิทธิ์ — Users & Roles (Image 5)
 
 #### C7.1 Filter Bar
 
@@ -1094,18 +1390,22 @@ model Store {
 }
 
 enum StoreStatus {
-  REGISTERED
-  T0_COMPLETED
-  CAMP_COMPLETED
-  T1_COMPLETED
-  PITCHING_COMPLETED
-  SELECTED
-  CONDITIONAL_SELECTED
-  WAITING_LIST
-  NOT_SELECTED
-  FIELD_AUDITED
-  IDP_CREATED
-  COMPLETED
+  REGISTERED          // สมัครและมีข้อมูลในระบบ
+  T0_COMPLETED        // ประเมินก่อนค่ายแล้ว
+  CAMP_COMPLETED      // เข้าค่ายแล้ว
+  T1_COMPLETED        // ประเมินหลังค่ายแล้ว
+  PITCHING_COMPLETED  // นำเสนอ Pitching แล้ว
+  SELECTED            // ผ่านเข้า Incubation
+  CONDITIONAL_SELECTED // ผ่านแบบมีเงื่อนไข
+  WAITING_LIST        // รายชื่อสำรอง
+  NOT_SELECTED        // ยังไม่ผ่าน
+  FIELD_AUDITED       // ลงพื้นที่ตรวจแล้ว
+  IDP_CREATED         // มีแผนพัฒนารายกิจการแล้ว
+  TRAINING            // อยู่ระหว่างอบรม
+  INCUBATION          // เข้าสู่กระบวนการบ่มเพาะ
+  ACCELERATOR         // เข้าสู่กระบวนการเร่งการเติบโต
+  MODEL               // เป็นธุรกิจต้นแบบ
+  COMPLETED           // ติดตามผลครบแล้ว
 }
 
 model Question {
@@ -1277,6 +1577,60 @@ model Portfolio {
 
 enum PortfolioStatus { PENDING COMPLETE }
 
+model Product {
+  id                String   @id @default(cuid())
+  storeId           String
+  name              String
+  category          String?
+  productType       String?
+  sellingPoints     String?
+  mainIngredients   String?
+  localIngredients  String?
+  shelfLife         String?
+  productForm       String?
+  targetMarkets     String[]
+  targetCountries   String[]
+  salesChannels     String[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  store             Store    @relation(fields:[storeId], references:[id])
+  exportReadiness   ExportReadiness?
+}
+
+model ExportReadiness {
+  id          String   @id @default(cuid())
+  productId   String   @unique
+  items       Json     // array of { id, category, label, result, note, files[] }
+  totalScore  Float?
+  level       ExportReadinessLevel?
+  actionPlan  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  product     Product  @relation(fields:[productId], references:[id])
+}
+
+enum ExportReadinessLevel { NOT_READY EARLY_STAGE READY_WITH_CONDITIONS MARKET_READY EXPORT_READY }
+
+model OKR {
+  id          String   @id @default(cuid())
+  objectiveNo Int      // 1-7
+  objective   String
+  createdAt   DateTime @default(now())
+  krs         KR[]
+}
+
+model KR {
+  id          String   @id @default(cuid())
+  okrId       String
+  krText      String
+  target      Float
+  current     Float    @default(0)
+  unit        String?
+  updatedAt   DateTime @updatedAt
+  okr         OKR      @relation(fields:[okrId], references:[id])
+}
+
 model Report {
   id          String   @id @default(cuid())
   name        String
@@ -1408,10 +1762,50 @@ GET    /api/reports/templates
 GET    /api/reports/activity-log
 ```
 
+#### Field Audit
+```
+GET    /api/field-audit/:storeId/:round
+PUT    /api/field-audit/:storeId/:round
+POST   /api/field-audit/:storeId/:round/files
+DELETE /api/field-audit/files/:fileId
+```
+
+#### Portfolio
+```
+GET    /api/portfolio/:storeId
+GET    /api/portfolio/:storeId/:dimensionId
+PUT    /api/portfolio/:storeId/:dimensionId
+POST   /api/portfolio/:storeId/:dimensionId/files
+DELETE /api/portfolio/files/:fileId
+GET    /api/portfolio/:storeId/completeness   (% per dimension + overall)
+```
+
+#### Export Products
+```
+GET    /api/export-products/:storeId
+POST   /api/export-products/:storeId
+PUT    /api/export-products/:storeId/:productId
+GET    /api/export-products/:storeId/:productId/readiness
+PUT    /api/export-products/:storeId/:productId/readiness
+POST   /api/export-products/:storeId/:productId/readiness/files
+DELETE /api/export-products/:storeId/:productId
+```
+
 #### Ranking
 ```
 GET    /api/ranking                    ?round=T1
 GET    /api/ranking/incubation-score   (Readiness Score calculation)
+GET    /api/ranking/top20              (Top 20 Incubation candidates)
+PUT    /api/ranking/:storeId/status    (Admin override status)
+```
+
+#### OKR
+```
+GET    /api/okr
+GET    /api/okr/:okrId/krs
+PUT    /api/okr/krs/:krId
+GET    /api/okr/dashboard              (all O1-O7 with current progress)
+GET    /api/okr/store-triggers         (which stores contribute to which KR)
 ```
 
 ### E3. Business Logic
@@ -1454,14 +1848,14 @@ export function detectRedFlags(scores: Score[]): RedFlag[] {
 #### Score Calculation
 ```typescript
 const DIMENSIONS = [
-  { id:1, weight:12, questionNos:[1,2,3,4,5,6,7] },
-  { id:2, weight:15, questionNos:[8,9,10,11,12,13,14] },
-  { id:3, weight:10, questionNos:[15,16,17,18,19,20] },
-  { id:4, weight:13, questionNos:[21,22,23,24,25,26,27] },
-  { id:5, weight:20, questionNos:[28,29,30,31,32,33,34] },
-  { id:6, weight:18, questionNos:[35,36,37,38,39,40,41] },
-  { id:7, weight:5,  questionNos:[42,43,44,45,46] },
-  { id:8, weight:7,  questionNos:[47,48,49,50] },
+  { id:1, name:'คุณภาพอาหารและนวัตกรรมเมนู',        nameEn:'Food Quality & Menu Innovation',           weight:12, questionNos:[1,2,3,4,5,6,7] },
+  { id:2, name:'ความปลอดภัยอาหารและมาตรฐาน',        nameEn:'Food Safety & Standards',                  weight:15, questionNos:[8,9,10,11,12,13,14] },
+  { id:3, name:'แบรนด์และโมเดลธุรกิจ',              nameEn:'Brand & Business Model',                   weight:10, questionNos:[15,16,17,18,19,20] },
+  { id:4, name:'การตลาดและฐานลูกค้า',               nameEn:'Marketing & Customer Base',                weight:13, questionNos:[21,22,23,24,25,26,27] },
+  { id:5, name:'การเงิน ต้นทุน และกำไร',            nameEn:'Finance, Cost & Profit',                   weight:20, questionNos:[28,29,30,31,32,33,34] },
+  { id:6, name:'ระบบปฏิบัติการร้านและการบริการ',    nameEn:'Restaurant Operations & Service',          weight:18, questionNos:[35,36,37,38,39,40,41] },
+  { id:7, name:'เครือข่าย วัตถุดิบ และห่วงโซ่อุปทาน', nameEn:'Network, Ingredients & Supply Chain',  weight:5,  questionNos:[42,43,44,45,46] },
+  { id:8, name:'ความพร้อมเติบโตและเข้าร่วมโครงการ', nameEn:'Growth Readiness & Program Participation', weight:7,  questionNos:[47,48,49,50] },
 ];
 
 export function calcDimensionScore(dimensionId: number, scores: Score[]): number {
