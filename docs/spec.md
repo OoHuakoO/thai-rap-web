@@ -12,6 +12,21 @@
 
 ---
 
+## Implementation Progress (2026-07-06)
+
+ดูรายละเอียด sprint-by-sprint ที่ [plan/plan.md](../plan/plan.md). สรุปสั้น:
+
+| ส่วน (section) | สถานะ |
+|---|---|
+| Auth (login/register) | ✅ Done — ต่อ NestJS จริง, ไม่ใช้ NextAuth ตามที่ A1 ระบุไว้เดิม |
+| C2 ข้อมูลร้านอาหาร | ✅ Done (scope ลด — ดู note ในหัวข้อ C2 ด้านล่าง) |
+| C3 แบบประเมินร้าน | ✅ Done (scope ลด — ดู note ในหัวข้อ C3 ด้านล่าง) |
+| C1, C4–C12 (Dashboard, Analytics, Pitching, Field Audit, Portfolio, Export Products, Ranking, OKR, Reports, Users) | ⏳ Not started |
+
+Tech stack จริงต่างจาก A1 บางจุด: **Prisma + MySQL/MariaDB** (ไม่ใช่ PostgreSQL), ยังไม่ตั้งค่า S3/Cloudinary (ไฟล์อัปโหลดทุกจุดเลื่อนออกไป), Auth ใช้ JWT ตรงจาก NestJS ไม่ผ่าน NextAuth.js
+
+---
+
 ## PART A — OVERVIEW
 
 ### A1. Tech Stack
@@ -251,6 +266,8 @@ Items:
 
 ### C2. ข้อมูลร้านอาหาร — Restaurant Profiles (Image 4)
 
+> **Implementation note (2026-07-06):** ✅ Done ที่ `/stores`, ปรับ UI ให้ตรง `design/thai_rap.html` แทน Image 4. เบี่ยงจาก spec ด้านล่าง: C2.3 Store Quick View เป็น inline panel คอลัมน์ขวาในหน้าเดียวกัน ไม่ใช่ slide-in Sheet; ไม่มี "เอกสารที่อัปโหลด" / "FoodPhotos" (ไม่มี file storage); C2.4 bottom summary bar + map ยังไม่ทำ; ตารางไม่มีคอลัมน์ "ผู้ประเมิน" (ไม่มีความสัมพันธ์ตรงระหว่าง store กับ assessor ในสคีมา). ดู [03-stores.md](../../thai-rap-api/spec/03-stores.md) ฝั่ง backend
+
 #### C2.1 Filter + Action Bar
 
 ```tsx
@@ -335,6 +352,8 @@ Items:
 ---
 
 ### C3. แบบประเมินร้าน — Restaurant Assessment (Image 1)
+
+> **Implementation note (2026-07-06):** ✅ Done ที่ `/assessment/[storeId]/[round]`, ปรับ UI ให้ตรง `design/thai_rap.html` แทน Image 1. เบี่ยงจาก spec ด้านล่าง: คะแนนเก็บเป็น raw 0-4 ตลอด (ไม่ convert เป็น 0-100 ต่อข้อ ตาม C3.3 formula `displayScore = rawScore*25` — คำนวณ % แค่ระดับมิติ/รวม), ไม่มีคอลัมน์ "หลักฐาน/ไฟล์" (ไม่มี file storage), ไม่มี "อันดับในจังหวัด/อันดับทั้งหมด" ใน summary sidebar (ไม่มี ranking feature), C3.4 RadarChart แทนด้วย dimension progress bars, ไม่มี C3.5 History Timeline. Round selector เป็น pill tabs ไม่ใช่ purple-filled radio group. ดู [04-assessments.md](../../thai-rap-api/spec/04-assessments.md) ฝั่ง backend
 
 #### C3.1 Filter Bar
 

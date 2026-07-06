@@ -2,10 +2,12 @@
 
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { ROUTES } from '@/constants/routes'
 import { loginSchema } from '../schemas/login.schema'
 import type { LoginFormValues } from '../schemas/login.schema'
 import { useLogin } from '../hooks/use-login'
@@ -68,6 +70,13 @@ export function LoginForm() {
           <Button type="submit" className="w-full" disabled={isPending}>
             {isPending ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
           </Button>
+
+          <p className="text-center text-sm text-muted-foreground">
+            ยังไม่มีบัญชี?{' '}
+            <Link href={ROUTES.REGISTER} className="font-medium text-orange hover:underline">
+              สมัครสมาชิก
+            </Link>
+          </p>
         </form>
       </CardContent>
     </Card>

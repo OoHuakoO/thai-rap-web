@@ -1,6 +1,13 @@
 import { http, HttpResponse } from 'msw'
 import { userDb } from '../fixtures/user.fixtures'
-import type { LoginDto, LoginResponse } from '@/features/auth/types/auth-response.types'
+import { createUser } from '../factories/user.factory'
+import type {
+  LoginDto,
+  LoginResponse,
+  RegisterDto,
+  RegisterResponse,
+  AuthTokens,
+} from '@/features/auth/types/auth-response.types'
 import type { ApiErrorResponse } from '@/types/api.types'
 import type { AuthUser } from '@/types/auth.types'
 import { API_URL } from '@/constants'
@@ -12,14 +19,32 @@ function getScenario(request: Request): string {
 }
 
 function unauthorized(message = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'): Response {
-  return HttpResponse.json<ApiErrorResponse>({ message, statusCode: 401 }, { status: 401 })
+  return HttpResponse.json<ApiErrorResponse>(
+    { success: false, error: { code: 'AUTH_001', message } },
+    { status: 401 }
+  )
+}
+
+function conflict(message: string): Response {
+  return HttpResponse.json<ApiErrorResponse>(
+    { success: false, error: { code: 'USER_002', message } },
+    { status: 409 }
+  )
 }
 
 function serverError(): Response {
   return HttpResponse.json<ApiErrorResponse>(
-    { message: 'Internal server error', statusCode: 500 },
+    { success: false, error: { code: 'SYS_001', message: 'Internal server error' } },
     { status: 500 }
   )
+}
+
+function mockTokens(userId: string): AuthTokens {
+  return {
+    accessToken: `mock-access-${userId}`,
+    refreshToken: `mock-refresh-${userId}`,
+    expiresIn: 900,
+  }
 }
 
 export const authHandlers = [
@@ -34,9 +59,42 @@ export const authHandlers = [
     if (!found) return unauthorized()
 
     const user: AuthUser = { id: found.id, name: found.name, email: found.email, role: found.role }
-    return HttpResponse.json<LoginResponse>({
-      user,
-      token: `mock-jwt-${found.role}-${found.id}`,
-    })
+    return HttpResponse.json<LoginResponse>({ user, tokens: mockTokens(found.id) })
+  }),
+
+  http.post(`${BASE_URL}/register`, async ({ request }) => {
+    const scenario = getScenario(request)
+    if (scenario === 'server-error') return serverError()
+
+    const body = (await request.json()) as RegisterDto
+
+    if (userDb.getAll().some((u) => u.email === body.email)) {
+      return conflict('อีเมลนี้ถูกใช้งานแล้ว')
+    }
+
+    const created = createUser({ name: body.name, email: body.email, role: body.role })
+    userDb.create(created)
+
+    const user: AuthUser = { id: created.id, name: created.name, email: created.email, role: created.role }
+    return HttpResponse.json<RegisterResponse>(
+      { user, tokens: mockTokens(created.id) },
+      { status: 201 }
+    )
+  }),
+
+  http.post(`${BASE_URL}/refresh`, async ({ request }) => {
+    const scenario = getScenario(request)
+    if (scenario === 'server-error') return serverError()
+
+    const body = (await request.json()) as { refreshToken?: string }
+    if (!body.refreshToken?.startsWith('mock-refresh-')) {
+      return HttpResponse.json<ApiErrorResponse>(
+        { success: false, error: { code: 'AUTH_004', message: 'Refresh token is invalid' } },
+        { status: 401 }
+      )
+    }
+
+    const userId = body.refreshToken.replace('mock-refresh-', '')
+    return HttpResponse.json<AuthTokens>(mockTokens(userId))
   }),
 ]

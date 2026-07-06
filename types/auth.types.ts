@@ -1,26 +1,28 @@
 // ─── Roles ───────────────────────────────────────────────────────────────────
-// admin       — ผู้ดูแลระบบ / PMO: full access + user management
-// assessor    — ผู้ประเมินร้าน: assessment + scoring write
-// mentor      — ที่ปรึกษา / Coach: IDP + analytics read
-// entrepreneur — ผู้ประกอบการ: own store + own assessment read-only
-// judge       — กรรมการ Pitching: pitching scoring only
-// me_team     — ทีม M&E: monitor + view all reports, no write
+// Matches the Prisma `Role` enum in thai-rap-api exactly (uppercase) — the API
+// is the source of truth for this union since JWT payloads/user records carry it.
+// ADMIN        — ผู้ดูแลระบบ / PMO: full access + user management
+// ASSESSOR     — ผู้ประเมินร้าน: assessment + scoring write
+// MENTOR       — ที่ปรึกษา / Coach: IDP + analytics read
+// ENTREPRENEUR — ผู้ประกอบการ: own store + own assessment read-only
+// JUDGE        — กรรมการ Pitching: pitching scoring only
+// ME_TEAM      — ทีม M&E: monitor + view all reports, no write
 export type Role =
-  | 'admin'
-  | 'assessor'
-  | 'mentor'
-  | 'entrepreneur'
-  | 'judge'
-  | 'me_team'
+  | 'ADMIN'
+  | 'ASSESSOR'
+  | 'MENTOR'
+  | 'ENTREPRENEUR'
+  | 'JUDGE'
+  | 'ME_TEAM'
 
 // ─── Role Labels (Thai) ───────────────────────────────────────────────────────
 export const ROLE_LABELS: Record<Role, string> = {
-  admin:        'ผู้ดูแลระบบ (Admin / PMO)',
-  assessor:     'ผู้ประเมิน (Assessor)',
-  mentor:       'ที่ปรึกษา (Mentor / Coach)',
-  entrepreneur: 'ผู้ประกอบการ',
-  judge:        'กรรมการ Pitching',
-  me_team:      'ทีม M&E',
+  ADMIN:        'ผู้ดูแลระบบ (Admin / PMO)',
+  ASSESSOR:     'ผู้ประเมิน (Assessor)',
+  MENTOR:       'ที่ปรึกษา (Mentor / Coach)',
+  ENTREPRENEUR: 'ผู้ประกอบการ',
+  JUDGE:        'กรรมการ Pitching',
+  ME_TEAM:      'ทีม M&E',
 }
 
 // ─── Permissions ─────────────────────────────────────────────────────────────

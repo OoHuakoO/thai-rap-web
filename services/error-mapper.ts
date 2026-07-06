@@ -38,10 +38,10 @@ export function mapToApiError(error: unknown): ApiError {
     const retryAfter = headers['retry-after'] ? Number(headers['retry-after']) : undefined
 
     return new ApiError({
-      message: body?.message ?? error.message,
+      message: body?.error?.message ?? error.message,
       statusCode: status,
       code: codeFromStatus(status),
-      details: body?.errors,
+      details: body?.error?.details,
       requestId: typeof headers['x-request-id'] === 'string' ? headers['x-request-id'] : undefined,
       retryAfter,
     })

@@ -5,7 +5,7 @@ import { ROUTES } from './routes'
 // Permission matrix (6 roles × 18 permissions)
 
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
-  admin: [
+  ADMIN: [
     'dashboard:read',
     'store:read',       'store:write',       'store:delete',
     'assessment:read',  'assessment:write',  'assessment:delete',
@@ -17,7 +17,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   ],
 
   // ผู้ประเมินร้าน — assessment write + view pitching/analytics/reports
-  assessor: [
+  ASSESSOR: [
     'dashboard:read',
     'store:read',       'store:write',
     'assessment:read',  'assessment:write',
@@ -27,7 +27,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   ],
 
   // ที่ปรึกษา — view assessment + analytics + reports, no write on assessment
-  mentor: [
+  MENTOR: [
     'dashboard:read',
     'store:read',
     'assessment:read',
@@ -36,21 +36,21 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   ],
 
   // ผู้ประกอบการ — own store + own assessment read-only, analytics own
-  entrepreneur: [
+  ENTREPRENEUR: [
     'store:read',
     'assessment:read',
     'analytics:read',
   ],
 
   // กรรมการ Pitching — pitching scoring + view dashboard + store for context
-  judge: [
+  JUDGE: [
     'dashboard:read',
     'store:read',
     'pitching:read',    'pitching:write',
   ],
 
   // ทีม M&E — monitor all, view reports, no write
-  me_team: [
+  ME_TEAM: [
     'dashboard:read',
     'store:read',
     'assessment:read',

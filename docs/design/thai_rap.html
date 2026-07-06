@@ -1,0 +1,2441 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THAI-RAP System</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== SHARED BASE ===== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Sarabun', sans-serif; background: #f0f0f0; font-size: 13px; }
+.sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 260px; background: #3B3C3F; color: #fff; z-index: 100; display: flex; flex-direction: column; transition: width 0.25s; }
+.sidebar.collapsed { width: 62px; }
+.sidebar.collapsed .nav-label,
+.sidebar.collapsed .nav-sublabel,
+.sidebar.collapsed .logo-text-wrap,
+.sidebar.collapsed .sidebar-footer-text { display: none; }
+.sidebar.collapsed .nav-item { justify-content: center; padding: 10px 0; }
+.sidebar.collapsed .sidebar-logo { justify-content: center; padding: 12px 0; }
+.sidebar.collapsed .sidebar-collapse-btn { justify-content: center; }
+.sidebar.collapsed .sidebar-section-label { display: none; }
+.sidebar-logo { padding: 12px 14px 10px; border-bottom: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; gap: 10px; }
+.logo-puzzle { flex-shrink: 0; }
+.logo-text-wrap .logo-text { font-size: 16px; font-weight: 800; letter-spacing: 0.5px; }
+.logo-text-wrap .logo-sub { font-size: 8.5px; opacity: 0.58; line-height: 1.4; }
+.nav { flex: 1; padding: 4px 0; overflow-y: auto; }
+.nav-section { padding: 8px 14px 3px; font-size: 8.5px; font-weight: 700; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.6px; }
+.sidebar-section-label { font-size: 8.5px; font-weight: 700; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.6px; padding: 8px 14px 2px; }
+.nav-item { display: flex; align-items: center; gap: 9px; padding: 8px 14px; cursor: pointer; transition: background 0.15s; color: rgba(255,255,255,0.68); font-size: 11.5px; }
+.nav-item:hover { background: rgba(255,255,255,0.08); }
+.nav-item.active { background: #F17128; color: #fff; }
+.nav-item.soon { opacity: 0.45; cursor: default; }
+.nav-icon { width: 26px; height: 26px; border-radius: 6px; background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+.nav-item.active .nav-icon { background: rgba(255,255,255,0.22); }
+.nav-label { font-weight: 500; line-height: 1.2; flex: 1; }
+.nav-sublabel { font-size: 8.5px; opacity: 0.58; }
+.nav-badge { font-size: 8px; padding: 1px 5px; border-radius: 10px; background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.7); font-weight: 600; flex-shrink: 0; }
+.nav-badge-soon { background: rgba(241,113,40,0.25); color: #F17128; }
+.sidebar-collapse-btn { padding: 8px 14px; display: flex; align-items: center; gap: 7px; cursor: pointer; color: rgba(255,255,255,0.45); font-size: 10px; border-top: 1px solid rgba(255,255,255,0.1); transition: all 0.15s; }
+.sidebar-collapse-btn:hover { color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.06); }
+.sidebar-footer { border-top: 1px solid rgba(255,255,255,0.12); padding: 9px 14px; display: flex; align-items: center; gap: 7px; font-size: 10px; color: rgba(255,255,255,0.5); cursor: pointer; }
+.sidebar-footer:hover { color: rgba(255,255,255,0.8); }
+.main { margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; transition: margin-left 0.25s; }
+.main.collapsed { margin-left: 62px; }
+.top-header { background: #fff; border-bottom: 1px solid #e8e8e8; }
+.header-logos-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 18px; border-bottom: 1px solid #f0f0f0; }
+.header-logos { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.logo-emblem { width: 34px; height: 34px; border-radius: 50%; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: #555; flex-shrink: 0; }
+.project-banner { background: linear-gradient(135deg, #FDF5EC 0%, #FFF8F2 100%); padding: 10px 18px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.project-banner::after { content: ''; position: absolute; right: 40px; top: 50%; transform: translateY(-50%); width: 120px; height: 60px; background-image: radial-gradient(circle, rgba(241,113,40,0.18) 1.5px, transparent 1.5px); background-size: 10px 10px; pointer-events: none; }
+.banner-content { text-align: center; }
+.title-main { font-size: 13.5px; font-weight: 700; color: #C75B1A; line-height: 1.5; }
+.title-sub { font-size: 12px; color: #58595B; font-weight: 600; margin-top: 1px; }
+.title-detail { font-size: 10.5px; color: #888; margin-top: 2px; }
+/* Legacy header-inner for compat */
+.header-inner { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; gap: 10px; }
+.header-right { display: flex; align-items: center; gap: 12px; justify-content: flex-end; }
+.header-bell { position: relative; cursor: pointer; font-size: 18px; color: #58595B; }
+.bell-badge { position: absolute; top: -4px; right: -5px; background: #F17128; color: #fff; font-size: 8px; width: 15px; height: 15px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+.header-user { display: flex; align-items: center; gap: 7px; cursor: pointer; }
+.user-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #F17128, #F58544); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 13px; }
+.user-name { font-size: 11px; font-weight: 600; color: #333; }
+.user-role { font-size: 9px; color: #888; }
+select { border: 1.5px solid #e0e0e0; border-radius: 7px; padding: 5px 8px; font-size: 12px; color: #333; background: #fff; cursor: pointer; font-family: 'Sarabun', sans-serif; outline: none; }
+select:focus { border-color: #F17128; }
+.btn-draft { padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: 11.5px; font-weight: 600; border: 1.5px solid #F17128; background: #fff; color: #F17128; display: flex; align-items: center; gap: 4px; font-family: 'Sarabun', sans-serif; white-space: nowrap; }
+.btn-draft:hover { background: #FFF0E5; }
+.btn-submit { padding: 6px 14px; border-radius: 7px; cursor: pointer; font-size: 11.5px; font-weight: 600; border: none; background: #F17128; color: #fff; display: flex; align-items: center; gap: 4px; font-family: 'Sarabun', sans-serif; white-space: nowrap; }
+.btn-submit:hover { background: #d95f15; }
+
+/* PAGE SWITCH */
+.page-wrap { display: none; flex: 1; flex-direction: column; min-height: 0; }
+.page-wrap.active { display: flex; }
+
+/* ===== ASSESSMENT PAGE ===== */
+.toolbar { background: #fff; border-bottom: 2px solid #f0f0f0; padding: 8px 18px; display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
+.tb-group { display: flex; flex-direction: column; gap: 3px; }
+.tb-label { font-size: 9.5px; color: #999; }
+.restaurant-pick { display: flex; align-items: center; gap: 6px; border: 1.5px solid #e0e0e0; border-radius: 7px; padding: 5px 9px; background: #fff; cursor: pointer; min-width: 165px; }
+.rest-icon { width: 24px; height: 24px; border-radius: 5px; background: #FFF0E5; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+.rest-name { font-size: 12px; font-weight: 500; color: #333; flex: 1; }
+.round-tabs { display: flex; gap: 4px; }
+.round-tab { padding: 5px 13px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 600; border: 1.5px solid #ddd; background: #fff; color: #888; transition: all 0.2s; position: relative; }
+.round-tab.active { background: #3d5a80; color: #fff; border-color: #3d5a80; }
+.round-tab.completed { border-color: #4caf50; color: #4caf50; }
+.round-tab.completed::after { content: '✓'; position: absolute; top: -6px; right: -4px; background: #4caf50; color: #fff; font-size: 8px; width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+.round-tab.locked { opacity: 0.38; cursor: not-allowed; }
+.round-tab:not(.locked):not(.active):hover { border-color: #F17128; color: #F17128; }
+.progress-wrap { display: flex; align-items: center; gap: 7px; }
+.progress-bar { width: 110px; height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #F17128, #F58544); border-radius: 4px; transition: width 0.5s; }
+.progress-pct { font-size: 12px; font-weight: 700; color: #F17128; }
+.content-area { flex: 1; padding: 12px 14px; display: grid; grid-template-columns: 205px 1fr 270px; gap: 10px; align-items: start; overflow-y: auto; }
+.dim-card { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+.dim-card-title { padding: 10px 12px; font-size: 13px; font-weight: 700; color: #333; border-bottom: 1px solid #f5f5f5; }
+.dim-card-sub { font-size: 9px; color: #999; font-weight: 400; }
+.dim-item { display: flex; align-items: center; gap: 7px; padding: 8px 10px; cursor: pointer; border-bottom: 1px solid #f8f8f8; transition: background 0.12s; }
+.dim-item:last-of-type { border-bottom: none; }
+.dim-item:hover { background: #FFF0E5; }
+.dim-item.active { background: #FFF0E5; border-left: 3px solid #F17128; padding-left: 7px; }
+.dim-num { width: 21px; height: 21px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; background: #f0f0f0; color: #666; }
+.dim-item.active .dim-num { background: #F17128; color: #fff; }
+.dim-info { flex: 1; min-width: 0; }
+.dim-name { font-size: 10.5px; font-weight: 600; color: #333; line-height: 1.3; }
+.dim-name-en { font-size: 8.5px; color: #aaa; }
+.dim-right { text-align: right; flex-shrink: 0; }
+.dim-pct { font-size: 11px; font-weight: 700; color: #F17128; }
+.dim-weight { font-size: 8.5px; color: #bbb; }
+.dim-bar-mini { width: 44px; height: 3px; background: #f0f0f0; border-radius: 2px; margin-top: 2px; margin-left: auto; }
+.dim-bar-mini-fill { height: 100%; border-radius: 2px; background: #F17128; }
+.dim-footer { padding: 9px 12px; border-top: 2px solid #f0f0f0; background: #fafafa; display: flex; justify-content: space-between; align-items: center; }
+.dim-footer-label { font-size: 10px; color: #666; }
+.dim-footer-score { font-size: 15px; font-weight: 800; color: #F17128; }
+.dim-footer-link { font-size: 9.5px; color: #F17128; text-decoration: underline; cursor: pointer; }
+.score-legend { margin: 6px 10px 2px; background: #FFF0E5; border-radius: 7px; padding: 6px 8px; font-size: 10px; }
+.score-legend-title { font-weight: 700; color: #F17128; margin-bottom: 4px; }
+.score-legend-row { display: flex; gap: 3px; flex-wrap: wrap; }
+.sl-badge { display: flex; align-items: center; gap: 2px; background: #fff; border: 1px solid #e8e8e8; border-radius: 4px; padding: 1px 5px; font-size: 9px; }
+.sl-num { font-weight: 700; color: #F17128; }
+.sl-text { color: #666; }
+.assess-card { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+.assess-head { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.assess-head-left { display: flex; align-items: flex-start; gap: 9px; }
+.assess-icon { width: 36px; height: 36px; border-radius: 9px; background: linear-gradient(135deg, #F17128, #F58544); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.assess-title { font-size: 13px; font-weight: 700; color: #333; }
+.assess-desc { font-size: 10.5px; color: #777; margin-top: 2px; line-height: 1.4; max-width: 380px; }
+.assess-meta { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.meta-pill { background: #f5f5f5; padding: 3px 9px; border-radius: 20px; font-size: 10.5px; font-weight: 500; color: #666; }
+.score-now { font-size: 9.5px; color: #999; text-align: right; }
+.score-now-val { font-size: 20px; font-weight: 800; color: #F17128; }
+.score-now-max { font-size: 11px; color: #bbb; }
+.assess-table-wrap { overflow-x: auto; }
+table.at { width: 100%; border-collapse: collapse; font-size: 11px; }
+table.at th { background: #f8f8f8; padding: 7px 8px; text-align: left; color: #666; font-weight: 600; border-bottom: 2px solid #e8e8e8; white-space: nowrap; font-size: 10.5px; }
+table.at td { padding: 7px 8px; border-bottom: 1px solid #f5f5f5; vertical-align: top; }
+table.at tr:hover td { background: #fafaf8; }
+.td-num { color: #999; font-weight: 700; font-size: 10px; width: 28px; }
+.crit-text { font-size: 11px; color: #333; line-height: 1.5; max-width: 170px; }
+.score-btn-group { display: flex; flex-direction: column; gap: 3px; }
+.sbg-row { display: flex; gap: 1px; }
+.sb { width: 24px; height: 24px; border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: 700; border: 1.5px solid #e0e0e0; background: #f8f8f8; color: #aaa; display: flex; align-items: center; justify-content: center; transition: all 0.12s; user-select: none; flex-shrink: 0; }
+.sb:hover { border-color: #F17128; color: #F17128; background: #FFF0E5; }
+.sb.active-0 { background: #f5f5f5; border-color: #999; color: #555; }
+.sb.active-1 { background: #ffebee; border-color: #f44336; color: #f44336; }
+.sb.active-2 { background: #fff3e0; border-color: #ff9800; color: #ff9800; }
+.sb.active-3 { background: #e8f5e9; border-color: #4caf50; color: #4caf50; }
+.sb.active-4 { background: #e3f2fd; border-color: #1976d2; color: #1976d2; }
+.sbg-label { font-size: 8.5px; color: #aaa; text-align: center; white-space: nowrap; margin-top: 1px; }
+.file-chip { display: inline-flex; align-items: center; gap: 3px; background: #FFF0E5; border: 1px solid #F17128; border-radius: 5px; padding: 2px 6px; font-size: 9.5px; color: #F17128; cursor: pointer; white-space: nowrap; margin-bottom: 2px; }
+.file-sz { font-size: 8.5px; color: #bbb; }
+.file-acts { display: flex; gap: 3px; margin-top: 2px; }
+.file-btn { width: 20px; height: 20px; border-radius: 4px; border: 1px solid #e0e0e0; background: #f8f8f8; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #666; }
+.file-btn:hover { background: #FFF0E5; border-color: #F17128; color: #F17128; }
+.upload-btn { border: 1.5px dashed #ccc; border-radius: 5px; padding: 4px 7px; font-size: 9.5px; color: #bbb; cursor: pointer; display: flex; align-items: center; gap: 3px; white-space: nowrap; }
+.upload-btn:hover { border-color: #F17128; color: #F17128; }
+.note-input { width: 100%; border: 1px solid #e8e8e8; border-radius: 5px; padding: 3px 6px; font-size: 10px; color: #555; font-family: 'Sarabun', sans-serif; resize: none; line-height: 1.4; min-height: 36px; }
+.note-input:focus { outline: none; border-color: #F17128; }
+.suggest-text { font-size: 10px; color: #888; line-height: 1.5; font-style: italic; max-width: 140px; }
+.st-badge { display: inline-flex; align-items: center; gap: 2px; padding: 2px 7px; border-radius: 20px; font-size: 9.5px; font-weight: 600; white-space: nowrap; }
+.st-assessing { background: #FFF0E5; color: #F17128; border: 1px solid #F17128; }
+.st-done { background: #e8f5e9; color: #4caf50; border: 1px solid #4caf50; }
+.st-fix { background: #ffebee; color: #f44336; border: 1px solid #f44336; }
+.st-pending { background: #f5f5f5; color: #999; border: 1px solid #ddd; }
+.assess-footer { padding: 9px 14px; border-top: 2px solid #f0f0f0; background: #fafafa; display: flex; align-items: center; justify-content: space-between; }
+.footer-score-area .label { font-size: 11px; color: #555; }
+.footer-score-area .score { font-size: 17px; font-weight: 800; color: #F17128; }
+.footer-meta { font-size: 9.5px; color: #aaa; margin-top: 2px; }
+/* Assessment right panel */
+.asum-card { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+.asum-head { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
+.asum-title { font-size: 12.5px; font-weight: 700; color: #333; }
+.asum-link { font-size: 9.5px; color: #F17128; text-decoration: underline; cursor: pointer; }
+.rest-info { padding: 10px 12px; border-bottom: 1px solid #f5f5f5; display: flex; align-items: center; gap: 8px; }
+.rest-thumb { width: 44px; height: 44px; border-radius: 9px; flex-shrink: 0; background: linear-gradient(135deg, #F17128, #f0a070); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.rest-name { font-size: 11.5px; font-weight: 700; color: #333; }
+.rest-loc { font-size: 9.5px; color: #888; }
+.t1-done { background: #e8f5e9; color: #4caf50; border: 1px solid #4caf50; padding: 2px 6px; border-radius: 20px; font-size: 9px; font-weight: 700; white-space: nowrap; }
+.score-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px 12px; border-bottom: 1px solid #f5f5f5; }
+.sc-box { background: #fafafa; border-radius: 7px; padding: 7px 8px; text-align: center; }
+.sc-box-label { font-size: 8.5px; color: #888; line-height: 1.3; margin-bottom: 2px; }
+.sc-box-val { font-size: 17px; font-weight: 800; color: #F17128; }
+.sc-box-max { font-size: 9px; color: #bbb; font-weight: 400; }
+.sc-box-blue .sc-box-val { color: #3d5a80; }
+.rank-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 7px 12px; border-bottom: 1px solid #f5f5f5; }
+.rk-box { background: #fafafa; border-radius: 7px; padding: 6px 8px; text-align: center; }
+.rk-label { font-size: 8.5px; color: #888; }
+.rk-val { font-size: 15px; font-weight: 800; color: #3d5a80; }
+.flags-sec { padding: 8px 12px; border-bottom: 1px solid #f5f5f5; }
+.flags-title { font-size: 10.5px; font-weight: 700; color: #f44336; display: flex; align-items: center; gap: 4px; margin-bottom: 5px; }
+.flag-cnt { background: #f44336; color: #fff; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; }
+.flag-item { display: flex; align-items: flex-start; gap: 4px; font-size: 10px; color: #555; margin-bottom: 3px; line-height: 1.4; }
+.flag-dot { width: 5px; height: 5px; border-radius: 50%; background: #f44336; margin-top: 3px; flex-shrink: 0; }
+.imp-sec { padding: 8px 12px; border-bottom: 1px solid #f5f5f5; }
+.imp-title { font-size: 10.5px; font-weight: 700; color: #F17128; display: flex; align-items: center; gap: 4px; margin-bottom: 5px; }
+.imp-cnt { background: #F17128; color: #fff; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; }
+.imp-item { display: flex; align-items: flex-start; gap: 4px; font-size: 10px; color: #555; margin-bottom: 3px; line-height: 1.4; }
+.imp-dot { width: 5px; height: 5px; border-radius: 50%; background: #F17128; margin-top: 3px; flex-shrink: 0; }
+.radar-sec { padding: 8px 12px; }
+.radar-title { font-size: 10.5px; font-weight: 700; color: #333; margin-bottom: 4px; }
+.radar-legend { display: flex; gap: 10px; margin-bottom: 4px; }
+.leg-item { display: flex; align-items: center; gap: 3px; font-size: 8.5px; color: #666; }
+.leg-line { width: 14px; height: 2px; }
+.timeline-area { margin: 0 14px 12px; background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); padding: 10px 14px; }
+.tl-item { flex: 1; }
+.tl-card { background: #f8f8f8; border-radius: 8px; padding: 7px 9px; border: 1.5px solid #e8e8e8; cursor: pointer; transition: all 0.18s; }
+.tl-card:hover { border-color: #F17128; }
+.tl-card.current { background: #FFF0E5; border-color: #F17128; }
+.tl-card.done { background: #e8f5e9; border-color: #4caf50; }
+.tl-title { font-size: 10.5px; font-weight: 700; color: #333; }
+.tl-date { font-size: 8.5px; color: #888; margin-top: 1px; }
+.tl-by { font-size: 8.5px; color: #aaa; }
+.tl-st { display: inline-block; margin-top: 3px; padding: 1px 6px; border-radius: 20px; font-size: 8.5px; font-weight: 600; }
+.tl-orange { background: #FFF0E5; color: #F17128; border: 1px solid #F17128; }
+.tl-green { background: #e8f5e9; color: #4caf50; border: 1px solid #4caf50; }
+.tl-gray { background: #f5f5f5; color: #999; border: 1px solid #ddd; }
+.tl-arrow { color: #ccc; font-size: 16px; padding-top: 10px; flex-shrink: 0; }
+.notes-box { background: #f8f8f8; border-radius: 7px; padding: 7px 9px; min-width: 190px; max-width: 230px; font-size: 10px; color: #555; line-height: 1.5; border-left: 3px solid #F17128; }
+.notes-title { font-size: 10.5px; font-weight: 700; color: #333; margin-bottom: 3px; display: flex; justify-content: space-between; }
+.notes-edit { color: #bbb; cursor: pointer; font-size: 11px; }
+.notes-edit:hover { color: #F17128; }
+.lock-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; align-items: center; justify-content: center; }
+.lock-overlay.show { display: flex; }
+.lock-modal { background: #fff; border-radius: 14px; padding: 28px 24px; text-align: center; max-width: 340px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+.lock-icon { font-size: 44px; margin-bottom: 10px; }
+.lock-title { font-size: 17px; font-weight: 700; color: #333; margin-bottom: 6px; }
+.lock-desc { font-size: 12.5px; color: #666; line-height: 1.6; margin-bottom: 18px; }
+.lock-btn { background: #F17128; color: #fff; border: none; border-radius: 7px; padding: 9px 22px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Sarabun', sans-serif; }
+.lock-btn:hover { background: #d95f15; }
+
+/* ===== REPORTS PAGE ===== */
+.rpt-body { flex: 1; overflow-y: auto; padding: 14px 16px; transition: margin-right 0.3s; }
+.rpt-body.panel-open { margin-right: 300px; }
+.page-topbar { background: #fff; border-radius: 10px; padding: 10px 14px; display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; box-shadow: 0 1px 4px rgba(0,0,0,0.07); margin-bottom: 12px; }
+.page-topbar-title { font-size: 15px; font-weight: 700; color: #333; margin-right: 6px; white-space: nowrap; }
+.page-topbar-sub { font-size: 10px; color: #999; }
+.filter-group { display: flex; flex-direction: column; gap: 2px; }
+.filter-label { font-size: 9.5px; color: #999; }
+.date-range { display: flex; align-items: center; gap: 5px; border: 1.5px solid #e0e0e0; border-radius: 7px; padding: 5px 9px; background: #fff; font-size: 12px; color: #333; cursor: pointer; }
+.date-range:hover { border-color: #F17128; }
+.btn-new { display: flex; align-items: center; gap: 5px; padding: 6px 14px; background: #F17128; color: #fff; border: none; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Sarabun', sans-serif; white-space: nowrap; margin-left: auto; }
+.btn-new:hover { background: #d95f15; }
+.stat-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 14px; }
+.stat-card { background: #fff; border-radius: 10px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); display: flex; align-items: center; gap: 12px; }
+.stat-icon { width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.si-orange { background: linear-gradient(135deg,#FFF0E5,#ffd4b0); }
+.si-purple { background: linear-gradient(135deg,#f3e5f5,#e1bee7); }
+.si-blue { background: linear-gradient(135deg,#e3f2fd,#bbdefb); }
+.stat-val { font-size: 24px; font-weight: 800; color: #333; }
+.stat-label { font-size: 11.5px; font-weight: 600; color: #555; }
+.stat-sub { font-size: 10px; color: #888; margin-top: 1px; }
+.stat-change-up { font-size: 10px; color: #4caf50; margin-top: 2px; }
+.stat-change-warn { font-size: 10px; color: #F17128; margin-top: 2px; }
+.section-card { background: #fff; border-radius: 10px; padding: 12px 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); margin-bottom: 14px; }
+.section-title { font-size: 13px; font-weight: 700; color: #333; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.section-hint { font-size: 10px; color: #999; font-weight: 400; }
+.template-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+.tpl-card { border: 1.5px solid #e8e8e8; border-radius: 9px; padding: 10px 12px; cursor: pointer; transition: all 0.18s; background: #fff; }
+.tpl-card:hover { border-color: #F17128; box-shadow: 0 2px 8px rgba(241,113,40,0.15); transform: translateY(-1px); }
+.tpl-card.selected { border-color: #F17128; background: #FFF0E5; }
+.tpl-icon { width: 36px; height: 36px; border-radius: 8px; margin-bottom: 7px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.tpl-name { font-size: 11.5px; font-weight: 700; color: #333; margin-bottom: 4px; line-height: 1.3; }
+.tpl-date { font-size: 9px; color: #bbb; margin-bottom: 6px; }
+.tpl-badges { display: flex; gap: 3px; flex-wrap: wrap; }
+.badge-pdf { background: #ffebee; color: #f44336; border: 1px solid #f44336; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; cursor: pointer; }
+.badge-pdf:hover { background: #f44336; color: #fff; }
+.badge-xlsx { background: #e8f5e9; color: #4caf50; border: 1px solid #4caf50; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; cursor: pointer; }
+.badge-xlsx:hover { background: #4caf50; color: #fff; }
+.table-card { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.07); margin-bottom: 14px; }
+.table-head { padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f0f0f0; }
+.table-title { font-size: 13px; font-weight: 700; color: #333; }
+.table-link { font-size: 10px; color: #F17128; text-decoration: underline; cursor: pointer; }
+table.rt { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+table.rt th { background: #f8f8f8; padding: 8px 10px; text-align: left; color: #666; font-weight: 600; border-bottom: 2px solid #e8e8e8; white-space: nowrap; font-size: 11px; }
+table.rt td { padding: 8px 10px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
+table.rt tr:hover td { background: #fafaf8; }
+.type-tag { display: inline-block; background: #f0f0f0; color: #555; padding: 2px 7px; border-radius: 20px; font-size: 10px; font-weight: 500; }
+.fmt-pdf { color: #f44336; font-weight: 700; font-size: 10.5px; }
+.fmt-xlsx { color: #4caf50; font-weight: 700; font-size: 10.5px; }
+.fmt-csv { color: #9c27b0; font-weight: 700; font-size: 10.5px; }
+.rpt-st-done { background: #e8f5e9; color: #4caf50; border: 1px solid #4caf50; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+.rpt-st-pending { background: #fff3e0; color: #F17128; border: 1px solid #F17128; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+.rpt-st-process { background: #e3f2fd; color: #1976d2; border: 1px solid #1976d2; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+.dl-btn { width: 26px; height: 26px; border-radius: 6px; border: 1.5px solid #e0e0e0; background: #f8f8f8; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; color: #666; transition: all 0.15s; }
+.dl-btn:hover { background: #FFF0E5; border-color: #F17128; color: #F17128; }
+.more-btn { width: 24px; height: 24px; border-radius: 5px; border: none; background: transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; color: #bbb; }
+.more-btn:hover { background: #f5f5f5; color: #666; }
+.pagination { padding: 8px 14px; border-top: 1px solid #f5f5f5; display: flex; align-items: center; justify-content: space-between; }
+.pag-info { font-size: 11px; color: #888; }
+.pag-btns { display: flex; align-items: center; gap: 3px; }
+.pag-btn { width: 28px; height: 28px; border-radius: 6px; border: 1.5px solid #e0e0e0; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 500; color: #555; font-family: 'Sarabun', sans-serif; transition: all 0.15s; }
+.pag-btn:hover { border-color: #F17128; color: #F17128; }
+.pag-btn.active { background: #F17128; border-color: #F17128; color: #fff; }
+.pag-dots { color: #bbb; font-size: 13px; padding: 0 2px; }
+.activity-row { display: flex; align-items: center; padding: 7px 14px; border-bottom: 1px solid #f8f8f8; }
+.activity-row:last-child { border-bottom: none; }
+.act-time { font-size: 10.5px; color: #888; min-width: 130px; }
+.act-action { font-size: 11px; color: #555; min-width: 140px; }
+.act-name { font-size: 11px; color: #333; font-weight: 500; flex: 1; }
+.act-fmt { font-size: 10px; min-width: 50px; }
+.act-user { font-size: 10.5px; color: #777; min-width: 90px; }
+.act-status { min-width: 80px; }
+/* Right export panel */
+.right-panel { position: fixed; top: 0; right: 0; width: 300px; height: 100vh; background: #fff; border-left: 1px solid #e0e0e0; display: flex; flex-direction: column; z-index: 50; transform: translateX(100%); transition: transform 0.3s; box-shadow: -4px 0 16px rgba(0,0,0,0.08); }
+.right-panel.open { transform: translateX(0); }
+.panel-head { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
+.panel-title { font-size: 13px; font-weight: 700; color: #333; }
+.panel-close { width: 26px; height: 26px; border-radius: 6px; border: 1.5px solid #e0e0e0; background: #f8f8f8; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #666; }
+.panel-close:hover { background: #ffebee; border-color: #f44336; color: #f44336; }
+.panel-body { flex: 1; overflow-y: auto; padding: 14px 16px; }
+.panel-section { margin-bottom: 16px; }
+.panel-section-title { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.selected-report { background: #FFF0E5; border: 1.5px solid #F17128; border-radius: 8px; padding: 9px 11px; display: flex; align-items: center; gap: 8px; }
+.sr-icon { width: 32px; height: 32px; border-radius: 7px; background: #F17128; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.sr-name { font-size: 12px; font-weight: 600; color: #F17128; flex: 1; }
+.sr-change { font-size: 10px; color: #F17128; text-decoration: underline; cursor: pointer; white-space: nowrap; }
+.format-group { display: flex; gap: 6px; }
+.fmt-option { flex: 1; border: 1.5px solid #e0e0e0; border-radius: 7px; padding: 7px 8px; cursor: pointer; text-align: center; transition: all 0.15s; }
+.fmt-option:hover { border-color: #F17128; }
+.fmt-option.sel-pdf { border-color: #f44336; background: #ffebee; }
+.fmt-option.sel-xlsx { border-color: #4caf50; background: #e8f5e9; }
+.fmt-option.sel-csv { border-color: #9c27b0; background: #f3e5f5; }
+.fmt-label { font-size: 11px; font-weight: 700; display: block; }
+.fmt-sublabel { font-size: 9px; color: #aaa; }
+.fmt-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid #ddd; display: inline-block; margin-right: 3px; vertical-align: middle; }
+.check-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid #f8f8f8; cursor: pointer; }
+.check-item:last-child { border-bottom: none; }
+.check-box { width: 16px; height: 16px; border-radius: 4px; border: 2px solid #e0e0e0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; transition: all 0.12s; }
+.check-box.checked { background: #F17128; border-color: #F17128; color: #fff; }
+.check-text { font-size: 11.5px; color: #444; flex: 1; }
+.panel-field { margin-bottom: 8px; }
+.panel-field label { font-size: 10.5px; color: #666; display: block; margin-bottom: 3px; }
+.panel-field select, .panel-field input { width: 100%; border: 1.5px solid #e0e0e0; border-radius: 7px; padding: 6px 9px; font-size: 12px; color: #333; background: #fff; font-family: 'Sarabun', sans-serif; outline: none; }
+.panel-field select:focus, .panel-field input:focus { border-color: #F17128; }
+.date-range-row { display: flex; align-items: center; gap: 5px; }
+.date-range-row input { flex: 1; }
+.date-sep { color: #aaa; font-size: 12px; }
+.panel-footer { padding: 12px 16px; border-top: 1px solid #f0f0f0; }
+.export-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.btn-exp-pdf { padding: 9px 12px; border-radius: 8px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'Sarabun', sans-serif; background: #F17128; color: #fff; display: flex; align-items: center; justify-content: center; gap: 5px; }
+.btn-exp-pdf:hover { background: #d95f15; }
+.btn-exp-xlsx { padding: 9px 12px; border-radius: 8px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'Sarabun', sans-serif; background: #4caf50; color: #fff; display: flex; align-items: center; justify-content: center; gap: 5px; }
+.btn-exp-xlsx:hover { background: #388e3c; }
+.btn-exp-csv { padding: 9px 12px; border-radius: 8px; border: 1.5px solid #9c27b0; cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'Sarabun', sans-serif; background: #fff; color: #9c27b0; display: flex; align-items: center; justify-content: center; gap: 5px; grid-column: 1/-1; }
+.btn-exp-csv:hover { background: #f3e5f5; }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #F17128; }
+
+/* ===== ANALYTICS PAGE ===== */
+.an-wrap { flex:1; overflow-y:auto; padding:14px 16px; }
+.an-topbar { background:#fff; border-radius:10px; padding:10px 14px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; box-shadow:0 1px 4px rgba(0,0,0,0.07); margin-bottom:12px; }
+.an-main { display:grid; grid-template-columns:1fr 272px; gap:12px; }
+.an-col-left { display:flex; flex-direction:column; gap:12px; }
+.an-col-right { display:flex; flex-direction:column; gap:12px; }
+.an-card { background:#fff; border-radius:10px; padding:12px 14px; box-shadow:0 1px 4px rgba(0,0,0,0.07); }
+.an-card-title { font-size:12px; font-weight:700; color:#333; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+.an-card-sub { font-size:9px; color:#999; font-weight:400; }
+.an-card-link { font-size:10px; color:#F17128; text-decoration:underline; cursor:pointer; margin-left:auto; }
+.an-row2 { display:grid; grid-template-columns:1fr 1.5fr; gap:12px; }
+.an-row3 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.an-action-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+.dim-cmp-row { display:flex; align-items:center; gap:6px; padding:4px 0; border-bottom:1px solid #f8f8f8; font-size:10px; }
+.dim-cmp-row:last-child { border-bottom:none; }
+.dim-cmp-name { width:110px; flex-shrink:0; color:#444; line-height:1.3; }
+.dim-cmp-bars { flex:1; display:flex; flex-direction:column; gap:2px; }
+.dim-bar-t0 { height:5px; border-radius:3px; background:#F17128; }
+.dim-bar-t1 { height:5px; border-radius:3px; background:#7B1FA2; }
+.dim-cmp-scores { width:60px; flex-shrink:0; text-align:right; font-size:9.5px; }
+.zone-pill { display:inline-block; padding:2px 9px; border-radius:20px; font-size:10px; font-weight:700; white-space:nowrap; }
+.zone-red { background:#ffebee; color:#f44336; border:1px solid #f44336; }
+.zone-survival { background:#fff3e0; color:#ff9800; border:1px solid #ff9800; }
+.zone-improve { background:#e8f5e9; color:#4caf50; border:1px solid #4caf50; }
+.zone-growth { background:#e3f2fd; color:#1976d2; border:1px solid #1976d2; }
+.zone-model { background:#f3e5f5; color:#7b1fa2; border:1px solid #7b1fa2; }
+.zone-dist-row { display:flex; align-items:center; gap:6px; margin-bottom:5px; font-size:10px; }
+.zone-dist-bar { flex:1; height:10px; background:#f0f0f0; border-radius:5px; overflow:hidden; }
+.zone-dist-fill { height:100%; border-radius:5px; }
+.route-arrow { font-size:12px; color:#aaa; flex-shrink:0; }
+.route-box { background:#f8f8f8; border-radius:7px; padding:5px 8px; font-size:10px; color:#555; text-align:center; flex:1; border:1px solid #e8e8e8; }
+.route-box-highlight { border-color:#F17128; background:#FFF0E5; color:#F17128; font-weight:600; }
+.route-row { display:flex; align-items:center; gap:4px; margin-bottom:5px; }
+.action-card { background:#fff; border-radius:10px; padding:12px 14px; box-shadow:0 1px 4px rgba(0,0,0,0.07); }
+.action-day-label { font-size:9px; color:#999; text-transform:uppercase; letter-spacing:0.5px; }
+.action-day-num { font-size:22px; font-weight:900; color:#F17128; line-height:1.1; }
+.action-day-sub { font-size:10px; font-weight:600; color:#333; margin-bottom:6px; }
+.action-item { display:flex; align-items:flex-start; gap:5px; font-size:10px; color:#555; margin-bottom:4px; line-height:1.4; }
+.action-dot { width:5px; height:5px; border-radius:50%; background:#F17128; flex-shrink:0; margin-top:3px; }
+.rec-score-row { display:flex; align-items:center; gap:6px; padding:5px 0; border-bottom:1px solid #f8f8f8; }
+.rec-score-row:last-child { border-bottom:none; }
+.rec-rank-badge { width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:800; color:#fff; flex-shrink:0; }
+.rec-name { flex:1; font-size:10.5px; color:#333; font-weight:500; min-width:0; }
+.rec-prov { font-size:9px; color:#aaa; }
+.rec-score-val { font-size:11px; font-weight:700; color:#F17128; }
+.toggle-group { display:flex; gap:0; border:1.5px solid #e0e0e0; border-radius:7px; overflow:hidden; }
+.toggle-btn { padding:5px 12px; font-size:11.5px; font-weight:600; cursor:pointer; background:#fff; color:#888; border:none; font-family:'Sarabun',sans-serif; transition:all 0.15s; }
+.toggle-btn.active { background:#3d5a80; color:#fff; }
+.toggle-btn:hover:not(.active) { background:#f5f5f5; }
+
+/* ===== PITCHING PAGE ===== */
+.pt-wrap { flex:1; overflow-y:auto; padding:14px 16px; }
+.pt-topbar { background:#fff; border-radius:10px; padding:10px 14px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; box-shadow:0 1px 4px rgba(0,0,0,0.07); margin-bottom:12px; }
+.pt-main { display:grid; grid-template-columns:248px 1fr 260px; gap:12px; align-items:start; }
+.pt-card { background:#fff; border-radius:10px; padding:12px 14px; box-shadow:0 1px 4px rgba(0,0,0,0.07); margin-bottom:12px; }
+.pt-card:last-child { margin-bottom:0; }
+.pt-card-title { font-size:12px; font-weight:700; color:#333; margin-bottom:8px; }
+.pt-score-big { font-size:54px; font-weight:900; color:#F17128; line-height:1; }
+.pt-score-label { font-size:11px; color:#999; margin-top:2px; }
+.comp-row { display:flex; align-items:center; gap:6px; padding:6px 0; border-bottom:1px solid #f5f5f5; }
+.comp-row:last-child { border-bottom:none; }
+.comp-num { width:14px; height:14px; border-radius:50%; background:#F17128; color:#fff; font-size:8px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.comp-name { flex:1; font-size:10.5px; color:#333; min-width:0; }
+.comp-weight { font-size:9px; color:#aaa; white-space:nowrap; }
+.comp-bar-wrap { width:60px; }
+.comp-bar { height:6px; background:#f0f0f0; border-radius:3px; overflow:hidden; }
+.comp-bar-fill { height:100%; border-radius:3px; background:#F17128; }
+.comp-score { font-size:11px; font-weight:700; color:#F17128; width:36px; text-align:right; flex-shrink:0; }
+.comp-grade { font-size:9px; padding:1px 5px; border-radius:10px; background:#e8f5e9; color:#4caf50; font-weight:600; white-space:nowrap; }
+.judge-row { display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid #f8f8f8; font-size:10.5px; }
+.judge-row:last-child { border-bottom:none; }
+.judge-name { flex:1; color:#333; }
+.judge-score { font-weight:700; color:#F17128; }
+.judge-grade { font-size:9px; }
+.pt-rank-row { display:flex; align-items:center; gap:6px; padding:5px 0; border-bottom:1px solid #f8f8f8; }
+.pt-rank-row:last-child { border-bottom:none; }
+.pt-rank-num { width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:800; color:#fff; flex-shrink:0; }
+.pt-rank-name { flex:1; font-size:10.5px; color:#333; min-width:0; }
+.pt-rank-prov { font-size:9px; color:#aaa; }
+.pt-rank-score { font-size:11px; font-weight:700; color:#F17128; white-space:nowrap; }
+.pt-rank-badge { font-size:9px; padding:1px 6px; border-radius:10px; }
+.inc-pass { background:#e8f5e9; color:#4caf50; border:1px solid #4caf50; }
+.inc-cond { background:#fff3e0; color:#ff9800; border:1px solid #ff9800; }
+.inc-reserve { background:#e3f2fd; color:#1976d2; border:1px solid #1976d2; }
+.inc-no { background:#f5f5f5; color:#999; border:1px solid #ddd; }
+.focus-item { display:flex; align-items:flex-start; gap:5px; padding:5px 0; border-bottom:1px solid #f8f8f8; font-size:10.5px; color:#555; line-height:1.4; }
+.focus-item:last-child { border-bottom:none; }
+.focus-dot { width:5px; height:5px; border-radius:50%; background:#F17128; flex-shrink:0; margin-top:3.5px; }
+.dist-bar-row { display:flex; align-items:center; gap:6px; margin-bottom:4px; font-size:10px; }
+.dist-bar-label { width:70px; flex-shrink:0; color:#555; }
+.dist-bar-track { flex:1; height:10px; background:#f0f0f0; border-radius:5px; overflow:hidden; }
+.dist-bar-fill { height:100%; border-radius:5px; }
+.dist-bar-count { width:40px; text-align:right; color:#888; flex-shrink:0; }
+
+/* ===== OVERVIEW DASHBOARD ===== */
+.ov-wrap { flex:1; overflow-y:auto; padding:14px 16px; }
+.kpi-row { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin-bottom:14px; }
+.kpi-card { background:#fff; border-radius:10px; padding:12px 14px; box-shadow:0 1px 4px rgba(0,0,0,0.07); position:relative; overflow:hidden; }
+.kpi-icon { width:38px; height:38px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:18px; margin-bottom:6px; }
+.kpi-val { font-size:22px; font-weight:800; color:#333; line-height:1; }
+.kpi-unit { font-size:10px; color:#888; font-weight:400; }
+.kpi-label { font-size:10.5px; font-weight:600; color:#555; margin-top:3px; }
+.kpi-sub { font-size:9.5px; color:#aaa; margin-top:2px; }
+.kpi-bar { height:3px; background:#f0f0f0; border-radius:2px; margin-top:6px; overflow:hidden; }
+.kpi-bar-fill { height:100%; border-radius:2px; }
+.kpi-up { color:#4caf50; font-weight:700; font-size:13px; }
+.kpi-icon-orange { background:#FFF0E5; }
+.kpi-icon-purple { background:#f3e5f5; }
+.kpi-icon-blue { background:#e3f2fd; }
+.kpi-icon-green { background:#e8f5e9; }
+
+.ov-grid3 { display:grid; grid-template-columns:1fr 1.2fr 1fr; gap:12px; margin-bottom:14px; }
+.ov-card { background:#fff; border-radius:10px; padding:12px 14px; box-shadow:0 1px 4px rgba(0,0,0,0.07); }
+.ov-card-title { font-size:12px; font-weight:700; color:#333; margin-bottom:10px; }
+.ov-card-sub { font-size:9px; color:#999; font-weight:400; }
+.ov-card-link { font-size:10px; color:#F17128; text-decoration:underline; cursor:pointer; float:right; }
+
+/* Donut chart */
+.donut-wrap { display:flex; align-items:center; gap:12px; }
+.donut-legend { flex:1; }
+.donut-legend-item { display:flex; align-items:center; gap:6px; font-size:10px; color:#555; margin-bottom:5px; }
+.donut-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+.donut-name { flex:1; }
+.donut-count { font-weight:700; color:#333; }
+.donut-pct { color:#aaa; margin-left:2px; }
+
+/* Top20 table */
+table.top20 { width:100%; border-collapse:collapse; font-size:11px; }
+table.top20 th { font-size:10px; color:#888; font-weight:600; padding:4px 6px; border-bottom:1px solid #f0f0f0; text-align:left; }
+table.top20 td { padding:5px 6px; border-bottom:1px solid #f8f8f8; }
+table.top20 tr:last-child td { border-bottom:none; }
+.top-rank { width:20px; height:20px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:9px; font-weight:800; color:#fff; }
+.rank-1 { background:#F17128; }
+.rank-2 { background:#9e9e9e; }
+.rank-3 { background:#cd7f32; }
+.rank-other { background:#e0e0e0; color:#666; }
+.score-chip { background:#FFF0E5; color:#F17128; border:1px solid #F17128; padding:1px 6px; border-radius:10px; font-size:10px; font-weight:700; }
+
+/* Pipeline */
+.pipeline { display:flex; align-items:flex-start; gap:0; overflow-x:auto; padding-bottom:4px; }
+.pipeline-step { display:flex; flex-direction:column; align-items:center; flex:1; min-width:0; }
+.pipeline-icon { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; border:3px solid #fff; box-shadow:0 2px 8px rgba(0,0,0,0.12); z-index:1; }
+.pipeline-arrow { font-size:16px; color:#ddd; margin-top:12px; flex-shrink:0; padding:0 2px; }
+.pipeline-num { font-size:14px; font-weight:800; color:#333; margin-top:5px; }
+.pipeline-pct { font-size:9.5px; color:#F17128; font-weight:700; }
+.pipeline-label { font-size:9px; color:#777; text-align:center; line-height:1.3; margin-top:2px; }
+.pip-orange { background:linear-gradient(135deg,#F17128,#F58544); }
+.pip-amber { background:linear-gradient(135deg,#ff9800,#ffc107); }
+.pip-blue { background:linear-gradient(135deg,#1976d2,#42a5f5); }
+.pip-purple { background:linear-gradient(135deg,#7b1fa2,#ab47bc); }
+.pip-success { background:linear-gradient(135deg,#388e3c,#66bb6a); }
+.pipeline-line { flex:1; height:2px; background:#e0e0e0; margin-top:19px; min-width:8px; }
+
+/* Activity */
+.act-feed-item { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid #f5f5f5; }
+.act-feed-item:last-child { border-bottom:none; }
+.act-feed-icon { width:28px; height:28px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
+.act-feed-warn { background:#fff3e0; }
+.act-feed-cal { background:#e3f2fd; }
+.act-feed-info { background:#e8f5e9; }
+.act-feed-text { flex:1; }
+.act-feed-title { font-size:11px; font-weight:600; color:#333; line-height:1.4; }
+.act-feed-detail { font-size:9.5px; color:#888; margin-top:1px; }
+.act-feed-date { font-size:9px; color:#bbb; white-space:nowrap; }
+
+/* Recent reports mini table */
+.mini-report-row { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid #f5f5f5; }
+.mini-report-row:last-child { border-bottom:none; }
+.mr-name { flex:1; font-size:11px; color:#333; font-weight:500; }
+.mr-fmt { font-size:10px; font-weight:700; min-width:36px; }
+.mr-date { font-size:9.5px; color:#aaa; min-width:80px; }
+.mr-st { font-size:9px; font-weight:600; padding:1px 6px; border-radius:10px; background:#e8f5e9; color:#4caf50; border:1px solid #4caf50; white-space:nowrap; }
+.mr-dl { width:22px; height:22px; border-radius:5px; border:1px solid #e0e0e0; background:#f8f8f8; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:10px; color:#666; }
+.mr-dl:hover { background:#FFF0E5; border-color:#F17128; color:#F17128; }
+
+/* ===== RESTAURANT PROFILES ===== */
+.rp-wrap { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.rp-topbar {
+  background:#fff; padding:10px 16px; border-bottom:2px solid #f0f0f0;
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap; flex-shrink:0;
+}
+.rp-topbar-title { font-size:15px; font-weight:700; color:#333; }
+.rp-topbar-sub { font-size:10px; color:#999; font-weight:400; }
+.rp-search {
+  flex:1; max-width:260px; display:flex; align-items:center;
+  border:1.5px solid #e0e0e0; border-radius:8px; padding:5px 10px;
+  background:#fff; gap:6px; min-width:160px;
+}
+.rp-search input {
+  border:none; outline:none; font-size:12px; color:#333;
+  font-family:'Sarabun',sans-serif; flex:1; background:transparent;
+}
+.rp-search-icon { color:#bbb; font-size:13px; flex-shrink:0; }
+.rp-filter-group { display:flex; flex-direction:column; gap:2px; }
+.rp-filter-label { font-size:9px; color:#bbb; }
+.btn-add-rest {
+  display:flex; align-items:center; gap:5px; padding:6px 14px;
+  background:#F17128; color:#fff; border:none; border-radius:7px;
+  font-size:12px; font-weight:600; cursor:pointer;
+  font-family:'Sarabun',sans-serif; white-space:nowrap; margin-left:auto;
+}
+.btn-add-rest:hover { background:#d95f15; }
+
+.rp-body {
+  flex:1; display:grid; grid-template-columns:1fr 420px;
+  overflow:hidden; min-height:0;
+}
+.rp-table-area {
+  display:flex; flex-direction:column; overflow:hidden;
+  border-right:1px solid #e8e8e8;
+}
+.rp-table-wrap { flex:1; overflow-y:auto; }
+
+table.rpt-main { width:100%; border-collapse:collapse; font-size:11.5px; }
+table.rpt-main th {
+  background:#f8f8f8; padding:8px 10px; text-align:left; color:#666;
+  font-weight:600; border-bottom:2px solid #e8e8e8; white-space:nowrap;
+  font-size:10.5px; position:sticky; top:0; z-index:1;
+}
+table.rpt-main td { padding:7px 10px; border-bottom:1px solid #f5f5f5; vertical-align:middle; }
+table.rpt-main tr:hover td { background:#fafaf8; }
+table.rpt-main tr.selected td { background:#FFF0E5; }
+.rest-thumb-sm {
+  width:36px; height:36px; border-radius:7px; object-fit:cover;
+  flex-shrink:0; background:linear-gradient(135deg,#F17128,#f0a070);
+  display:flex; align-items:center; justify-content:center; font-size:16px;
+}
+.rest-name-cell { display:flex; align-items:center; gap:8px; }
+.rest-nm { font-size:11.5px; font-weight:600; color:#333; }
+.rest-type-sm { font-size:9.5px; color:#aaa; }
+
+/* Status badges */
+.st-t1 { background:#e8f5e9; color:#4caf50; border:1px solid #4caf50; padding:2px 7px; border-radius:20px; font-size:9.5px; font-weight:600; white-space:nowrap; }
+.st-t0 { background:#fff3e0; color:#ff9800; border:1px solid #ff9800; padding:2px 7px; border-radius:20px; font-size:9.5px; font-weight:600; white-space:nowrap; }
+.st-pass { background:#e3f2fd; color:#1976d2; border:1px solid #1976d2; padding:2px 7px; border-radius:20px; font-size:9.5px; font-weight:600; white-space:nowrap; }
+.st-reg { background:#f5f5f5; color:#888; border:1px solid #ddd; padding:2px 7px; border-radius:20px; font-size:9.5px; font-weight:600; white-space:nowrap; }
+.tbl-score { font-size:12px; font-weight:700; color:#F17128; }
+.tbl-assessor { font-size:10px; color:#555; }
+.tbl-date { font-size:9px; color:#aaa; }
+.tbl-actions { display:flex; align-items:center; gap:4px; }
+.tbl-act-btn {
+  width:24px; height:24px; border-radius:5px; border:1px solid #e0e0e0;
+  background:#f8f8f8; cursor:pointer; display:flex; align-items:center;
+  justify-content:center; font-size:11px; color:#666;
+}
+.tbl-act-btn:hover { background:#FFF0E5; border-color:#F17128; color:#F17128; }
+
+/* Pagination */
+.rp-pagination {
+  padding:7px 12px; border-top:1px solid #f0f0f0; background:#fafafa;
+  display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+}
+.rpg-info { font-size:10.5px; color:#888; }
+.rpg-btns { display:flex; gap:2px; }
+.rpg-btn {
+  width:26px; height:26px; border-radius:5px; border:1.5px solid #e0e0e0;
+  background:#fff; cursor:pointer; display:flex; align-items:center;
+  justify-content:center; font-size:11px; font-weight:500; color:#555;
+  font-family:'Sarabun',sans-serif;
+}
+.rpg-btn:hover { border-color:#F17128; color:#F17128; }
+.rpg-btn.active { background:#F17128; border-color:#F17128; color:#fff; }
+.rpg-dots { color:#bbb; padding:0 2px; font-size:12px; }
+
+/* Detail Panel */
+.rp-detail { overflow-y:auto; background:#fff; }
+.rpd-placeholder {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  height:100%; color:#bbb; font-size:12px; gap:8px;
+}
+.rpd-placeholder-icon { font-size:36px; }
+.rpd-hero { position:relative; height:140px; overflow:hidden; flex-shrink:0; }
+.rpd-hero-img {
+  width:100%; height:100%; object-fit:cover;
+  background:linear-gradient(135deg,#F17128,#f0a070);
+  display:flex; align-items:center; justify-content:center; font-size:40px;
+}
+.rpd-hero-overlay {
+  position:absolute; bottom:0; left:0; right:0;
+  background:linear-gradient(transparent,rgba(0,0,0,0.5));
+  padding:8px 12px;
+}
+.rpd-name { color:#fff; font-size:14px; font-weight:700; }
+.rpd-loc { color:rgba(255,255,255,0.85); font-size:10.5px; margin-top:1px; }
+.rpd-badge-wrap { position:absolute; top:8px; right:8px; }
+
+.rpd-body { padding:10px 12px; }
+.rpd-section { margin-bottom:12px; }
+.rpd-section-title {
+  font-size:10px; font-weight:700; color:#888; text-transform:uppercase;
+  letter-spacing:0.5px; margin-bottom:6px; padding-bottom:4px;
+  border-bottom:1px solid #f0f0f0;
+}
+.rpd-info-grid { display:grid; grid-template-columns:auto 1fr; gap:4px 10px; font-size:10.5px; }
+.rpd-info-label { color:#aaa; font-weight:500; white-space:nowrap; }
+.rpd-info-val { color:#333; font-weight:500; }
+.rpd-social { display:flex; align-items:center; gap:6px; margin-top:3px; }
+.rpd-social-btn {
+  width:24px; height:24px; border-radius:5px; display:flex; align-items:center;
+  justify-content:center; font-size:12px; cursor:pointer; border:1px solid #e0e0e0;
+}
+.rpd-social-link { font-size:9.5px; color:#F17128; text-decoration:underline; cursor:pointer; }
+
+.rpd-photos { display:flex; gap:5px; overflow-x:auto; padding-bottom:3px; }
+.rpd-photo {
+  width:56px; height:46px; border-radius:6px; flex-shrink:0;
+  background:linear-gradient(135deg,#f0f0f0,#e0e0e0);
+  display:flex; align-items:center; justify-content:center; font-size:18px;
+  overflow:hidden; position:relative; cursor:pointer;
+}
+.rpd-photo-more {
+  position:absolute; inset:0; background:rgba(0,0,0,0.55);
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; font-size:10px; font-weight:700;
+}
+
+.rpd-docs { display:flex; gap:6px; flex-wrap:wrap; }
+.rpd-doc {
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  width:58px; cursor:pointer;
+}
+.rpd-doc-icon {
+  width:44px; height:44px; border-radius:8px; display:flex; align-items:center;
+  justify-content:center; font-size:20px; border:1px solid #e0e0e0;
+}
+.rpd-doc-name { font-size:8.5px; color:#777; text-align:center; line-height:1.3; }
+.rpd-doc-pdf { background:#ffebee; }
+.rpd-doc-xlsx { background:#e8f5e9; }
+.rpd-doc-docx { background:#e3f2fd; }
+
+.rpd-timeline { }
+.rpd-tl-item { display:flex; align-items:flex-start; gap:8px; margin-bottom:8px; }
+.rpd-tl-item:last-child { margin-bottom:0; }
+.rpd-tl-dot {
+  width:18px; height:18px; border-radius:50%; flex-shrink:0; margin-top:1px;
+  display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700;
+}
+.rpd-tl-done { background:#4caf50; color:#fff; }
+.rpd-tl-pending { background:#f0f0f0; border:2px solid #ddd; }
+.rpd-tl-line {
+  width:2px; background:#e0e0e0; height:16px; margin-left:8px;
+  flex-shrink:0; position:relative; top:-2px;
+}
+.rpd-tl-text { font-size:11px; color:#333; font-weight:500; flex:1; }
+.rpd-tl-date { font-size:9px; color:#aaa; margin-top:1px; }
+
+.rpd-tag {
+  display:inline-block; background:#FFF0E5; color:#F17128; border:1px solid #F17128;
+  padding:2px 7px; border-radius:20px; font-size:9.5px; font-weight:500; margin:2px;
+}
+.rpd-tag-blue {
+  background:#e3f2fd; color:#1976d2; border:1px solid #1976d2;
+}
+
+/* Bottom KPI + Map */
+.rp-bottom {
+  background:#fff; border-top:2px solid #f0f0f0; padding:10px 16px;
+  display:flex; gap:12px; align-items:center; flex-shrink:0;
+}
+.rp-kpi-mini-row { display:flex; gap:10px; flex:1; }
+.rp-kpi-mini {
+  background:#f8f8f8; border-radius:9px; padding:8px 12px;
+  display:flex; align-items:center; gap:8px; min-width:0; flex:1;
+}
+.rp-kpi-mini-icon {
+  width:32px; height:32px; border-radius:7px; display:flex; align-items:center;
+  justify-content:center; font-size:15px; flex-shrink:0;
+}
+.rp-kpi-mini-val { font-size:18px; font-weight:800; color:#333; }
+.rp-kpi-mini-label { font-size:9.5px; color:#777; }
+.rp-kpi-mini-sub { font-size:9px; font-weight:700; margin-top:1px; }
+</style>
+</head>
+<body>
+
+<!-- LOCK OVERLAY -->
+<div class="lock-overlay" id="lockOverlay">
+  <div class="lock-modal">
+    <div class="lock-icon">🔒</div>
+    <div class="lock-title">ต้องทำรอบ T1 ก่อน</div>
+    <div class="lock-desc">ไม่สามารถเข้าถึงรอบนี้ได้<br>กรุณาทำการประเมินรอบ <strong>T1</strong> ให้เสร็จก่อน<br>จึงจะสามารถเข้าถึง T2, T3, T4 ได้</div>
+    <button class="lock-btn" onclick="closeLock()">เข้าใจแล้ว</button>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <!-- THAI-RAP Puzzle Logo (SVG approximation) -->
+    <svg class="logo-puzzle" viewBox="0 0 54 38" width="54" height="38" style="flex-shrink:0;">
+      <rect x="1" y="1" width="15" height="16" rx="3" fill="#6B2D8B"/>
+      <rect x="18" y="1" width="15" height="16" rx="3" fill="#1D5FAD"/>
+      <rect x="35" y="1" width="18" height="16" rx="3" fill="#2E7B54"/>
+      <rect x="1" y="20" width="15" height="17" rx="3" fill="#C0392B"/>
+      <rect x="18" y="20" width="15" height="17" rx="3" fill="#E07B2E"/>
+      <rect x="35" y="20" width="18" height="17" rx="3" fill="#D4A017"/>
+      <!-- white icons: chef hat, fish, fork, house, chili, leaf -->
+      <path d="M6,12 Q6,9 8.5,9 Q11,9 11,12 L11,14 L6,14 Z" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1"/>
+      <ellipse cx="25.5" cy="9" rx="4" ry="2.5" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1"/>
+      <line x1="22" y1="9" x2="29" y2="9" stroke="rgba(255,255,255,0.8)" stroke-width="1"/>
+      <circle cx="44" cy="9" r="1" fill="rgba(255,255,255,0.8)"/>
+      <line x1="44" y1="10" x2="44" y2="15" stroke="rgba(255,255,255,0.8)" stroke-width="1.2"/>
+    </svg>
+    <div class="logo-text-wrap">
+      <div class="logo-text">THAI-RAP</div>
+      <div class="logo-sub">Restaurant Assessment<br>& Performance</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="nav-item active" data-page="overview" onclick="navGo(this)">
+      <div class="nav-icon">📊</div>
+      <div style="flex:1;min-width:0;"><div class="nav-label">ภาพรวมโครงการ</div><div class="nav-sublabel">Project Overview</div></div>
+    </div>
+    <div class="nav-item" data-page="restaurant-profiles" onclick="navGo(this)">
+      <div class="nav-icon">🏪</div>
+      <div style="flex:1;min-width:0;"><div class="nav-label">ข้อมูลร้านอาหาร</div><div class="nav-sublabel">Restaurant Profiles</div></div>
+    </div>
+    <div class="nav-item" data-page="assessment" onclick="navGo(this)">
+      <div class="nav-icon">📋</div>
+      <div style="flex:1;min-width:0;"><div class="nav-label">แบบประเมินร้าน</div><div class="nav-sublabel">Restaurant Assessment</div></div>
+    </div>
+    <div class="nav-item" data-page="analytics" onclick="navGo(this)">
+      <div class="nav-icon">📈</div>
+      <div style="flex:1;min-width:0;"><div class="nav-label">วิเคราะห์ผลการดำเนิน</div><div class="nav-sublabel">Performance Analytics</div></div>
+    </div>
+    <div class="nav-item" data-page="pitching" onclick="navGo(this)">
+      <div class="nav-icon">🏆</div>
+      <div style="flex:1;min-width:0;"><div class="nav-label">คะแนนพิชชิ่ง</div><div class="nav-sublabel">Pitching &amp; Ranking</div></div>
+    </div>
+    <div class="nav-item" data-page="reports" onclick="navGo(this)">
+      <div class="nav-icon">📄</div>
+      <div style="flex:1;min-width:0;"><div class="nav-label">รายงานและส่งออก</div><div class="nav-sublabel">Reports &amp; Export</div></div>
+    </div>
+    <div class="nav-item" data-page="users" onclick="navGo(this)">
+      <div class="nav-icon">👥</div>
+      <div style="flex:1;min-width:0;"><div class="nav-label">ผู้ใช้งานและสิทธิ์</div><div class="nav-sublabel">Users &amp; Roles</div></div>
+    </div>
+  </nav>
+  <div class="sidebar-collapse-btn" onclick="toggleSidebar()">
+    <span id="collapseIcon">◀</span>
+    <span class="sidebar-footer-text" style="font-size:10px;">ย่อแถบเมนู</span>
+  </div>
+  <div class="sidebar-footer">
+    <span>📖</span>
+    <span class="sidebar-footer-text">คู่มือการใช้งาน / User Manual</span>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- SHARED HEADER -->
+  <header class="top-header">
+    <!-- Row 1: Partner logos + user info -->
+    <div class="header-logos-row">
+      <div class="header-logos">
+        <img src="logos.png" alt="Partner Logos" style="height:44px;object-fit:contain;max-width:400px;" />
+      </div>
+      <div class="header-right">
+        <div style="display:flex;align-items:center;gap:5px;padding:3px 9px;background:#FFF0E5;border:1px solid #F17128;border-radius:20px;font-size:9.5px;font-weight:600;color:#F17128;">
+          <span>🏢</span><span>รอบประเมิน: <strong>50 ร้าน</strong> → Incubation: <strong>20 ร้าน</strong></span>
+        </div>
+        <div class="header-bell">🔔<div class="bell-badge">5</div></div>
+        <div class="header-user">
+          <div class="user-avatar">ศ</div>
+          <div><div class="user-name">นางสาวศิริวรรณ จันทร์ดี</div><div class="user-role">ผู้ดูแลระบบ (Admin) ▾</div></div>
+        </div>
+      </div>
+    </div>
+    <!-- Row 2: Project banner (cream) -->
+    <div class="project-banner">
+      <div class="banner-content">
+        <div class="title-main">หน่วยบริหารเครือข่าย การพัฒนาผู้ประกอบการธุรกิจอาหาร ในภูมิภาค ภาคตะวันออก</div>
+        <div class="title-sub">ภายใต้โครงการการสร้างผู้ประกอบการร้านอาหารไทยมืออาชีพ</div>
+        <div class="title-detail">ประจำปีงบประมาณ พ.ศ. 2569 &nbsp;|&nbsp; มหาวิทยาลัยราชภัฏรำไพพรรณี จังหวัดจันทบุรี</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== PAGE: ASSESSMENT ===== -->
+  <div id="page-assessment" class="page-wrap">
+    <div class="toolbar">
+      <div class="tb-group">
+        <div class="tb-label">เลือกร้านอาหาร</div>
+        <div class="restaurant-pick"><div class="rest-icon">🍜</div><div class="rest-name">บ้านวิม่า จันทบุรี</div><span style="color:#aaa;font-size:10px;">▾</span></div>
+      </div>
+      <div class="tb-group"><div class="tb-label">จังหวัด</div><select><option>จันทบุรี</option><option>ระยอง</option><option>ตราด</option></select></div>
+      <div class="tb-group">
+        <div class="tb-label">รอบประเมิน</div>
+        <div class="round-tabs">
+          <div class="round-tab active" id="tab-T0" onclick="selectRound(this,'T0')">T0</div>
+          <div class="round-tab completed" id="tab-T1" onclick="selectRound(this,'T1')">T1</div>
+          <div class="round-tab" id="tab-T2" onclick="selectRound(this,'T2')">T2</div>
+          <div class="round-tab" id="tab-T3" onclick="selectRound(this,'T3')">T3</div>
+          <div class="round-tab" id="tab-T4" onclick="selectRound(this,'T4')">T4</div>
+        </div>
+      </div>
+      <div class="tb-group">
+        <div class="tb-label">ความคืบหน้าการประเมิน</div>
+        <div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:62%"></div></div><div class="progress-pct" id="progressPct">62%</div></div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:7px;align-items:center;">
+        <button class="btn-draft">💾 บันทึกร่าง</button>
+        <button class="btn-submit">บันทึกและถัดไป →</button>
+      </div>
+    </div>
+    <div class="content-area">
+      <div class="dim-card">
+        <div class="dim-card-title">8 มิติการประเมิน <span class="dim-card-sub">Assessment Dimensions</span></div>
+        <div class="score-legend">
+          <div class="score-legend-title">เกณฑ์คะแนน 0–4</div>
+          <div class="score-legend-row">
+            <div class="sl-badge"><span class="sl-num">0</span><span class="sl-text">ไม่มี</span></div>
+            <div class="sl-badge"><span class="sl-num">1</span><span class="sl-text">มีบ้าง</span></div>
+            <div class="sl-badge"><span class="sl-num">2</span><span class="sl-text">พื้นฐาน</span></div>
+            <div class="sl-badge"><span class="sl-num">3</span><span class="sl-text">ดี</span></div>
+            <div class="sl-badge"><span class="sl-num">4</span><span class="sl-text">ดีมาก</span></div>
+          </div>
+        </div>
+        <div id="dimList"></div>
+        <div class="dim-footer">
+          <div><div class="dim-footer-label">คะแนนรวมถ่วงน้ำหนัก</div><div class="dim-footer-link">ดูรูปภาพผลทั้งหมด →</div></div>
+          <div class="dim-footer-score" id="totalScore">46.25<span style="font-size:10px;color:#bbb;font-weight:400;">/100</span></div>
+        </div>
+      </div>
+      <div class="assess-card" id="assessCard"></div>
+      <div class="asum-card">
+        <div class="asum-head"><div class="asum-title">สรุปผลการประเมินร้าน</div><div class="asum-link">ดูรายงานฉบับเต็ม →</div></div>
+        <div class="rest-info">
+          <div class="rest-thumb">🍜</div>
+          <div style="flex:1;"><div class="rest-name">บ้านวิม่า จันทบุรี</div><div class="rest-loc">จันทบุรี</div></div>
+          <div class="t1-done">ประเมิน T1 แล้ว</div>
+        </div>
+        <div class="score-grid2">
+          <div class="sc-box"><div class="sc-box-label">คะแนนมิติที่เลือก<br>(เทียบ % น้ำหนัก)</div><div class="sc-box-val" id="dimSelectedScore">60.00<span class="sc-box-max">/100</span></div></div>
+          <div class="sc-box sc-box-blue"><div class="sc-box-label">คะแนนรวมถ่วงน้ำหนักทั้งหมด</div><div class="sc-box-val">46.25<span class="sc-box-max">/100</span></div></div>
+        </div>
+        <div class="rank-grid2">
+          <div class="rk-box"><div class="rk-label">อันดับในจังหวัด</div><div class="rk-val">12<span style="font-size:10px;color:#aaa;"> / 35</span></div><div style="font-size:8.5px;color:#aaa;">ร้าน</div></div>
+          <div class="rk-box"><div class="rk-label">อันดับในทั้งหมด</div><div class="rk-val">68<span style="font-size:10px;color:#aaa;"> / 312</span></div><div style="font-size:8.5px;color:#aaa;">ร้าน</div></div>
+        </div>
+        <div class="flags-sec">
+          <div class="flags-title">Red Flags (ต้องแก้เร่งด่วน)<div class="flag-cnt">2</div></div>
+          <div class="flag-item"><div class="flag-dot"></div><div>Financial Risk: ไม่แยกเงินร้าน-ส่วนตัว</div></div>
+          <div class="flag-item"><div class="flag-dot"></div><div>Operation Risk: ไม่มี SOP ระบบสต็อกยังอ่อน</div></div>
+        </div>
+        <div class="imp-sec">
+          <div class="imp-title">จุดที่ควรเร่งพัฒนา<div class="imp-cnt">3</div></div>
+          <div class="imp-item"><div class="imp-dot"></div><div>การเงิน ต้นทุน และกำไร (มิติ 5)</div></div>
+          <div class="imp-item"><div class="imp-dot"></div><div>ระบบปฏิบัติการร้าน (มิติ 6)</div></div>
+          <div class="imp-item"><div class="imp-dot"></div><div>แบรนด์และโมเดลธุรกิจ (มิติ 3)</div></div>
+        </div>
+        <div class="radar-sec">
+          <div class="radar-title">เปรียบเทียบ 8 มิติ</div>
+          <div class="radar-legend">
+            <div class="leg-item"><div class="leg-line" style="background:#F17128;"></div><span>ร้านนี้</span></div>
+            <div class="leg-item"><div class="leg-line" style="border-top:2px dashed #3d5a80;"></div><span>ค่าเฉลี่ย</span></div>
+          </div>
+          <svg width="246" height="210" viewBox="0 0 246 210">
+            <circle cx="123" cy="105" r="85" fill="none" stroke="#f0f0f0" stroke-width="1"/>
+            <circle cx="123" cy="105" r="63.75" fill="none" stroke="#f0f0f0" stroke-width="1"/>
+            <circle cx="123" cy="105" r="42.5" fill="none" stroke="#f0f0f0" stroke-width="1"/>
+            <circle cx="123" cy="105" r="21.25" fill="none" stroke="#f0f0f0" stroke-width="1"/>
+            <line x1="123" y1="20" x2="123" y2="190" stroke="#e8e8e8" stroke-width="1"/>
+            <line x1="38" y1="105" x2="208" y2="105" stroke="#e8e8e8" stroke-width="1"/>
+            <line x1="63" y1="45" x2="183" y2="165" stroke="#e8e8e8" stroke-width="1"/>
+            <line x1="183" y1="45" x2="63" y2="165" stroke="#e8e8e8" stroke-width="1"/>
+            <polygon points="123,47.75 175.7,67.1 178.25,105 157.9,135.8 123,163.25 92.7,140.7 82.75,105 89.9,70.3" fill="rgba(241,113,40,0.18)" stroke="#F17128" stroke-width="2" stroke-linejoin="round"/>
+            <polygon points="123,58.25 161.2,78.9 169.75,105 151.0,132.8 123,151.75 99.8,131.2 76.25,105 89.6,79.6" fill="none" stroke="#3d5a80" stroke-width="1.5" stroke-dasharray="4,3" stroke-linejoin="round"/>
+            <circle cx="123" cy="47.75" r="2.5" fill="#F17128"/><circle cx="175.7" cy="67.1" r="2.5" fill="#F17128"/>
+            <circle cx="178.25" cy="105" r="2.5" fill="#F17128"/><circle cx="157.9" cy="135.8" r="2.5" fill="#F17128"/>
+            <circle cx="123" cy="163.25" r="2.5" fill="#F17128"/><circle cx="92.7" cy="140.7" r="2.5" fill="#F17128"/>
+            <circle cx="82.75" cy="105" r="2.5" fill="#F17128"/><circle cx="89.9" cy="70.3" r="2.5" fill="#F17128"/>
+            <text x="123" y="14" font-size="8" fill="#666" text-anchor="middle">1.คุณภาพอาหาร</text>
+            <text x="196" y="58" font-size="8" fill="#666" text-anchor="middle">2.Food Safety</text>
+            <text x="204" y="103" font-size="8" fill="#666" text-anchor="start">3.แบรนด์</text>
+            <text x="182" y="156" font-size="8" fill="#666" text-anchor="middle">4.การตลาด</text>
+            <text x="123" y="204" font-size="8" fill="#666" text-anchor="middle">5.การเงิน</text>
+            <text x="64" y="156" font-size="8" fill="#666" text-anchor="middle">6.ระบบร้าน</text>
+            <text x="34" y="103" font-size="8" fill="#666" text-anchor="end">7.Supply</text>
+            <text x="50" y="58" font-size="8" fill="#666" text-anchor="middle">8.ความพร้อม</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div class="timeline-area">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:12px;font-weight:700;color:#333;">บันทึกและประวัติการประเมิน</div>
+        <div style="font-size:10px;color:#888;">บันทึกเพิ่มเติมเกี่ยวกับผู้ประเมิน</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="display:flex;gap:10px;align-items:flex-start;flex:1;">
+          <div class="tl-item"><div class="tl-card current"><div class="tl-title">รอบปัจจุบัน T1</div><div class="tl-date">20 พ.ค. 2569 14:35</div><div class="tl-by">โดย นางสาวศิริวรรณ จันทร์ดี</div><div><span class="tl-st tl-orange">กำลังประเมิน</span></div></div></div>
+          <div class="tl-arrow">→</div>
+          <div class="tl-item"><div class="tl-card"><div class="tl-title">ร่างครั้งที่ 2</div><div class="tl-date">15 พ.ค. 2569 10:22</div><div class="tl-by">โดย นางสาวศิริวรรณ</div><div><span class="tl-st tl-gray">บันทึกร่าง</span></div></div></div>
+          <div class="tl-arrow">→</div>
+          <div class="tl-item"><div class="tl-card"><div class="tl-title">ร่างครั้งที่ 1</div><div class="tl-date">15 พ.ค. 2569 16:40</div><div class="tl-by">โดย นางสาวศิริวรรณ</div><div><span class="tl-st tl-gray">บันทึกร่าง</span></div></div></div>
+          <div class="tl-arrow">→</div>
+          <div class="tl-item"><div class="tl-card done"><div class="tl-title">รอบก่อนหน้า T0</div><div class="tl-date">12 มิ.ย. 2569 11:15</div><div class="tl-by">โดย นางสาวศิริวรรณ</div><div><span class="tl-st tl-green">เสร็จสิ้น</span></div></div></div>
+        </div>
+        <div class="notes-box"><div class="notes-title">บันทึกเพิ่มเติม <span class="notes-edit">✏</span></div><div>ร้านมีศักยภาพสูง ยังขาดระบบการเงินและ SOP ควรเน้นพัฒนามิติ 5 และ 6 ก่อน</div></div>
+      </div>
+    </div>
+  </div><!-- end page-assessment -->
+
+  <!-- ===== PAGE: REPORTS ===== -->
+  <div id="page-reports" class="page-wrap">
+    <div class="rpt-body" id="rptBody">
+      <div class="page-topbar">
+        <div><div class="page-topbar-title">รายงานและส่งออก</div><div class="page-topbar-sub">Reports &amp; Export</div></div>
+        <div class="filter-group"><div class="filter-label">ประเภทรายงาน</div>
+          <select style="min-width:140px;"><option>ทั้งหมด</option><option>รายงานรายร้าน</option><option>รายงาน Top 20 Incubation</option><option>รายงานภาพรวม 50 ร้าน</option><option>รายงาน Red Flag</option><option>รายงานคะแนน Pitching</option><option>รายงาน IDP</option><option>รายงานรายจังหวัด</option></select>
+        </div>
+        <div class="filter-group"><div class="filter-label">จังหวัด</div><select><option>ทั้งหมด</option><option>จันทบุรี</option><option>ระยอง</option><option>ตราด</option><option>ชลบุรี</option></select></div>
+        <div class="filter-group"><div class="filter-label">รูปแบบ</div><select><option>ทั้งหมด</option><option>PDF</option><option>Excel (XLSX)</option><option>CSV</option></select></div>
+        <div class="filter-group"><div class="filter-label">ช่วงวันที่</div><div class="date-range">📅 01/04/2569 &nbsp;—&nbsp; 30/04/2569</div></div>
+        <button class="btn-new" onclick="rptOpenPanel()">＋ สร้างรายงานใหม่</button>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-icon si-orange">📄</div><div><div class="stat-label">รายงานทั้งหมด</div><div class="stat-val">128</div><div class="stat-sub">ทั้งหมด 128 รายการ</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-orange">📊</div><div><div class="stat-label">สร้างวันนี้</div><div class="stat-val">12</div><div class="stat-change-up">▲ +20% จากเมื่อวาน</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-purple">⬇️</div><div><div class="stat-label">ดาวน์โหลดวันนี้</div><div class="stat-val">46</div><div class="stat-change-up">▲ +15% จากเมื่อวาน</div></div></div>
+        <div class="stat-card"><div class="stat-icon si-blue">📅</div><div><div class="stat-label">กำหนดส่งรายงานสัปดาห์</div><div class="stat-val">8 <span style="font-size:13px;color:#888;font-weight:400;">งาน</span></div><div class="stat-change-warn">กำลังดำเนินการอยู่ 2 งาน</div></div></div>
+      </div>
+      <div class="section-card">
+        <div class="section-title">แม่แบบรายงาน <span class="section-hint">(คลิกเพื่อสร้างรายงานใหม่)</span></div>
+        <div class="template-grid" id="templateGrid"></div>
+      </div>
+      <div class="table-card">
+        <div class="table-head"><div class="table-title">รายงานที่สร้าง / ส่งออกแล้ว</div><div class="table-link">ดูประวัติทั้งหมด →</div></div>
+        <table class="rt"><thead><tr><th>ชื่อรายงาน</th><th>ประเภท</th><th>รูปแบบ</th><th>วันที่สร้าง</th><th>ผู้สร้าง</th><th>สถานะ</th><th style="width:40px;"></th><th style="width:30px;"></th></tr></thead><tbody id="reportTableBody"></tbody></table>
+        <div class="pagination">
+          <div class="pag-info">แสดง 1 – 8 จาก 128 รายการ</div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="pag-btns"><div class="pag-btn">‹</div><div class="pag-btn active">1</div><div class="pag-btn">2</div><div class="pag-btn">3</div><div class="pag-btn">4</div><div class="pag-btn">5</div><div class="pag-dots">…</div><div class="pag-btn">16</div><div class="pag-btn">›</div></div>
+            <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#888;">แสดงผล <select style="padding:3px 5px;font-size:11px;width:50px;"><option>10</option><option>25</option><option>50</option></select></div>
+          </div>
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-head"><div class="table-title">ประวัติกิจกรรม (การส่งออกรายงาน)</div><div class="table-link">ดูประวัติทั้งหมด →</div></div>
+        <div style="padding:6px 14px 4px;background:#f8f8f8;border-bottom:1px solid #f0f0f0;display:flex;gap:0;">
+          <span style="font-size:10.5px;color:#666;font-weight:600;min-width:130px;">เวลา</span>
+          <span style="font-size:10.5px;color:#666;font-weight:600;min-width:140px;">กิจกรรม</span>
+          <span style="font-size:10.5px;color:#666;font-weight:600;flex:1;">รายงาน</span>
+          <span style="font-size:10.5px;color:#666;font-weight:600;min-width:55px;">รูปแบบ</span>
+          <span style="font-size:10.5px;color:#666;font-weight:600;min-width:95px;">ผู้ดำเนินการ</span>
+          <span style="font-size:10.5px;color:#666;font-weight:600;min-width:85px;">สถานะ</span>
+          <span style="width:30px;"></span>
+        </div>
+        <div id="activityList"></div>
+      </div>
+    </div>
+  </div><!-- end page-reports -->
+
+
+  <!-- ===== PAGE: OVERVIEW DASHBOARD ===== -->
+  <div id="page-overview" class="page-wrap active">
+    <div class="ov-wrap">
+
+      <!-- Context banner -->
+      <div style="background:#FFF8F2;border:1px solid #F7D4B5;border-radius:9px;padding:8px 14px;margin-bottom:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#C75B1A;">📌 รอบประเมิน THAI-RAP 2569</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <span style="font-size:11px;color:#555;">ร้านในรอบคัดเลือก: <strong style="color:#F17128;">50 ร้าน</strong></span>
+          <span style="color:#ddd;">|</span>
+          <span style="font-size:11px;color:#555;">เป้าหมาย Incubation: <strong style="color:#4caf50;">20 ร้าน</strong></span>
+          <span style="color:#ddd;">|</span>
+          <span style="font-size:11px;color:#555;">ผู้เข้าร่วมโครงการ (ภาคตะวันออก): <strong style="color:#3d5a80;">312 ร้าน</strong> / เป้า 400 ร้าน</span>
+        </div>
+      </div>
+      <!-- KPI Row -->
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon-orange">👥</div>
+          <div class="kpi-val">312 <span class="kpi-unit">ร้าน</span></div>
+          <div class="kpi-label">ผู้เข้าร่วมโครงการ</div>
+          <div class="kpi-sub">ภาคตะวันออก / เป้า 400 ร้าน</div>
+          <div class="kpi-bar"><div class="kpi-bar-fill" style="width:78%;background:#F17128;"></div></div>
+        </div>
+        <div class="kpi-card" style="border-top:3px solid #F17128;">
+          <div class="kpi-icon kpi-icon-orange">📋</div>
+          <div class="kpi-val">48 <span class="kpi-unit">ร้าน</span></div>
+          <div class="kpi-label">ประเมิน T0 แล้ว <span style="color:#aaa;font-size:9px;">(รอบ 50)</span></div>
+          <div class="kpi-sub" style="color:#F17128;font-weight:700;">96% ของ 50 ร้าน</div>
+          <div class="kpi-bar"><div class="kpi-bar-fill" style="width:96%;background:#F17128;"></div></div>
+        </div>
+        <div class="kpi-card" style="border-top:3px solid #9c27b0;">
+          <div class="kpi-icon kpi-icon-purple">✅</div>
+          <div class="kpi-val">35 <span class="kpi-unit">ร้าน</span></div>
+          <div class="kpi-label">ประเมิน T1 แล้ว <span style="color:#aaa;font-size:9px;">(รอบ 50)</span></div>
+          <div class="kpi-sub" style="color:#9c27b0;font-weight:700;">70% ของ 50 ร้าน</div>
+          <div class="kpi-bar"><div class="kpi-bar-fill" style="width:70%;background:#9c27b0;"></div></div>
+        </div>
+        <div class="kpi-card" style="border-top:3px solid #4caf50;">
+          <div class="kpi-icon kpi-icon-green">🏆</div>
+          <div class="kpi-val">20 <span class="kpi-unit">ร้าน</span></div>
+          <div class="kpi-label">เป้าหมาย Incubation</div>
+          <div class="kpi-sub" style="color:#4caf50;font-weight:700;">คัดจาก 50 → 20 ร้าน</div>
+          <div class="kpi-bar"><div class="kpi-bar-fill" style="width:40%;background:#4caf50;"></div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon-blue">⭐</div>
+          <div class="kpi-val">72.34 <span class="kpi-unit">คะแนน</span></div>
+          <div class="kpi-label">คะแนนเฉลี่ย T1</div>
+          <div class="kpi-sub">จาก 100 คะแนน</div>
+          <div class="kpi-bar"><div class="kpi-bar-fill" style="width:72.34%;background:#1976d2;"></div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-icon-green">📈</div>
+          <div class="kpi-val kpi-up">+18.57%</div>
+          <div class="kpi-label">อัตราพัฒนา (T1−T0)</div>
+          <div class="kpi-sub" style="color:#4caf50;">เพิ่มขึ้นเฉลี่ยทั้งโครงการ</div>
+          <div class="kpi-bar"><div class="kpi-bar-fill" style="width:18.57%;background:#4caf50;"></div></div>
+        </div>
+      </div>
+
+      <!-- Row 1: donut + top20 + pipeline -->
+      <div class="ov-grid3">
+        <!-- Donut chart -->
+        <div class="ov-card">
+          <div class="ov-card-title">การกระจายตัวของร้านอาหารตามจังหวัด <span class="ov-card-sub">(ภาคตะวันออก)</span></div>
+          <div class="donut-wrap">
+            <svg width="140" height="140" viewBox="0 0 170 170">
+              <circle cx="85" cy="85" r="60" fill="none" stroke="#f0f0f0" stroke-width="28"/>
+              <!-- จันทบุรี 31.4% dash=119.4 offset=0 -->
+              <circle cx="85" cy="85" r="60" fill="none" stroke="#F17128" stroke-width="28"
+                stroke-dasharray="119.4 257.6" stroke-dashoffset="0" transform="rotate(-90 85 85)"/>
+              <!-- ชลบุรี 26.3% dash=99.9 offset=-119.4 -->
+              <circle cx="85" cy="85" r="60" fill="none" stroke="#5D4037" stroke-width="28"
+                stroke-dasharray="99.9 277.1" stroke-dashoffset="-119.4" transform="rotate(-90 85 85)"/>
+              <!-- ระยอง 19.6% dash=74.4 offset=-219.3 -->
+              <circle cx="85" cy="85" r="60" fill="none" stroke="#7B1FA2" stroke-width="28"
+                stroke-dasharray="74.4 302.6" stroke-dashoffset="-219.3" transform="rotate(-90 85 85)"/>
+              <!-- ตราด 12.2% dash=46.3 offset=-293.7 -->
+              <circle cx="85" cy="85" r="60" fill="none" stroke="#827717" stroke-width="28"
+                stroke-dasharray="46.3 330.7" stroke-dashoffset="-293.7" transform="rotate(-90 85 85)"/>
+              <!-- ฉะเชิงเทรา 10.6% dash=40.2 offset=-340.0 -->
+              <circle cx="85" cy="85" r="60" fill="none" stroke="#9E9E9E" stroke-width="28"
+                stroke-dasharray="40.2 336.8" stroke-dashoffset="-340.0" transform="rotate(-90 85 85)"/>
+              <text x="85" y="80" text-anchor="middle" font-size="18" font-weight="800" fill="#333">312</text>
+              <text x="85" y="96" text-anchor="middle" font-size="11" fill="#888">ร้าน</text>
+            </svg>
+            <div class="donut-legend">
+              <div class="donut-legend-item"><div class="donut-dot" style="background:#F17128;"></div><div class="donut-name">จันทบุรี</div><span class="donut-count">98</span><span class="donut-pct">(31.4%)</span></div>
+              <div class="donut-legend-item"><div class="donut-dot" style="background:#5D4037;"></div><div class="donut-name">ชลบุรี</div><span class="donut-count">82</span><span class="donut-pct">(26.3%)</span></div>
+              <div class="donut-legend-item"><div class="donut-dot" style="background:#7B1FA2;"></div><div class="donut-name">ระยอง</div><span class="donut-count">61</span><span class="donut-pct">(19.6%)</span></div>
+              <div class="donut-legend-item"><div class="donut-dot" style="background:#827717;"></div><div class="donut-name">ตราด</div><span class="donut-count">38</span><span class="donut-pct">(12.2%)</span></div>
+              <div class="donut-legend-item"><div class="donut-dot" style="background:#9E9E9E;"></div><div class="donut-name">ฉะเชิงเทรา</div><span class="donut-count">33</span><span class="donut-pct">(10.6%)</span></div>
+            </div>
+          </div>
+          <div style="font-size:8.5px;color:#bbb;margin-top:8px;">ข้อมูล ณ วันที่ 20 พฤษภาคม 2569</div>
+        </div>
+
+        <!-- Top 20 -->
+        <div class="ov-card">
+          <div class="ov-card-title">Top 20 ร้านค้าที่ได้คะแนนสูงสุด (T1) <span class="ov-card-link">ดูรายชื่อทั้งหมด 20 ร้าน →</span></div>
+          <table class="top20">
+            <thead><tr><th>อันดับ</th><th>ชื่อร้าน</th><th>จังหวัด</th><th>ประเภทอาหาร</th><th>คะแนน T1</th></tr></thead>
+            <tbody>
+              <tr><td><span class="top-rank rank-1">1</span></td><td style="font-weight:600;">บ้านริมน้ำ จันทบุรี</td><td>จันทบุรี</td><td style="color:#888;">อาหารไทย</td><td><span class="score-chip">92.45</span></td></tr>
+              <tr><td><span class="top-rank rank-2">2</span></td><td style="font-weight:600;">คัวทะเลสด</td><td>ชลบุรี</td><td style="color:#888;">อาหารทะเล</td><td><span class="score-chip">91.12</span></td></tr>
+              <tr><td><span class="top-rank rank-3">3</span></td><td style="font-weight:600;">สวนริมสุข Cafe</td><td>ระยอง</td><td style="color:#888;">คาเฟ่</td><td><span class="score-chip">90.31</span></td></tr>
+              <tr><td><span class="top-rank rank-other">4</span></td><td style="font-weight:600;">ตราดซีฟู้ด</td><td>ตราด</td><td style="color:#888;">อาหารทะเล</td><td><span class="score-chip">89.78</span></td></tr>
+              <tr><td><span class="top-rank rank-other">5</span></td><td style="font-weight:600;">ฉะเชิงเทรา กูร์เมต์</td><td>ฉะเชิงเทรา</td><td style="color:#888;">อาหารไทย</td><td><span class="score-chip">89.21</span></td></tr>
+              <tr><td><span class="top-rank rank-other">6</span></td><td style="font-weight:600;">ครัวริมคลอง</td><td>จันทบุรี</td><td style="color:#888;">อาหารไทย</td><td><span class="score-chip">88.90</span></td></tr>
+              <tr><td><span class="top-rank rank-other">7</span></td><td style="font-weight:600;">ข้าวต้มเรือ ระยอง</td><td>ระยอง</td><td style="color:#888;">อาหารจีน</td><td><span class="score-chip">88.45</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pipeline -->
+        <div class="ov-card">
+          <div class="ov-card-title">สถานะการพัฒนาผู้ประกอบการ <span class="ov-card-sub">(Incubation Progress)</span></div>
+          <div class="pipeline" style="margin-bottom:10px;">
+            <div class="pipeline-step">
+              <div class="pipeline-icon pip-orange">👥</div>
+              <div class="pipeline-num">312</div>
+              <div class="pipeline-pct">100%</div>
+              <div class="pipeline-label">คัดกรอง<br>เบื้องต้น</div>
+            </div>
+            <div class="pipeline-line"></div>
+            <div class="pipeline-step">
+              <div class="pipeline-icon pip-amber">📋</div>
+              <div class="pipeline-num">289</div>
+              <div class="pipeline-pct">92.63%</div>
+              <div class="pipeline-label">ประเมิน T0</div>
+            </div>
+            <div class="pipeline-line"></div>
+            <div class="pipeline-step">
+              <div class="pipeline-icon pip-blue">🎓</div>
+              <div class="pipeline-num">212</div>
+              <div class="pipeline-pct">67.95%</div>
+              <div class="pipeline-label">พัฒนา<br>ศักยภาพ</div>
+            </div>
+            <div class="pipeline-line"></div>
+            <div class="pipeline-step">
+              <div class="pipeline-icon pip-purple">✅</div>
+              <div class="pipeline-num">176</div>
+              <div class="pipeline-pct">56.41%</div>
+              <div class="pipeline-label">ประเมิน T1</div>
+            </div>
+            <div class="pipeline-line"></div>
+            <div class="pipeline-step">
+              <div class="pipeline-icon pip-success">🏆</div>
+              <div class="pipeline-num">48</div>
+              <div class="pipeline-pct">15.38%</div>
+              <div class="pipeline-label">ผ่านเข้ารอบ</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: bar chart + activity + reports -->
+      <div class="ov-grid3">
+        <!-- Bar chart T0 vs T1 -->
+        <div class="ov-card">
+          <div class="ov-card-title">เปรียบเทียบผลคะแนนเฉลี่ย (T0 vs T1) <span class="ov-card-link">ดูรายละเอียดการวิเคราะห์ →</span></div>
+          <div style="display:flex;gap:10px;margin-bottom:6px;">
+            <div style="display:flex;align-items:center;gap:4px;font-size:9.5px;"><div style="width:10px;height:10px;border-radius:2px;background:#F17128;"></div>คะแนนเฉลี่ย T0</div>
+            <div style="display:flex;align-items:center;gap:4px;font-size:9.5px;"><div style="width:10px;height:10px;border-radius:2px;background:#7B1FA2;"></div>คะแนนเฉลี่ย T1</div>
+          </div>
+          <svg viewBox="0 0 340 155" width="100%" style="overflow:visible;">
+            <!-- Y-axis lines -->
+            <line x1="28" y1="10" x2="28" y2="130" stroke="#e0e0e0" stroke-width="1"/>
+            <line x1="28" y1="130" x2="335" y2="130" stroke="#e0e0e0" stroke-width="1"/>
+            <!-- Y labels -->
+            <text x="22" y="14" font-size="8" fill="#aaa" text-anchor="end">100</text>
+            <text x="22" y="47" font-size="8" fill="#aaa" text-anchor="end">75</text>
+            <text x="22" y="80" font-size="8" fill="#aaa" text-anchor="end">50</text>
+            <text x="22" y="113" font-size="8" fill="#aaa" text-anchor="end">25</text>
+            <line x1="28" y1="13" x2="335" y2="13" stroke="#f5f5f5" stroke-width="1"/>
+            <line x1="28" y1="46" x2="335" y2="46" stroke="#f5f5f5" stroke-width="1"/>
+            <line x1="28" y1="79" x2="335" y2="79" stroke="#f5f5f5" stroke-width="1"/>
+            <line x1="28" y1="112" x2="335" y2="112" stroke="#f5f5f5" stroke-width="1"/>
+            <!-- Bars: height = value/100*117, y = 130 - height, bar_w=18, gap=6 -->
+            <!-- จันทบุรี T0=62.10 T1=73.89 -->
+            <rect x="38" y="57.5" width="18" height="72.5" fill="#F17128" rx="2"/>
+            <rect x="58" y="43.6" width="18" height="86.4" fill="#7B1FA2" rx="2"/>
+            <text x="57" y="148" font-size="8" fill="#666" text-anchor="middle">จันทบุรี</text>
+            <text x="47" y="54" font-size="7.5" fill="#F17128" text-anchor="middle">62.1</text>
+            <text x="67" y="40" font-size="7.5" fill="#7B1FA2" text-anchor="middle">73.9</text>
+            <!-- ชลบุรี T0=75.80 T1=72.11 -->
+            <rect x="96" y="41.3" width="18" height="88.7" fill="#F17128" rx="2"/>
+            <rect x="116" y="45.6" width="18" height="84.4" fill="#7B1FA2" rx="2"/>
+            <text x="115" y="148" font-size="8" fill="#666" text-anchor="middle">ชลบุรี</text>
+            <text x="105" y="37" font-size="7.5" fill="#F17128" text-anchor="middle">75.8</text>
+            <text x="125" y="41" font-size="7.5" fill="#7B1FA2" text-anchor="middle">72.1</text>
+            <!-- ระยอง T0=76.92 T1=60.28 -->
+            <rect x="154" y="40.0" width="18" height="90.0" fill="#F17128" rx="2"/>
+            <rect x="174" y="59.6" width="18" height="70.4" fill="#7B1FA2" rx="2"/>
+            <text x="173" y="148" font-size="8" fill="#666" text-anchor="middle">ระยอง</text>
+            <text x="163" y="36" font-size="7.5" fill="#F17128" text-anchor="middle">76.9</text>
+            <text x="183" y="56" font-size="7.5" fill="#7B1FA2" text-anchor="middle">60.3</text>
+            <!-- ตราด T0=63.54 T1=59.41 -->
+            <rect x="212" y="55.7" width="18" height="74.3" fill="#F17128" rx="2"/>
+            <rect x="232" y="60.5" width="18" height="69.5" fill="#7B1FA2" rx="2"/>
+            <text x="231" y="148" font-size="8" fill="#666" text-anchor="middle">ตราด</text>
+            <text x="221" y="51" font-size="7.5" fill="#F17128" text-anchor="middle">63.5</text>
+            <text x="241" y="56" font-size="7.5" fill="#7B1FA2" text-anchor="middle">59.4</text>
+            <!-- ฉะเชิงเทรา T0=61.33 T1=70.44 -->
+            <rect x="270" y="58.2" width="18" height="71.8" fill="#F17128" rx="2"/>
+            <rect x="290" y="47.6" width="18" height="82.4" fill="#7B1FA2" rx="2"/>
+            <text x="289" y="148" font-size="8" fill="#666" text-anchor="middle">ฉะเชิงเทรา</text>
+            <text x="279" y="54" font-size="7.5" fill="#F17128" text-anchor="middle">61.3</text>
+            <text x="299" y="43" font-size="7.5" fill="#7B1FA2" text-anchor="middle">70.4</text>
+          </svg>
+          <div style="font-size:8.5px;color:#bbb;margin-top:4px;">ข้อมูล ณ วันที่ 20 พฤษภาคม 2569</div>
+        </div>
+
+        <!-- Activity feed -->
+        <div class="ov-card">
+          <div class="ov-card-title">กิจกรรมล่าสุด / ติดตามเร่งด่วน <span class="ov-card-link">ดูทั้งหมด →</span></div>
+          <div class="act-feed-item">
+            <div class="act-feed-icon act-feed-warn">⚠️</div>
+            <div class="act-feed-text">
+              <div class="act-feed-title">ร้านอาหาร 36 ร้าน ยังไม่ประเมิน T1</div>
+              <div class="act-feed-detail">กรุณาติดตามและนัดหมายการประเมินโดยเร็ว</div>
+            </div>
+            <div class="act-feed-date">20 พ.ค. 2569</div>
+          </div>
+          <div class="act-feed-item">
+            <div class="act-feed-icon act-feed-cal">📅</div>
+            <div class="act-feed-text">
+              <div class="act-feed-title">กิจกรรมอบรมหลักสูตรจัดการต้นทุน</div>
+              <div class="act-feed-detail">วันที่ 25 พ.ค. 2569 เวลา 09.00 น.</div>
+            </div>
+            <div class="act-feed-date">19 พ.ค. 2569</div>
+          </div>
+          <div class="act-feed-item">
+            <div class="act-feed-icon act-feed-info">📢</div>
+            <div class="act-feed-text">
+              <div class="act-feed-title">อัปเดตเกณฑ์การประเมินโครงการ ปี 2569</div>
+              <div class="act-feed-detail">มีผลตั้งแต่วันที่ 18 พ.ค. 2569 เป็นต้นไป</div>
+            </div>
+            <div class="act-feed-date">18 พ.ค. 2569</div>
+          </div>
+          <div class="act-feed-item">
+            <div class="act-feed-icon act-feed-warn">🚩</div>
+            <div class="act-feed-text">
+              <div class="act-feed-title">Red Flag: ร้าน 12 แห่ง มีความเสี่ยง Financial Risk</div>
+              <div class="act-feed-detail">ต้องการคำปรึกษาเร่งด่วนจาก Mentor</div>
+            </div>
+            <div class="act-feed-date">17 พ.ค. 2569</div>
+          </div>
+        </div>
+
+        <!-- Recent reports -->
+        <div class="ov-card">
+          <div class="ov-card-title">เอกสาร / รายงาน และสถานะการส่งออก <span class="ov-card-link">ดูรายงานทั้งหมด →</span></div>
+          <div style="display:grid;grid-template-columns:1fr auto auto auto auto;gap:0;font-size:10px;color:#888;font-weight:600;padding:3px 0;border-bottom:1px solid #f0f0f0;margin-bottom:2px;">
+            <span>รายงาน</span><span style="min-width:36px;">รูปแบบ</span><span style="min-width:80px;padding-left:4px;">วันที่สร้าง</span><span style="min-width:50px;padding-left:4px;">สถานะ</span><span style="width:22px;"></span>
+          </div>
+          <div class="mini-report-row">
+            <div class="mr-name">รายงานสรุปภาพรวมโครงการ</div>
+            <div class="mr-fmt fmt-pdf">PDF</div>
+            <div class="mr-date">20 พ.ค. 2569</div>
+            <div class="mr-st">สำเร็จ</div>
+            <div class="mr-dl">⬇</div>
+          </div>
+          <div class="mini-report-row">
+            <div class="mr-name">รายงานผลการประเมิน T1</div>
+            <div class="mr-fmt fmt-xlsx">Excel</div>
+            <div class="mr-date">20 พ.ค. 2569</div>
+            <div class="mr-st">สำเร็จ</div>
+            <div class="mr-dl">⬇</div>
+          </div>
+          <div class="mini-report-row">
+            <div class="mr-name">รายงานคะแนนพิชชิ่งรอบคัดเลือก</div>
+            <div class="mr-fmt fmt-pdf">PDF</div>
+            <div class="mr-date">19 พ.ค. 2569</div>
+            <div class="mr-st">สำเร็จ</div>
+            <div class="mr-dl">⬇</div>
+          </div>
+          <div class="mini-report-row">
+            <div class="mr-name">รายงานพัฒนาการรายจังหวัด</div>
+            <div class="mr-fmt fmt-xlsx">Excel</div>
+            <div class="mr-date">18 พ.ค. 2569</div>
+            <div class="mr-st">สำเร็จ</div>
+            <div class="mr-dl">⬇</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- end page-overview -->
+
+  <!-- ===== PAGE: ANALYTICS ===== -->
+  <div id="page-analytics" class="page-wrap">
+    <div class="an-wrap">
+      <!-- Topbar -->
+      <div class="an-topbar">
+        <div class="tb-group">
+          <div class="tb-label">เลือกร้านอาหาร</div>
+          <div class="restaurant-pick"><div class="rest-icon">🍜</div><div class="rest-name">บ้านวิม่า จันทบุรี</div><span style="color:#aaa;font-size:10px;">▾</span></div>
+        </div>
+        <div class="tb-group">
+          <div class="tb-label">เปรียบเทียบ</div>
+          <div class="toggle-group">
+            <div class="toggle-btn active" onclick="anToggle(this,'T0')">T0 Baseline</div>
+            <div class="toggle-btn" onclick="anToggle(this,'T1')">T1 Post Camp</div>
+            <div class="toggle-btn" onclick="anToggle(this,'BOTH')">T0 vs T1</div>
+          </div>
+        </div>
+        <div class="tb-group"><div class="tb-label">จังหวัด</div><select><option>จันทบุรี</option><option>ระยอง</option><option>ตราด</option><option>ทั้งหมด</option></select></div>
+        <div class="tb-group"><div class="tb-label">กลุ่มร้าน</div><select><option>ทั้งหมด (50 ร้าน)</option><option>Top 20 Incubation</option><option>Red Zone เท่านั้น</option></select></div>
+        <div style="margin-left:auto;display:flex;gap:7px;align-items:center;">
+          <button class="btn-draft">📊 พิมพ์รายงาน</button>
+          <button class="btn-submit">⬇ ส่งออกรายงาน</button>
+        </div>
+      </div>
+
+      <!-- KPI Row -->
+      <div class="kpi-row" style="grid-template-columns:repeat(6,1fr);">
+        <div class="kpi-card"><div class="kpi-icon kpi-icon-orange">📋</div><div class="kpi-val">289 <span class="kpi-unit">ร้าน</span></div><div class="kpi-label">ประเมินแล้ว T0</div><div class="kpi-sub" style="color:#F17128;font-weight:700;">92.63%</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:92.63%;background:#F17128;"></div></div></div>
+        <div class="kpi-card"><div class="kpi-icon kpi-icon-purple">✅</div><div class="kpi-val">176 <span class="kpi-unit">ร้าน</span></div><div class="kpi-label">ประเมินแล้ว T1</div><div class="kpi-sub" style="color:#9c27b0;font-weight:700;">56.41%</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:56.41%;background:#9c27b0;"></div></div></div>
+        <div class="kpi-card"><div class="kpi-icon kpi-icon-green">📈</div><div class="kpi-val kpi-up">+23.4</div><div class="kpi-label">คะแนนพัฒนาเฉลี่ย</div><div class="kpi-sub">T1 − T0 (คะแนนเฉลี่ย)</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:23.4%;background:#4caf50;"></div></div></div>
+        <div class="kpi-card"><div class="kpi-icon kpi-icon-green">🏆</div><div class="kpi-val">48 <span class="kpi-unit">ร้าน</span></div><div class="kpi-label">ร้านผ่านเข้ารอบ</div><div class="kpi-sub" style="color:#4caf50;font-weight:700;">15.38%</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:15.38%;background:#4caf50;"></div></div></div>
+        <div class="kpi-card"><div class="kpi-icon kpi-icon-blue">⭐</div><div class="kpi-val">72.34 <span class="kpi-unit">คะแนน</span></div><div class="kpi-label">คะแนนเฉลี่ย T1</div><div class="kpi-sub">จาก 100 คะแนน</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:72.34%;background:#1976d2;"></div></div></div>
+        <div class="kpi-card"><div class="kpi-icon kpi-icon-orange">🥇</div><div class="kpi-val">Top <span class="kpi-unit">3%</span></div><div class="kpi-label">อันดับร้านที่เลือก</div><div class="kpi-sub">อันดับ 5 / 176 ร้าน T1</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:97%;background:#F17128;"></div></div></div>
+      </div>
+
+      <!-- Main layout -->
+      <div class="an-main">
+        <!-- Left col -->
+        <div class="an-col-left">
+          <!-- Row 1: Radar + Dimension compare -->
+          <div class="an-row2">
+            <!-- Radar chart -->
+            <div class="an-card">
+              <div class="an-card-title">การเปรียบเทียบ 8 มิติ <span class="an-card-sub">Score Compare</span></div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                <div style="display:flex;align-items:center;gap:3px;font-size:9px;"><div style="width:10px;height:3px;background:#F17128;border-radius:2px;"></div>T0</div>
+                <div style="display:flex;align-items:center;gap:3px;font-size:9px;"><div style="width:10px;height:3px;border-top:2px dashed #7B1FA2;"></div>T1</div>
+              </div>
+              <svg width="100%" viewBox="0 0 220 200">
+                <circle cx="110" cy="100" r="80" fill="none" stroke="#f0f0f0" stroke-width="1"/>
+                <circle cx="110" cy="100" r="60" fill="none" stroke="#f0f0f0" stroke-width="1"/>
+                <circle cx="110" cy="100" r="40" fill="none" stroke="#f0f0f0" stroke-width="1"/>
+                <circle cx="110" cy="100" r="20" fill="none" stroke="#f0f0f0" stroke-width="1"/>
+                <line x1="110" y1="20" x2="110" y2="180" stroke="#eee" stroke-width="1"/>
+                <line x1="30" y1="100" x2="190" y2="100" stroke="#eee" stroke-width="1"/>
+                <line x1="53" y1="43" x2="167" y2="157" stroke="#eee" stroke-width="1"/>
+                <line x1="167" y1="43" x2="53" y2="157" stroke="#eee" stroke-width="1"/>
+                <!-- T0 polygon (lower) -->
+                <polygon points="110,45 158,63 165,100 148,133 110,158 79,136 66,100 76,67" fill="rgba(241,113,40,0.15)" stroke="#F17128" stroke-width="1.5" stroke-linejoin="round"/>
+                <!-- T1 polygon (higher) -->
+                <polygon points="110,36 163,56 172,100 152,136 110,164 74,140 59,100 70,60" fill="rgba(123,31,162,0.12)" stroke="#7B1FA2" stroke-width="1.5" stroke-dasharray="4,3" stroke-linejoin="round"/>
+                <text x="110" y="14" font-size="7.5" fill="#666" text-anchor="middle">1.คุณภาพอาหาร</text>
+                <text x="184" y="56" font-size="7.5" fill="#666" text-anchor="start">2.Food Safety</text>
+                <text x="188" y="100" font-size="7.5" fill="#666" text-anchor="start">3.แบรนด์</text>
+                <text x="176" y="150" font-size="7.5" fill="#666" text-anchor="middle">4.การตลาด</text>
+                <text x="110" y="195" font-size="7.5" fill="#666" text-anchor="middle">5.การเงิน</text>
+                <text x="44" y="150" font-size="7.5" fill="#666" text-anchor="middle">6.ระบบร้าน</text>
+                <text x="20" y="100" font-size="7.5" fill="#666" text-anchor="end">7.Supply</text>
+                <text x="36" y="56" font-size="7.5" fill="#666" text-anchor="middle">8.ความพร้อม</text>
+              </svg>
+            </div>
+            <!-- Dimension bar compare -->
+            <div class="an-card">
+              <div class="an-card-title">เปรียบเทียบรายมิติ <span class="an-card-sub">T0 vs T1</span></div>
+              <div style="display:flex;gap:10px;margin-bottom:6px;">
+                <div style="display:flex;align-items:center;gap:3px;font-size:9px;"><div style="width:10px;height:5px;border-radius:2px;background:#F17128;"></div>T0</div>
+                <div style="display:flex;align-items:center;gap:3px;font-size:9px;"><div style="width:10px;height:5px;border-radius:2px;background:#7B1FA2;"></div>T1</div>
+              </div>
+              <div class="dim-cmp-row"><div class="dim-cmp-name">1. คุณภาพอาหาร</div><div class="dim-cmp-bars"><div class="dim-bar-t0" style="width:68%;"></div><div class="dim-bar-t1" style="width:79%;"></div></div><div class="dim-cmp-scores"><span style="color:#F17128;">68</span> → <span style="color:#7B1FA2;">79</span></div></div>
+              <div class="dim-cmp-row"><div class="dim-cmp-name">2. Food Safety</div><div class="dim-cmp-bars"><div class="dim-bar-t0" style="width:60%;"></div><div class="dim-bar-t1" style="width:74%;"></div></div><div class="dim-cmp-scores"><span style="color:#F17128;">60</span> → <span style="color:#7B1FA2;">74</span></div></div>
+              <div class="dim-cmp-row"><div class="dim-cmp-name">3. แบรนด์</div><div class="dim-cmp-bars"><div class="dim-bar-t0" style="width:55%;"></div><div class="dim-bar-t1" style="width:70%;"></div></div><div class="dim-cmp-scores"><span style="color:#F17128;">55</span> → <span style="color:#7B1FA2;">70</span></div></div>
+              <div class="dim-cmp-row"><div class="dim-cmp-name">4. การตลาด</div><div class="dim-cmp-bars"><div class="dim-bar-t0" style="width:62%;"></div><div class="dim-bar-t1" style="width:75%;"></div></div><div class="dim-cmp-scores"><span style="color:#F17128;">62</span> → <span style="color:#7B1FA2;">75</span></div></div>
+              <div class="dim-cmp-row"><div class="dim-cmp-name">5. การเงิน</div><div class="dim-cmp-bars"><div class="dim-bar-t0" style="width:40%;"></div><div class="dim-bar-t1" style="width:58%;"></div></div><div class="dim-cmp-scores"><span style="color:#F17128;">40</span> → <span style="color:#7B1FA2;">58</span></div></div>
+              <div class="dim-cmp-row"><div class="dim-cmp-name">6. ระบบร้าน</div><div class="dim-cmp-bars"><div class="dim-bar-t0" style="width:45%;"></div><div class="dim-bar-t1" style="width:62%;"></div></div><div class="dim-cmp-scores"><span style="color:#F17128;">45</span> → <span style="color:#7B1FA2;">62</span></div></div>
+              <div class="dim-cmp-row"><div class="dim-cmp-name">7. Supply Chain</div><div class="dim-cmp-bars"><div class="dim-bar-t0" style="width:72%;"></div><div class="dim-bar-t1" style="width:82%;"></div></div><div class="dim-cmp-scores"><span style="color:#F17128;">72</span> → <span style="color:#7B1FA2;">82</span></div></div>
+              <div class="dim-cmp-row"><div class="dim-cmp-name">8. ความพร้อม</div><div class="dim-cmp-bars"><div class="dim-bar-t0" style="width:88%;"></div><div class="dim-bar-t1" style="width:93%;"></div></div><div class="dim-cmp-scores"><span style="color:#F17128;">88</span> → <span style="color:#7B1FA2;">93</span></div></div>
+            </div>
+          </div>
+
+          <!-- Row 2: Zone analysis + Route analysis -->
+          <div class="an-row3">
+            <!-- Zone distribution -->
+            <div class="an-card">
+              <div class="an-card-title">การกระจาย Zone (T1) <span class="an-card-sub">Zone Analysis</span></div>
+              <div style="margin-bottom:10px;">
+                <div class="zone-dist-row"><div style="width:80px;flex-shrink:0;font-size:9.5px;"><span class="zone-pill zone-model">Model</span></div><div class="zone-dist-bar"><div class="zone-dist-fill" style="width:9.7%;background:#7b1fa2;"></div></div><div style="width:40px;text-align:right;font-size:9.5px;color:#888;">17 ร้าน</div></div>
+                <div class="zone-dist-row"><div style="width:80px;flex-shrink:0;font-size:9.5px;"><span class="zone-pill zone-growth">Growth</span></div><div class="zone-dist-bar"><div class="zone-dist-fill" style="width:17.6%;background:#1976d2;"></div></div><div style="width:40px;text-align:right;font-size:9.5px;color:#888;">31 ร้าน</div></div>
+                <div class="zone-dist-row"><div style="width:80px;flex-shrink:0;font-size:9.5px;"><span class="zone-pill zone-improve">Improve</span></div><div class="zone-dist-bar"><div class="zone-dist-fill" style="width:37.5%;background:#4caf50;"></div></div><div style="width:40px;text-align:right;font-size:9.5px;color:#888;">66 ร้าน</div></div>
+                <div class="zone-dist-row"><div style="width:80px;flex-shrink:0;font-size:9.5px;"><span class="zone-pill zone-survival">Survival</span></div><div class="zone-dist-bar"><div class="zone-dist-fill" style="width:25%;background:#ff9800;"></div></div><div style="width:40px;text-align:right;font-size:9.5px;color:#888;">44 ร้าน</div></div>
+                <div class="zone-dist-row"><div style="width:80px;flex-shrink:0;font-size:9.5px;"><span class="zone-pill zone-red">Red Zone</span></div><div class="zone-dist-bar"><div class="zone-dist-fill" style="width:10.2%;background:#f44336;"></div></div><div style="width:40px;text-align:right;font-size:9.5px;color:#888;">18 ร้าน</div></div>
+              </div>
+              <div style="border-top:1px solid #f5f5f5;padding-top:8px;">
+                <div style="font-size:10px;color:#555;margin-bottom:4px;">ร้านที่เลือก: <strong>บ้านวิม่า จันทบุรี</strong></div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <div style="font-size:10px;color:#888;">T0: <span class="zone-pill zone-survival" style="font-size:9px;">Survival</span></div>
+                  <div style="color:#aaa;">→</div>
+                  <div style="font-size:10px;color:#888;">T1: <span class="zone-pill zone-improve" style="font-size:9px;">Improve</span></div>
+                  <div style="font-size:9.5px;color:#4caf50;font-weight:700;margin-left:4px;">↑ พัฒนาขึ้น</div>
+                </div>
+              </div>
+            </div>
+            <!-- Route analysis -->
+            <div class="an-card">
+              <div class="an-card-title">เส้นทางพัฒนา T0 → T1 <span class="an-card-sub">Route Analysis</span></div>
+              <div style="font-size:9.5px;color:#888;margin-bottom:8px;">จำนวนร้านที่เปลี่ยน Zone หลังค่าย</div>
+              <div class="route-row"><div class="route-box" style="background:#ffebee;border-color:#f44336;color:#f44336;">Red Zone<br><strong>18</strong></div><div class="route-arrow">→</div><div style="display:flex;flex-direction:column;gap:3px;flex:1;"><div style="display:flex;align-items:center;gap:3px;"><div style="font-size:9px;color:#aaa;width:14px;">→</div><div class="route-box route-box-highlight" style="background:#fff3e0;border-color:#ff9800;color:#ff9800;">Survival 8</div></div><div style="display:flex;align-items:center;gap:3px;"><div style="font-size:9px;color:#aaa;width:14px;">→</div><div class="route-box">Red (ยังอยู่) 10</div></div></div></div>
+              <div class="route-row" style="margin-top:5px;"><div class="route-box" style="background:#fff3e0;border-color:#ff9800;color:#ff9800;">Survival<br><strong>52</strong></div><div class="route-arrow">→</div><div style="display:flex;flex-direction:column;gap:3px;flex:1;"><div style="display:flex;align-items:center;gap:3px;"><div style="font-size:9px;color:#aaa;width:14px;">→</div><div class="route-box route-box-highlight" style="background:#e8f5e9;border-color:#4caf50;color:#4caf50;">Improve 28</div></div><div style="display:flex;align-items:center;gap:3px;"><div style="font-size:9px;color:#aaa;width:14px;">→</div><div class="route-box">Survival (ยังอยู่) 24</div></div></div></div>
+              <div class="route-row" style="margin-top:5px;"><div class="route-box" style="background:#e8f5e9;border-color:#4caf50;color:#4caf50;">Improve<br><strong>72</strong></div><div class="route-arrow">→</div><div style="display:flex;flex-direction:column;gap:3px;flex:1;"><div style="display:flex;align-items:center;gap:3px;"><div style="font-size:9px;color:#aaa;width:14px;">→</div><div class="route-box route-box-highlight" style="background:#e3f2fd;border-color:#1976d2;color:#1976d2;">Growth 31</div></div><div style="display:flex;align-items:center;gap:3px;"><div style="font-size:9px;color:#aaa;width:14px;">→</div><div class="route-box">Improve (ยังอยู่) 35</div></div><div style="display:flex;align-items:center;gap:3px;"><div style="font-size:9px;color:#aaa;width:14px;">→</div><div class="route-box route-box-highlight" style="background:#f3e5f5;border-color:#7b1fa2;color:#7b1fa2;">Model 6</div></div></div></div>
+              <div style="border-top:1px solid #f5f5f5;margin-top:8px;padding-top:6px;font-size:9.5px;color:#888;">ร้านที่พัฒนา Zone ขึ้น: <strong style="color:#4caf50;">73 ร้าน (41.5%)</strong></div>
+            </div>
+          </div>
+
+          <!-- Row 3: Action plans 7/30/90 day -->
+          <div class="an-action-row">
+            <div class="action-card" style="border-left:4px solid #F17128;">
+              <div class="action-day-label">Quick Win</div>
+              <div class="action-day-num">7</div>
+              <div class="action-day-sub">วัน — แผนเร่งด่วน</div>
+              <div class="action-item"><div class="action-dot"></div>คำนวณ Food Cost % เมนูหลัก 3–5 เมนู</div>
+              <div class="action-item"><div class="action-dot"></div>เปิดบัญชีธนาคารแยกร้าน–ส่วนตัว</div>
+              <div class="action-item"><div class="action-dot"></div>จัดทำ Checklist เปิด-ปิดร้าน</div>
+              <div class="action-item"><div class="action-dot"></div>อัปเดตข้อมูลร้านบน Google Maps</div>
+              <div class="action-item"><div class="action-dot"></div>ถ่ายรูปเมนูหลักอย่างน้อย 10 รูป</div>
+            </div>
+            <div class="action-card" style="border-left:4px solid #1976d2;">
+              <div class="action-day-label">Short Term</div>
+              <div class="action-day-num" style="color:#1976d2;">30</div>
+              <div class="action-day-sub">วัน — แผนระยะสั้น</div>
+              <div class="action-item"><div class="action-dot" style="background:#1976d2;"></div>ทำ SOP ระบบปฏิบัติการร้านครบ</div>
+              <div class="action-item"><div class="action-dot" style="background:#1976d2;"></div>บันทึกรายรับ-รายจ่ายทุกวันด้วย App</div>
+              <div class="action-item"><div class="action-dot" style="background:#1976d2;"></div>ทำ Content Marketing สัปดาห์ละ 3 โพสต์</div>
+              <div class="action-item"><div class="action-dot" style="background:#1976d2;"></div>วิเคราะห์ Margin รายเมนู</div>
+              <div class="action-item"><div class="action-dot" style="background:#1976d2;"></div>ทำ Feedback Form ลูกค้า</div>
+            </div>
+            <div class="action-card" style="border-left:4px solid #4caf50;">
+              <div class="action-day-label">Long Term</div>
+              <div class="action-day-num" style="color:#4caf50;">90</div>
+              <div class="action-day-sub">วัน — แผนระยะยาว</div>
+              <div class="action-item"><div class="action-dot" style="background:#4caf50;"></div>ประเมินผล T2 Field Audit</div>
+              <div class="action-item"><div class="action-dot" style="background:#4caf50;"></div>พัฒนา Signature Menu ร้านอย่างน้อย 2 เมนู</div>
+              <div class="action-item"><div class="action-dot" style="background:#4caf50;"></div>ขยายช่องทาง Delivery / LINE OA</div>
+              <div class="action-item"><div class="action-dot" style="background:#4caf50;"></div>ทำ Brand Identity และ Packaging</div>
+              <div class="action-item"><div class="action-dot" style="background:#4caf50;"></div>วางแผนต่อยอด สินค้าพร้อมขาย</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right sidebar -->
+        <div class="an-col-right">
+          <!-- R-Score ranking -->
+          <div class="an-card">
+            <div class="an-card-title">อันดับ Incubation Readiness <span class="an-card-sub">Top 10</span></div>
+            <div class="rec-score-row"><div class="rec-rank-badge rank-1">1</div><div><div class="rec-name">บ้านริมน้ำ จันทบุรี</div><div class="rec-prov">จันทบุรี</div></div><div class="rec-score-val">92.45</div></div>
+            <div class="rec-score-row"><div class="rec-rank-badge rank-2">2</div><div><div class="rec-name">คัวทะเลสด</div><div class="rec-prov">ชลบุรี</div></div><div class="rec-score-val">91.12</div></div>
+            <div class="rec-score-row"><div class="rec-rank-badge rank-3">3</div><div><div class="rec-name">สวนริมสุข Cafe</div><div class="rec-prov">ระยอง</div></div><div class="rec-score-val">90.31</div></div>
+            <div class="rec-score-row"><div class="rec-rank-badge rank-other">4</div><div><div class="rec-name">ตราดซีฟู้ด</div><div class="rec-prov">ตราด</div></div><div class="rec-score-val">89.78</div></div>
+            <div class="rec-score-row"><div class="rec-rank-badge rank-other">5</div><div><div class="rec-name">บ้านวิม่า จันทบุรี</div><div class="rec-prov">จันทบุรี <span style="color:#F17128;font-weight:700;">← ร้านที่เลือก</span></div></div><div class="rec-score-val" style="color:#F17128;">83.00</div></div>
+            <div class="rec-score-row"><div class="rec-rank-badge rank-other">6</div><div><div class="rec-name">ฉะเชิงเทรา กูร์เมต์</div><div class="rec-prov">ฉะเชิงเทรา</div></div><div class="rec-score-val">89.21</div></div>
+            <div class="rec-score-row"><div class="rec-rank-badge rank-other">7</div><div><div class="rec-name">ครัวริมคลอง</div><div class="rec-prov">จันทบุรี</div></div><div class="rec-score-val">88.90</div></div>
+            <div class="rec-score-row"><div class="rec-rank-badge rank-other">8</div><div><div class="rec-name">ข้าวต้มเรือ ระยอง</div><div class="rec-prov">ระยอง</div></div><div class="rec-score-val">88.45</div></div>
+            <div class="rec-score-row"><div class="rec-rank-badge rank-other">9</div><div><div class="rec-name">เม็ดทราย ซีไซด์</div><div class="rec-prov">ชลบุรี</div></div><div class="rec-score-val">86.74</div></div>
+            <div class="rec-score-row"><div class="rec-rank-badge rank-other">10</div><div><div class="rec-name">บ้านสวนเพลินใจ</div><div class="rec-prov">ปราจีนบุรี</div></div><div class="rec-score-val">88.21</div></div>
+          </div>
+
+          <!-- Red Flags -->
+          <div class="an-card">
+            <div class="an-card-title" style="color:#f44336;">🚩 Red Flags รายร้าน</div>
+            <div style="font-size:9.5px;color:#888;margin-bottom:6px;">ร้านที่เลือก: บ้านวิม่า จันทบุรี</div>
+            <div class="flag-item"><div class="flag-dot"></div><div><strong>Financial Risk:</strong> ข้อ 29–31 ได้คะแนน ≤ 1 (ไม่แยกเงิน, บันทึกไม่สม่ำเสมอ)</div></div>
+            <div class="flag-item"><div class="flag-dot"></div><div><strong>Operation Risk:</strong> ข้อ 39, 41 ได้คะแนน 1 (ไม่มีสต็อก, ไม่มีระบบ Complaint)</div></div>
+            <div style="margin-top:8px;padding-top:6px;border-top:1px solid #f5f5f5;font-size:9.5px;color:#888;">Red Flags ภาพรวมโครงการ</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:4px;">
+              <div style="background:#ffebee;border-radius:6px;padding:5px 7px;"><div style="font-size:9px;color:#f44336;font-weight:700;">Financial Risk</div><div style="font-size:14px;font-weight:800;color:#f44336;">12</div><div style="font-size:8.5px;color:#aaa;">ร้าน</div></div>
+              <div style="background:#ffebee;border-radius:6px;padding:5px 7px;"><div style="font-size:9px;color:#f44336;font-weight:700;">Operation Risk</div><div style="font-size:14px;font-weight:800;color:#f44336;">8</div><div style="font-size:8.5px;color:#aaa;">ร้าน</div></div>
+              <div style="background:#fff3e0;border-radius:6px;padding:5px 7px;"><div style="font-size:9px;color:#ff9800;font-weight:700;">Market Risk</div><div style="font-size:14px;font-weight:800;color:#ff9800;">6</div><div style="font-size:8.5px;color:#aaa;">ร้าน</div></div>
+              <div style="background:#fff3e0;border-radius:6px;padding:5px 7px;"><div style="font-size:9px;color:#ff9800;font-weight:700;">Food Safety</div><div style="font-size:14px;font-weight:800;color:#ff9800;">4</div><div style="font-size:8.5px;color:#aaa;">ร้าน</div></div>
+            </div>
+          </div>
+
+          <!-- Best / Worst dimension -->
+          <div class="an-card">
+            <div class="an-card-title">จุดแข็ง–จุดอ่อน</div>
+            <div style="margin-bottom:6px;">
+              <div style="font-size:9.5px;color:#888;margin-bottom:3px;">💪 มิติที่แข็งแรงที่สุด</div>
+              <div style="background:#e8f5e9;border-radius:7px;padding:6px 8px;display:flex;align-items:center;gap:6px;">
+                <div style="font-size:13px;">🚀</div>
+                <div><div style="font-size:10.5px;font-weight:700;color:#333;">มิติ 8: ความพร้อมเติบโต</div><div style="font-size:9px;color:#4caf50;">93% — ดีมาก</div></div>
+                <div style="margin-left:auto;font-size:15px;font-weight:800;color:#4caf50;">93%</div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:9.5px;color:#888;margin-bottom:3px;">⚠️ มิติที่ต้องพัฒนาเร่งด่วน</div>
+              <div style="background:#ffebee;border-radius:7px;padding:6px 8px;display:flex;align-items:center;gap:6px;">
+                <div style="font-size:13px;">💰</div>
+                <div><div style="font-size:10.5px;font-weight:700;color:#333;">มิติ 5: การเงิน ต้นทุน กำไร</div><div style="font-size:9px;color:#f44336;">58% — ต้องปรับปรุง</div></div>
+                <div style="margin-left:auto;font-size:15px;font-weight:800;color:#f44336;">58%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- end page-analytics -->
+
+  <!-- ===== PAGE: PITCHING ===== -->
+  <div id="page-pitching" class="page-wrap">
+    <div class="pt-wrap">
+      <!-- Topbar -->
+      <div class="pt-topbar">
+        <div class="tb-group">
+          <div class="tb-label">เลือกร้านอาหาร</div>
+          <div class="restaurant-pick"><div class="rest-icon">🍜</div><div class="rest-name">บ้านวิม่า จันทบุรี</div><span style="color:#aaa;font-size:10px;">▾</span></div>
+        </div>
+        <div class="tb-group">
+          <div class="tb-label">รอบประเมินที่ใช้คำนวณ</div>
+          <div class="round-tabs">
+            <div class="round-tab completed" style="font-size:11px;">T0</div>
+            <div class="round-tab active" style="font-size:11px;">T1</div>
+            <div class="round-tab locked" style="font-size:11px;">T2</div>
+            <div class="round-tab locked" style="font-size:11px;">T3</div>
+            <div class="round-tab locked" style="font-size:11px;">T4</div>
+          </div>
+        </div>
+        <div class="tb-group"><div class="tb-label">จังหวัด</div><select><option>ทั้งหมด</option><option>จันทบุรี</option><option>ระยอง</option><option>ตราด</option></select></div>
+        <div class="rp-search" style="max-width:200px;"><span class="rp-search-icon">🔍</span><input type="text" placeholder="ค้นหาชื่อร้าน..."/></div>
+        <div style="margin-left:auto;display:flex;gap:7px;"><button class="btn-draft">📊 ดูรายงาน</button><button class="btn-submit">＋ สร้างรายงาน</button></div>
+      </div>
+
+      <!-- Main 3-col -->
+      <div class="pt-main">
+        <!-- Left: Restaurant + components -->
+        <div>
+          <!-- Restaurant card -->
+          <div class="pt-card">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+              <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#F17128,#f0a070);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🍜</div>
+              <div style="flex:1;">
+                <div style="font-size:12px;font-weight:700;color:#333;">บ้านวิม่า จันทบุรี</div>
+                <div style="font-size:9.5px;color:#888;">📍 จันทบุรี &nbsp;|&nbsp; อาหารไทย</div>
+              </div>
+              <span class="st-t1" style="font-size:9px;">T1 แล้ว</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+              <div style="background:#fafafa;border-radius:7px;padding:6px 8px;text-align:center;">
+                <div style="font-size:8.5px;color:#888;">คะแนน T0</div>
+                <div style="font-size:18px;font-weight:800;color:#F17128;">54.80</div>
+                <div style="font-size:8px;color:#aaa;">/100</div>
+              </div>
+              <div style="background:#fafafa;border-radius:7px;padding:6px 8px;text-align:center;">
+                <div style="font-size:8.5px;color:#888;">คะแนน T1</div>
+                <div style="font-size:18px;font-weight:800;color:#3d5a80;">78.25</div>
+                <div style="font-size:8px;color:#aaa;">/100</div>
+              </div>
+            </div>
+            <div style="margin-top:6px;background:#e8f5e9;border-radius:7px;padding:5px 8px;display:flex;align-items:center;justify-content:space-between;">
+              <div style="font-size:9.5px;color:#4caf50;font-weight:600;">📈 พัฒนาขึ้น</div>
+              <div style="font-size:14px;font-weight:800;color:#4caf50;">+23.45</div>
+            </div>
+          </div>
+
+          <!-- 5 Component breakdown -->
+          <div class="pt-card">
+            <div class="pt-card-title">องค์ประกอบ Incubation Readiness <span style="font-size:9px;color:#999;">5 มิติ</span></div>
+            <div class="comp-row">
+              <div class="comp-num">1</div>
+              <div style="flex:1;min-width:0;">
+                <div class="comp-name">คะแนนหลังค่าย T1</div>
+                <div style="font-size:8.5px;color:#aaa;">น้ำหนัก 40%</div>
+              </div>
+              <div class="comp-bar-wrap"><div class="comp-bar"><div class="comp-bar-fill" style="width:78.25%;"></div></div></div>
+              <div class="comp-score">31.3</div>
+              <div class="comp-grade">ดี</div>
+            </div>
+            <div class="comp-row">
+              <div class="comp-num">2</div>
+              <div style="flex:1;min-width:0;">
+                <div class="comp-name">คะแนนพัฒนาการ T0→T1</div>
+                <div style="font-size:8.5px;color:#aaa;">น้ำหนัก 25%</div>
+              </div>
+              <div class="comp-bar-wrap"><div class="comp-bar"><div class="comp-bar-fill" style="width:72%;"></div></div></div>
+              <div class="comp-score">18.0</div>
+              <div class="comp-grade">ดี</div>
+            </div>
+            <div class="comp-row">
+              <div class="comp-num">3</div>
+              <div style="flex:1;min-width:0;">
+                <div class="comp-name">คะแนนนำเสนอ Pitching</div>
+                <div style="font-size:8.5px;color:#aaa;">น้ำหนัก 20%</div>
+              </div>
+              <div class="comp-bar-wrap"><div class="comp-bar"><div class="comp-bar-fill" style="width:85%;"></div></div></div>
+              <div class="comp-score">17.0</div>
+              <div class="comp-grade" style="background:#e3f2fd;color:#1976d2;">ดีมาก</div>
+            </div>
+            <div class="comp-row">
+              <div class="comp-num">4</div>
+              <div style="flex:1;min-width:0;">
+                <div class="comp-name">ความตั้งใจ Open-Growth Mindset</div>
+                <div style="font-size:8.5px;color:#aaa;">น้ำหนัก 10%</div>
+              </div>
+              <div class="comp-bar-wrap"><div class="comp-bar"><div class="comp-bar-fill" style="width:100%;"></div></div></div>
+              <div class="comp-score">10.0</div>
+              <div class="comp-grade" style="background:#e3f2fd;color:#1976d2;">ดีมาก</div>
+            </div>
+            <div class="comp-row">
+              <div class="comp-num">5</div>
+              <div style="flex:1;min-width:0;">
+                <div class="comp-name">ความพร้อมของหลักฐาน</div>
+                <div style="font-size:8.5px;color:#aaa;">น้ำหนัก 5%</div>
+              </div>
+              <div class="comp-bar-wrap"><div class="comp-bar"><div class="comp-bar-fill" style="width:75%;"></div></div></div>
+              <div class="comp-score">3.75</div>
+              <div class="comp-grade">ดี</div>
+            </div>
+            <div style="border-top:2px solid #f0f0f0;margin-top:8px;padding-top:8px;display:flex;align-items:center;justify-content:space-between;">
+              <div style="font-size:10.5px;color:#555;font-weight:600;">คะแนนรวม Incubation Readiness</div>
+              <div style="font-size:20px;font-weight:900;color:#F17128;">80.05 <span style="font-size:11px;color:#bbb;font-weight:400;">/100</span></div>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="pt-card">
+            <div class="pt-card-title">หมายเหตุ / บันทึกผู้ประเมิน</div>
+            <textarea class="note-input" rows="4" style="width:100%;font-size:10.5px;">ร้านมีศักยภาพสูง เจ้าของมีความตั้งใจและเปิดรับการเปลี่ยนแปลง คะแนน Pitching โดดเด่น ควรเน้นพัฒนาด้านการเงินและระบบร้านเพิ่มเติม</textarea>
+          </div>
+        </div>
+
+        <!-- Center: Score + judge -->
+        <div>
+          <!-- Big score -->
+          <div class="pt-card" style="text-align:center;padding:20px 14px;">
+            <div style="font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Incubation Readiness Score</div>
+            <div class="pt-score-big">80.05</div>
+            <div class="pt-score-label">คะแนนรวม / 100</div>
+            <div style="margin:10px 0;">
+              <div style="height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden;margin-bottom:4px;">
+                <div style="width:80.05%;height:100%;background:linear-gradient(90deg,#F17128,#F58544);border-radius:4px;"></div>
+              </div>
+            </div>
+            <span class="inc-pass" style="padding:5px 16px;border-radius:20px;font-size:11px;font-weight:700;">✅ ผ่านเข้า Incubation</span>
+            <div style="margin-top:8px;font-size:9.5px;color:#888;">อันดับที่ <strong style="color:#F17128;">5</strong> / 176 ร้าน T1</div>
+          </div>
+
+          <!-- Comparison info -->
+          <div class="pt-card">
+            <div class="pt-card-title">เปรียบเทียบกับค่าเฉลี่ย</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+              <div style="background:#fafafa;border-radius:7px;padding:7px 8px;text-align:center;">
+                <div style="font-size:8.5px;color:#888;">คะแนนเฉลี่ยโครงการ (T1)</div>
+                <div style="font-size:18px;font-weight:800;color:#3d5a80;">72.34</div>
+              </div>
+              <div style="background:#FFF0E5;border-radius:7px;padding:7px 8px;text-align:center;">
+                <div style="font-size:8.5px;color:#888;">ร้านนี้</div>
+                <div style="font-size:18px;font-weight:800;color:#F17128;">78.25</div>
+              </div>
+            </div>
+            <div style="background:#e8f5e9;border-radius:7px;padding:6px 9px;font-size:10.5px;color:#4caf50;font-weight:600;">↑ สูงกว่าค่าเฉลี่ย +5.91 คะแนน</div>
+          </div>
+
+          <!-- Zone analysis per criteria -->
+          <div class="pt-card">
+            <div class="pt-card-title">สถานะตามเกณฑ์คัดเลือก</div>
+            <div style="font-size:9.5px;color:#888;margin-bottom:6px;">เกณฑ์: อันดับ 1–20 และไม่มี Red Flag รุนแรง</div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <div style="display:flex;align-items:center;gap:6px;font-size:10.5px;"><div style="width:16px;height:16px;border-radius:50%;background:#4caf50;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;flex-shrink:0;">✓</div>อันดับ 5 ≤ 20 ร้าน</div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:10.5px;"><div style="width:16px;height:16px;border-radius:50%;background:#ff9800;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;flex-shrink:0;">!</div>มี Red Flag 2 รายการ (Financial, Operation)</div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:10.5px;"><div style="width:16px;height:16px;border-radius:50%;background:#4caf50;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;flex-shrink:0;">✓</div>คะแนน T1 ≥ 70 (Improve Zone)</div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:10.5px;"><div style="width:16px;height:16px;border-radius:50%;background:#4caf50;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;flex-shrink:0;">✓</div>คะแนนพัฒนา T0→T1 เป็นบวก (+23.45)</div>
+            </div>
+            <div style="margin-top:8px;padding:6px 9px;background:#fff3e0;border-radius:7px;border-left:3px solid #ff9800;font-size:10px;color:#e65100;">⚠ ผ่านแบบมีเงื่อนไข — ต้องแก้ Red Flag ก่อนเข้า Incubation</div>
+          </div>
+
+          <!-- Judge scores -->
+          <div class="pt-card">
+            <div class="pt-card-title">คะแนนจากกรรมการ Pitching</div>
+            <div class="judge-row">
+              <div class="judge-name">ผศ.ดร.กัณฑ์กัส วิทยา</div>
+              <div class="judge-score">85 <span class="judge-grade">/100</span></div>
+            </div>
+            <div class="judge-row">
+              <div class="judge-name">คุณพิสุทธิ์ ธุรกิจ</div>
+              <div class="judge-score">82 <span class="judge-grade">/100</span></div>
+            </div>
+            <div class="judge-row">
+              <div class="judge-name">อ.จิรากรณ์ อาหาร</div>
+              <div class="judge-score">88 <span class="judge-grade">/100</span></div>
+            </div>
+            <div style="border-top:2px solid #f0f0f0;margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:10.5px;color:#555;font-weight:600;">คะแนนเฉลี่ยกรรมการ</div>
+              <div style="font-size:18px;font-weight:800;color:#F17128;">85.00 <span style="font-size:10px;color:#bbb;font-weight:400;">/100</span></div>
+            </div>
+          </div>
+
+          <!-- Key improvements -->
+          <div class="pt-card">
+            <div class="pt-card-title">จุดที่ต้องเน้นพัฒนาก่อนเข้าค่าย</div>
+            <div class="focus-item"><div class="focus-dot"></div>แก้ Financial Risk: แยกบัญชีร้านและบันทึกรายรับ-รายจ่ายทุกวัน</div>
+            <div class="focus-item"><div class="focus-dot"></div>แก้ Operation Risk: จัดทำ SOP สต็อกและระบบรับเรื่องร้องเรียน</div>
+            <div class="focus-item"><div class="focus-dot"></div>พัฒนาการตลาดออนไลน์: เพิ่มช่องทาง TikTok และ LINE OA</div>
+            <div class="focus-item"><div class="focus-dot"></div>วิเคราะห์ต้นทุนรายเมนูและปรับราคาให้สอดคล้องกำไร</div>
+          </div>
+        </div>
+
+        <!-- Right: Ranking + distribution -->
+        <div>
+          <!-- Top 10 ranking -->
+          <div class="pt-card">
+            <div class="pt-card-title">Top 10 Incubation Readiness <span class="an-card-link">ดูทั้งหมด →</span></div>
+            <div class="pt-rank-row"><div class="pt-rank-num rank-1">1</div><div><div class="pt-rank-name">บ้านริมน้ำ จันทบุรี</div><div class="pt-rank-prov">จันทบุรี</div></div><div><div class="pt-rank-score">93.12</div><span class="pt-rank-badge inc-pass">ผ่าน</span></div></div>
+            <div class="pt-rank-row"><div class="pt-rank-num rank-2">2</div><div><div class="pt-rank-name">คัวทะเลสด</div><div class="pt-rank-prov">ชลบุรี</div></div><div><div class="pt-rank-score">91.45</div><span class="pt-rank-badge inc-pass">ผ่าน</span></div></div>
+            <div class="pt-rank-row"><div class="pt-rank-num rank-3">3</div><div><div class="pt-rank-name">สวนริมสุข Cafe</div><div class="pt-rank-prov">ระยอง</div></div><div><div class="pt-rank-score">90.80</div><span class="pt-rank-badge inc-pass">ผ่าน</span></div></div>
+            <div class="pt-rank-row"><div class="pt-rank-num rank-other">4</div><div><div class="pt-rank-name">ตราดซีฟู้ด</div><div class="pt-rank-prov">ตราด</div></div><div><div class="pt-rank-score">89.50</div><span class="pt-rank-badge inc-pass">ผ่าน</span></div></div>
+            <div class="pt-rank-row" style="background:#FFF0E5;border-radius:6px;padding:5px 4px;"><div class="pt-rank-num rank-other" style="background:#F17128;">5</div><div><div class="pt-rank-name" style="color:#F17128;font-weight:700;">บ้านวิม่า จันทบุรี</div><div class="pt-rank-prov">จันทบุรี ← ร้านนี้</div></div><div><div class="pt-rank-score">80.05</div><span class="pt-rank-badge inc-cond">มีเงื่อนไข</span></div></div>
+            <div class="pt-rank-row"><div class="pt-rank-num rank-other">6</div><div><div class="pt-rank-name">ฉะเชิงเทรา กูร์เมต์</div><div class="pt-rank-prov">ฉะเชิงเทรา</div></div><div><div class="pt-rank-score">88.91</div><span class="pt-rank-badge inc-pass">ผ่าน</span></div></div>
+            <div class="pt-rank-row"><div class="pt-rank-num rank-other">7</div><div><div class="pt-rank-name">ครัวริมคลอง</div><div class="pt-rank-prov">จันทบุรี</div></div><div><div class="pt-rank-score">87.34</div><span class="pt-rank-badge inc-pass">ผ่าน</span></div></div>
+            <div class="pt-rank-row"><div class="pt-rank-num rank-other">8</div><div><div class="pt-rank-name">ข้าวต้มเรือ ระยอง</div><div class="pt-rank-prov">ระยอง</div></div><div><div class="pt-rank-score">85.71</div><span class="pt-rank-badge inc-pass">ผ่าน</span></div></div>
+            <div class="pt-rank-row"><div class="pt-rank-num rank-other">9</div><div><div class="pt-rank-name">เม็ดทราย ซีไซด์</div><div class="pt-rank-prov">ชลบุรี</div></div><div><div class="pt-rank-score">84.22</div><span class="pt-rank-badge inc-pass">ผ่าน</span></div></div>
+            <div class="pt-rank-row"><div class="pt-rank-num rank-other">10</div><div><div class="pt-rank-name">บ้านสวนเพลินใจ</div><div class="pt-rank-prov">ปราจีนบุรี</div></div><div><div class="pt-rank-score">83.60</div><span class="pt-rank-badge inc-pass">ผ่าน</span></div></div>
+          </div>
+
+          <!-- Score distribution -->
+          <div class="pt-card">
+            <div class="pt-card-title">การกระจายคะแนน (T1) <span class="an-card-sub">Score Distribution</span></div>
+            <div class="dist-bar-row"><div class="dist-bar-label"><span class="zone-pill zone-model" style="font-size:8.5px;">Model 85+</span></div><div class="dist-bar-track"><div class="dist-bar-fill" style="width:9.7%;background:#7b1fa2;"></div></div><div class="dist-bar-count">17 ร้าน</div></div>
+            <div class="dist-bar-row"><div class="dist-bar-label"><span class="zone-pill zone-growth" style="font-size:8.5px;">Growth 75+</span></div><div class="dist-bar-track"><div class="dist-bar-fill" style="width:17.6%;background:#1976d2;"></div></div><div class="dist-bar-count">31 ร้าน</div></div>
+            <div class="dist-bar-row"><div class="dist-bar-label"><span class="zone-pill zone-improve" style="font-size:8.5px;">Improve 60+</span></div><div class="dist-bar-track"><div class="dist-bar-fill" style="width:37.5%;background:#4caf50;"></div></div><div class="dist-bar-count">66 ร้าน</div></div>
+            <div class="dist-bar-row"><div class="dist-bar-label"><span class="zone-pill zone-survival" style="font-size:8.5px;">Survival 40+</span></div><div class="dist-bar-track"><div class="dist-bar-fill" style="width:25%;background:#ff9800;"></div></div><div class="dist-bar-count">44 ร้าน</div></div>
+            <div class="dist-bar-row"><div class="dist-bar-label"><span class="zone-pill zone-red" style="font-size:8.5px;">Red 0–39</span></div><div class="dist-bar-track"><div class="dist-bar-fill" style="width:10.2%;background:#f44336;"></div></div><div class="dist-bar-count">18 ร้าน</div></div>
+          </div>
+
+          <!-- Province comparison -->
+          <div class="pt-card">
+            <div class="pt-card-title">คะแนนเฉลี่ยรายจังหวัด</div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <div style="display:flex;align-items:center;gap:6px;font-size:10px;"><div style="width:60px;color:#555;">จันทบุรี</div><div style="flex:1;height:7px;background:#f0f0f0;border-radius:3px;overflow:hidden;"><div style="width:73.9%;height:100%;background:#F17128;border-radius:3px;"></div></div><span style="font-weight:700;color:#F17128;">73.9</span></div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:10px;"><div style="width:60px;color:#555;">ชลบุรี</div><div style="flex:1;height:7px;background:#f0f0f0;border-radius:3px;overflow:hidden;"><div style="width:72.1%;height:100%;background:#7B1FA2;border-radius:3px;"></div></div><span style="font-weight:700;color:#7B1FA2;">72.1</span></div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:10px;"><div style="width:60px;color:#555;">ระยอง</div><div style="flex:1;height:7px;background:#f0f0f0;border-radius:3px;overflow:hidden;"><div style="width:60.3%;height:100%;background:#1976d2;border-radius:3px;"></div></div><span style="font-weight:700;color:#1976d2;">60.3</span></div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:10px;"><div style="width:60px;color:#555;">ตราด</div><div style="flex:1;height:7px;background:#f0f0f0;border-radius:3px;overflow:hidden;"><div style="width:59.4%;height:100%;background:#4caf50;border-radius:3px;"></div></div><span style="font-weight:700;color:#4caf50;">59.4</span></div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:10px;"><div style="width:60px;color:#555;">ฉะเชิงเทรา</div><div style="flex:1;height:7px;background:#f0f0f0;border-radius:3px;overflow:hidden;"><div style="width:70.4%;height:100%;background:#9E9E9E;border-radius:3px;"></div></div><span style="font-weight:700;color:#9E9E9E;">70.4</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- end page-pitching -->
+
+  <!-- ===== PAGE: RESTAURANT PROFILES ===== -->
+  <div id="page-restaurant-profiles" class="page-wrap">
+    <div class="rp-wrap">
+      <!-- Top bar -->
+      <div class="rp-topbar">
+        <div>
+          <div class="rp-topbar-title">ข้อมูลร้านอาหาร</div>
+          <div class="rp-topbar-sub">Restaurant Profiles</div>
+        </div>
+        <div class="rp-search">
+          <span class="rp-search-icon">🔍</span>
+          <input type="text" placeholder="ค้นหาชื่อร้าน, เจ้าของ, เบอร์โทร..." oninput="rpFilter()" id="rpSearchInput"/>
+        </div>
+        <div class="rp-filter-group">
+          <div class="rp-filter-label">จังหวัด</div>
+          <select id="rpProvFilter" onchange="rpFilter()" style="font-size:12px;padding:5px 8px;">
+            <option value="">ทั้งหมด</option>
+            <option>จันทบุรี</option><option>ชลบุรี</option><option>ระยอง</option>
+            <option>ตราด</option><option>ฉะเชิงเทรา</option><option>ปราจีนบุรี</option><option>สระแก้ว</option>
+          </select>
+        </div>
+        <div class="rp-filter-group">
+          <div class="rp-filter-label">ประเภทร้าน</div>
+          <select id="rpTypeFilter" onchange="rpFilter()" style="font-size:12px;padding:5px 8px;">
+            <option value="">ทั้งหมด</option>
+            <option>อาหารไทย</option><option>อาหารทะเล</option>
+            <option>คาเฟ่</option><option>คาเฟ่/เบเกอรี่</option>
+          </select>
+        </div>
+        <div class="rp-filter-group">
+          <div class="rp-filter-label">สถานะ</div>
+          <select id="rpStatusFilter" onchange="rpFilter()" style="font-size:12px;padding:5px 8px;">
+            <option value="">ทั้งหมด</option>
+            <option>ประเมิน T1 แล้ว</option><option>ประเมิน T0 แล้ว</option>
+            <option>ผ่านเข้ารอบ</option><option>ลงทะเบียนแล้ว</option>
+          </select>
+        </div>
+        <button class="btn-add-rest">＋ เพิ่มร้านอาหาร</button>
+      </div>
+
+      <!-- Body: table + detail -->
+      <div class="rp-body">
+        <!-- Table -->
+        <div class="rp-table-area">
+          <div class="rp-table-wrap">
+            <table class="rpt-main">
+              <thead>
+                <tr>
+                  <th style="min-width:160px;">ชื่อร้าน</th>
+                  <th>จังหวัด</th>
+                  <th>ประเภท</th>
+                  <th style="min-width:110px;">สถานะ</th>
+                  <th>คะแนนล่าสุด</th>
+                  <th style="min-width:100px;">ผู้ประเมิน</th>
+                  <th style="width:80px;">การจัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="rpTableBody"></tbody>
+            </table>
+          </div>
+          <div class="rp-pagination">
+            <div class="rpg-info" id="rpPagInfo">แสดง 1 – 8 จาก 167 ร้าน</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="rpg-btns" id="rpPagBtns">
+                <div class="rpg-btn">‹</div>
+                <div class="rpg-btn active">1</div>
+                <div class="rpg-btn">2</div><div class="rpg-btn">3</div>
+                <div class="rpg-btn">4</div><div class="rpg-btn">5</div>
+                <div class="rpg-dots">…</div>
+                <div class="rpg-btn">21</div>
+                <div class="rpg-btn">›</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:4px;font-size:10.5px;color:#888;">
+                แสดง <select style="padding:2px 4px;font-size:10.5px;width:46px;"><option>10</option><option>25</option><option>50</option></select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail Panel -->
+        <div class="rp-detail" id="rpDetail">
+          <div class="rpd-placeholder">
+            <div class="rpd-placeholder-icon">🏪</div>
+            <div>เลือกร้านอาหารเพื่อดูรายละเอียด</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom KPI + Map -->
+      <div class="rp-bottom">
+        <div class="rp-kpi-mini-row">
+          <div class="rp-kpi-mini">
+            <div class="rp-kpi-mini-icon" style="background:#FFF0E5;">🏪</div>
+            <div>
+              <div class="rp-kpi-mini-val">312</div>
+              <div class="rp-kpi-mini-label">จำนวนร้านทั้งหมด</div>
+              <div class="rp-kpi-mini-sub" style="color:#F17128;">เป้าหมาย 400 ร้าน (78%)</div>
+            </div>
+          </div>
+          <div class="rp-kpi-mini">
+            <div class="rp-kpi-mini-icon" style="background:#fff3e0;">📋</div>
+            <div>
+              <div class="rp-kpi-mini-val">289</div>
+              <div class="rp-kpi-mini-label">ร้านที่ประเมินแล้ว T0</div>
+              <div class="rp-kpi-mini-sub" style="color:#ff9800;">92.63%</div>
+            </div>
+          </div>
+          <div class="rp-kpi-mini">
+            <div class="rp-kpi-mini-icon" style="background:#e8f5e9;">✅</div>
+            <div>
+              <div class="rp-kpi-mini-val">176</div>
+              <div class="rp-kpi-mini-label">ร้านที่ประเมินแล้ว T1</div>
+              <div class="rp-kpi-mini-sub" style="color:#4caf50;">56.41%</div>
+            </div>
+          </div>
+          <div class="rp-kpi-mini">
+            <div class="rp-kpi-mini-icon" style="background:#e3f2fd;">🏆</div>
+            <div>
+              <div class="rp-kpi-mini-val">48</div>
+              <div class="rp-kpi-mini-label">ร้านที่ผ่านเข้ารอบ</div>
+              <div class="rp-kpi-mini-sub" style="color:#1976d2;">15.38%</div>
+            </div>
+          </div>
+        </div>
+        <!-- Mini province map -->
+        <div style="flex-shrink:0;">
+          <div style="font-size:10px;font-weight:700;color:#333;margin-bottom:5px;">การกระจายตัวของร้านอาหารรายจังหวัด</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <!-- Simplified province bars -->
+            <div style="display:flex;flex-direction:column;gap:3px;">
+              <div style="display:flex;align-items:center;gap:5px;font-size:9.5px;">
+                <div style="width:8px;height:8px;border-radius:2px;background:#F17128;flex-shrink:0;"></div>
+                <span style="color:#555;min-width:70px;">จันทบุรี</span>
+                <div style="width:80px;height:7px;background:#f0f0f0;border-radius:3px;overflow:hidden;"><div style="width:31.4%;height:100%;background:#F17128;border-radius:3px;"></div></div>
+                <span style="color:#888;font-size:9px;">98 ร้าน (31.4%)</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:9.5px;">
+                <div style="width:8px;height:8px;border-radius:2px;background:#7B1FA2;flex-shrink:0;"></div>
+                <span style="color:#555;min-width:70px;">ชลบุรี</span>
+                <div style="width:80px;height:7px;background:#f0f0f0;border-radius:3px;overflow:hidden;"><div style="width:26.3%;height:100%;background:#7B1FA2;border-radius:3px;"></div></div>
+                <span style="color:#888;font-size:9px;">82 ร้าน (26.3%)</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:9.5px;">
+                <div style="width:8px;height:8px;border-radius:2px;background:#1976d2;flex-shrink:0;"></div>
+                <span style="color:#555;min-width:70px;">ระยอง</span>
+                <div style="width:80px;height:7px;background:#f0f0f0;border-radius:3px;overflow:hidden;"><div style="width:19.6%;height:100%;background:#1976d2;border-radius:3px;"></div></div>
+                <span style="color:#888;font-size:9px;">61 ร้าน (19.6%)</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:9.5px;">
+                <div style="width:8px;height:8px;border-radius:2px;background:#4caf50;flex-shrink:0;"></div>
+                <span style="color:#555;min-width:70px;">ตราด</span>
+                <div style="width:80px;height:7px;background:#f0f0f0;border-radius:3px;overflow:hidden;"><div style="width:12.2%;height:100%;background:#4caf50;border-radius:3px;"></div></div>
+                <span style="color:#888;font-size:9px;">38 ร้าน (12.2%)</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:9.5px;">
+                <div style="width:8px;height:8px;border-radius:2px;background:#9E9E9E;flex-shrink:0;"></div>
+                <span style="color:#555;min-width:70px;">ฉะเชิงเทรา</span>
+                <div style="width:80px;height:7px;background:#f0f0f0;border-radius:3px;overflow:hidden;"><div style="width:10.6%;height:100%;background:#9E9E9E;border-radius:3px;"></div></div>
+                <span style="color:#888;font-size:9px;">33 ร้าน (10.6%)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- end page-restaurant-profiles -->
+</main>
+
+<!-- EXPORT RIGHT PANEL -->
+<div class="right-panel" id="rightPanel">
+  <div class="panel-head"><div class="panel-title">การตั้งค่าส่งออกรายงาน</div><div class="panel-close" onclick="rptClosePanel()">✕</div></div>
+  <div class="panel-body">
+    <div class="panel-section">
+      <div class="panel-section-title">รายงานที่เลือก</div>
+      <div class="selected-report"><div class="sr-icon">📊</div><div class="sr-name" id="selectedReportName">รายงานสรุปภาพรวมโครงการ</div><div class="sr-change" onclick="rptClosePanel()">เปลี่ยนรายงาน</div></div>
+    </div>
+    <div class="panel-section">
+      <div class="panel-section-title">รูปแบบไฟล์</div>
+      <div class="format-group">
+        <div class="fmt-option sel-pdf" onclick="selFmt('pdf',this)"><div><span class="fmt-dot" style="background:#f44336;border-color:#f44336;"></span><span class="fmt-label" style="color:#f44336;">PDF</span></div><div class="fmt-sublabel">รายงานสมบูรณ์</div></div>
+        <div class="fmt-option" onclick="selFmt('xlsx',this)"><div><span class="fmt-dot"></span><span class="fmt-label" style="color:#4caf50;">Excel</span></div><div class="fmt-sublabel">XLSX / วิเคราะห์ต่อ</div></div>
+        <div class="fmt-option" onclick="selFmt('csv',this)"><div><span class="fmt-dot"></span><span class="fmt-label" style="color:#9c27b0;">CSV</span></div><div class="fmt-sublabel">ข้อมูลดิบ</div></div>
+      </div>
+    </div>
+    <div class="panel-section">
+      <div class="panel-section-title">ตัวเลือกหัวข้อ</div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box checked">✓</div><div class="check-text">รวมตารางข้อมูล</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box checked">✓</div><div class="check-text">รวมกราฟและแผนภูมิ</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box checked">✓</div><div class="check-text">รวมสรุปสำหรับผู้บริหาร</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-text">รวมรายละเอียดรายจังหวัด</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-text">รวมรายการ Red Flag</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><div class="check-text">รวมแผน IDP รายร้าน</div></div>
+    </div>
+    <div class="panel-section">
+      <div class="panel-section-title">ขอบเขตข้อมูล</div>
+      <div class="panel-field"><label>จังหวัด</label><select><option>ทั้งหมด</option><option>จันทบุรี</option><option>ระยอง</option><option>ตราด</option></select></div>
+      <div class="panel-field"><label>ช่วงวันที่</label><div class="date-range-row"><input type="text" value="01/04/2569"><span class="date-sep">—</span><input type="text" value="30/04/2569"></div></div>
+      <div class="panel-field"><label>กลุ่มร้านอาหาร</label><select><option>ทั้งหมด (50 ร้าน)</option><option>Top 20 (Incubation)</option><option>Red Zone เท่านั้น</option><option>Improve Zone ขึ้นไป</option></select></div>
+      <div class="panel-field"><label>รอบประเมิน</label><select><option>ทั้งหมด</option><option>T0 - Baseline</option><option>T1 - Post Camp</option><option>เปรียบเทียบ T0 vs T1</option></select></div>
+    </div>
+  </div>
+  <div class="panel-footer">
+    <div class="export-btns">
+      <button class="btn-exp-pdf" onclick="exportAction('PDF')">📄 ส่งออก PDF</button>
+      <button class="btn-exp-xlsx" onclick="exportAction('Excel')">📊 ส่งออก Excel</button>
+      <button class="btn-exp-csv" onclick="exportAction('CSV')">↗ ส่งออก CSV</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" style="position:fixed;bottom:24px;right:24px;background:#333;color:#fff;padding:10px 18px;border-radius:8px;font-size:12px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,0.2);z-index:9999;transform:translateY(80px);opacity:0;transition:all 0.3s;"></div>
+
+<script>
+// ===== ROUTER =====
+function navGo(el) {
+  if (el.classList.contains('soon')) { showToast('🔒 หน้านี้อยู่ระหว่างพัฒนา — เร็วๆ นี้'); return; }
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  const page = el.dataset.page;
+  if (page === 'overview') switchPage('overview');
+  else if (page === 'restaurant-profiles') { switchPage('restaurant-profiles'); rpInit(); }
+  else if (page === 'assessment') switchPage('assessment');
+  else if (page === 'reports') { switchPage('reports'); rptInit(); }
+  else if (page === 'analytics') switchPage('analytics');
+  else if (page === 'pitching') switchPage('pitching');
+  else { showToast('หน้านี้ยังไม่เปิดให้บริการ'); }
+}
+function switchPage(id) {
+  document.querySelectorAll('.page-wrap').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if (id !== 'reports') rptClosePanel();
+}
+
+// ===== ASSESSMENT DATA =====
+const DIMS = [
+  { id:1, name:"คุณภาพอาหารและนวัตกรรมเมนู", nameEn:"Food Quality & Menu Innovation", weight:12, icon:"🍽", startQ:1,
+    questions:["ร้านมีเมนูหลักที่ขายดีและลูกค้าจดจำได้ชัดเจน","รสชาติอาหารมีความสม่ำเสมอ","มีสูตรมาตรฐานหรือวิธีทำที่บันทึกไว้","วัตถุดิบหลักมีคุณภาพและควบคุมความสดได้","เมนูมีจุดเด่นหรืออัตลักษณ์เฉพาะของร้าน","มีการรับฟังความคิดเห็นลูกค้าเพื่อนำมาปรับเมนู","มีโอกาสพัฒนาเมนู Signature หรือเมนูใหม่เพื่อเพิ่มยอดขาย"],
+    scores:[3,2,2,3,3,2,2], statuses:['done','assessing','assessing','done','done','assessing','pending'],
+    notes:["เมนูชัดเจน จดจำได้ดี","รสชาติค่อนข้างคงที่","มีสูตรบางส่วน แต่ยังไม่ครบ","วัตถุดิบสดดี","เมนูมีเอกลักษณ์ท้องถิ่น","รับฟัง FB บ้าง","ยังไม่ได้ทำ Signature เด่น"],
+    suggests:["ทำ Menu Card มาตรฐาน","บันทึก SOP รสชาติ","จัดทำสูตรมาตรฐานครบ","เพิ่มระบบ FIFO","พัฒนา Story เมนู","ทำ Feedback Form สม่ำเสมอ","กำหนด Signature Dish 1-2 เมนู"] },
+  { id:2, name:"ความปลอดภัยอาหารและมาตรฐาน", nameEn:"Food Safety & Standards", weight:15, icon:"🛡", startQ:8,
+    questions:["พื้นที่ครัวสะอาด เป็นระเบียบ และแยกโซนเหมาะสม","มีการจัดเก็บวัตถุดิบสด แห้ง และปรุงสุกอย่างถูกสุขลักษณะ","เจ้าของร้านหรือพนักงานมีความรู้พื้นฐานด้านสุขอนามัยอาหาร","มีการควบคุมวันหมดอายุของวัตถุดิบ","อุปกรณ์ครัว ภาชนะ และพื้นที่บริการสะอาดพร้อมใช้งาน","ร้านมีใบอนุญาตหรือเอกสารที่เกี่ยวข้องกับการจำหน่ายอาหาร","มีแนวทางป้องกันความเสี่ยง เช่น อาหารเสีย ปนเปื้อน หรือข้อร้องเรียนด้านสุขภาพ"],
+    scores:[3,2,2,2,3,3,1], statuses:['done','assessing','assessing','assessing','done','done','fix'],
+    notes:["ครัวสะอาดดี แยกโซนชัด","จัดเก็บดีบางส่วน","ความรู้พื้นฐานพอใช้","ตรวจ Exp.Date บ้าง","ภาชนะสะอาด","มีใบอนุญาตครบ","ยังไม่มีขั้นตอนชัดเจน"],
+    suggests:["ติดป้ายระบุโซน","จัดระบบ FIFO สม่ำเสมอ","อบรม Food Safety ประจำปี","ติด Label วันรับ-หมดอายุ","กำหนด Cleaning Schedule","ต่ออายุเอกสารตรงเวลา","จัดทำ SOP รับมือปัญหาอาหาร"] },
+  { id:3, name:"แบรนด์และโมเดลธุรกิจ", nameEn:"Brand & Business Model", weight:10, icon:"🏷", startQ:15,
+    questions:["ร้านมีชื่อ แบรนด์ หรือภาพจำที่ชัดเจน","ร้านอธิบายได้ว่าลูกค้ามากินร้านนี้เพราะอะไร","กลุ่มลูกค้าเป้าหมายของร้านมีความชัดเจน","ร้านมีเรื่องเล่าที่เชื่อมโยงกับอาหาร ท้องถิ่น หรือเจ้าของร้าน","รูปแบบรายได้ของร้านชัดเจน เช่น หน้าร้าน เดลิเวอรี Catering หรือออกบูธ","ร้านมีแนวคิดในการต่อยอด เช่น สินค้าพร้อมขาย แพ็กเกจจิ้ง หรือแฟรนไชส์"],
+    scores:[3,2,2,2,3,1], statuses:['done','assessing','assessing','assessing','done','fix'],
+    notes:["ชื่อร้านจดจำได้ดี","อธิบายได้แต่ยังไม่ชัด","รู้กลุ่มลูกค้ากว้างๆ","มีเรื่องเล่าบ้าง","รายได้จากหน้าร้านหลัก","ยังไม่ได้คิดต่อยอด"],
+    suggests:["ออกแบบ Logo/Brand Identity","สร้าง Value Proposition","ทำ Persona ลูกค้า","พัฒนา Brand Story","เพิ่มช่องทาง Delivery","วางแผน Product Extension"] },
+  { id:4, name:"การตลาดและฐานลูกค้า", nameEn:"Marketing & Customer Base", weight:13, icon:"📣", startQ:21,
+    questions:["ร้านมีช่องทางออนไลน์ เช่น Facebook, TikTok, LINE OA หรือ Google Maps","ข้อมูลร้านออนไลน์ถูกต้อง เช่น เวลาเปิด-ปิด เบอร์โทร พิกัด และเมนู","มีภาพอาหารหรือคอนเทนต์ที่ช่วยกระตุ้นยอดขาย","ร้านมีฐานลูกค้าประจำหรือมีวิธีทำให้ลูกค้ากลับมาซื้อซ้ำ","มีการทำโปรโมชันหรือกิจกรรมการตลาดอย่างเหมาะสม","ร้านรู้ว่าช่องทางใดสร้างยอดขายดีที่สุด","ร้านมีโอกาสขยายตลาดใหม่ เช่น เดลิเวอรี ออกงาน หน่วยงาน โรงแรม หรือการท่องเที่ยว"],
+    scores:[3,3,2,2,2,1,2], statuses:['done','done','assessing','assessing','assessing','fix','assessing'],
+    notes:["มี FB Page และ Google Maps","ข้อมูลออนไลน์ค่อนข้างครบ","รูปอาหารบ้าง ไม่สม่ำเสมอ","ลูกค้าประจำมีบ้าง","โปรโมชันตามเทศกาล","ยังไม่วิเคราะห์ช่องทาง","มีโอกาสออกงาน OTOP"],
+    suggests:["เปิด TikTok / LINE OA","Update ข้อมูลสม่ำเสมอ","วาง Content Calendar","ทำ Loyalty Program","วางแผนโปรโมชันล่วงหน้า","ติดตาม Insight ช่องทาง","สมัครออกงานแสดงสินค้า"] },
+  { id:5, name:"การเงิน ต้นทุน และกำไร", nameEn:"Finance, Cost & Profit", weight:20, icon:"💰", startQ:28,
+    questions:["ร้านรู้ต้นทุนวัตถุดิบของเมนูหลัก","ร้านตั้งราคาขายโดยอิงต้นทุนและกำไร","ร้านแยกเงินร้านกับเงินส่วนตัวออกจากกัน","มีการบันทึกรายรับ-รายจ่ายอย่างสม่ำเสมอ","ร้านรู้ยอดขายเฉลี่ยต่อวันและต่อเดือน","ร้านรู้ว่าเมนูใดกำไรดี และเมนูใดควรปรับราคา","ร้านมีเงินหมุนเวียนเพียงพอสำหรับวัตถุดิบ ค่าแรง ค่าเช่า และค่าใช้จ่ายจำเป็น"],
+    scores:[2,2,1,1,2,1,2], statuses:['assessing','assessing','fix','fix','assessing','fix','assessing'],
+    notes:["รู้ต้นทุนคร่าวๆ","ตั้งราคาจากประสบการณ์","ยังไม่แยกเงินชัดเจน","บันทึกไม่สม่ำเสมอ","รู้ยอดขายประมาณ","ไม่วิเคราะห์กำไรรายเมนู","เงินหมุนเวียนพอประมาณ"],
+    suggests:["คำนวณ Food Cost % ทุกเมนู","ทำ Pricing Matrix","เปิดบัญชีแยกร้าน","ใช้ App บันทึกบัญชี","ทำรายงานยอดขายประจำวัน","วิเคราะห์ Margin รายเมนู","วางแผนสำรองเงินทุน 3 เดือน"] },
+  { id:6, name:"ระบบปฏิบัติการร้านและการบริการ", nameEn:"Operations & Service", weight:18, icon:"⚙️", startQ:35,
+    questions:["ร้านมีขั้นตอนการเปิดร้าน-ปิดร้านที่ชัดเจน","มีการแบ่งหน้าที่ของเจ้าของร้าน พนักงานครัว และพนักงานบริการ","เวลาการออกอาหารเหมาะสม ไม่ทำให้ลูกค้ารอนานเกินไป","มีมาตรฐานการบริการ เช่น ต้อนรับ รับออเดอร์ เสิร์ฟอาหาร และรับชำระเงิน","มีระบบจัดการสต็อกวัตถุดิบเพื่อลดของเสีย","ร้านรับมือช่วงลูกค้าเยอะได้โดยคุณภาพไม่ตก","มีระบบจัดการข้อร้องเรียนของลูกค้า"],
+    scores:[2,2,3,2,1,2,1], statuses:['assessing','assessing','done','assessing','fix','assessing','fix'],
+    notes:["เปิด-ปิดร้านแบบปากเปล่า","แบ่งหน้าที่ไม่เป็นทางการ","เวลาออกอาหารดี","มีมาตรฐานบ้าง","สต็อกแบบสังเกตด้วยสายตา","รับมือได้พอประมาณ","ไม่มีระบบรับเรื่องร้องเรียน"],
+    suggests:["จัดทำ Checklist เปิด-ปิดร้าน","ทำ Job Description","ตั้ง Timer มาตรฐาน","เขียน Service Flow","ใช้ระบบ Stock Card","ฝึก Rush Hour Management","ทำ Complaint Form"] },
+  { id:7, name:"เครือข่าย วัตถุดิบ และห่วงโซ่อุปทาน", nameEn:"Network, Supply & Chain", weight:5, icon:"🔗", startQ:42,
+    questions:["ร้านมีแหล่งวัตถุดิบประจำที่เชื่อถือได้","มีการใช้วัตถุดิบท้องถิ่นหรือวัตถุดิบเด่นของพื้นที่","ร้านมีซัพพลายเออร์สำรอง หากวัตถุดิบหลักขาดตลาด","มีความร่วมมือกับชุมชน กลุ่มเกษตรกร หรือผู้ผลิตท้องถิ่น","ร้านมีความเชื่อมโยงกับหน่วยงาน ภาคี หรือเครือข่ายธุรกิจในพื้นที่"],
+    scores:[3,3,2,1,2], statuses:['done','done','assessing','fix','assessing'],
+    notes:["ซื้อตลาดสดประจำ","ใช้ผักท้องถิ่นดี","มีร้านสำรองบ้าง","ยังไม่ได้ทำ","รู้จักเครือข่ายบ้าง"],
+    suggests:["ทำสัญญาซื้อขายประจำ","พัฒนาเมนู Local Ingredients","ลงทะเบียน Supplier สำรอง 2 ราย","เข้าร่วมกลุ่มเกษตรกร","เข้าร่วม Network ธุรกิจ"] },
+  { id:8, name:"ความพร้อมเติบโตและเข้าร่วมโครงการ", nameEn:"Growth Readiness", weight:7, icon:"🚀", startQ:47,
+    questions:["เจ้าของร้านมีความตั้งใจและเปิดรับการเปลี่ยนแปลง","ร้านพร้อมให้ทีมโครงการลงพื้นที่ ตรวจประเมิน และให้คำปรึกษาแบบ 1-on-1","ร้านสามารถจัดเตรียมข้อมูลสำคัญ เช่น รูปเมนู รูปร้าน ยอดขาย ต้นทุน และปัญหาหลัก","ร้านมีเป้าหมายการพัฒนาภายใน 3–6 เดือน เช่น เพิ่มยอดขาย ลดต้นทุน ปรับเมนู ทำแบรนด์ หรือขยายช่องทางขาย"],
+    scores:[4,4,3,3], statuses:['done','done','done','assessing'],
+    notes:["มีความตั้งใจสูง","พร้อมรับทีมลงพื้นที่","ข้อมูลค่อนข้างพร้อม","มีเป้าหมาย แต่ยังกว้าง"],
+    suggests:["ยึดทัศนคตินี้ตลอดโครงการ","นัดวันลงพื้นที่ล่วงหน้า","รวบรวม Data เพิ่ม","กำหนด OKR ชัดเจน 1-3 ข้อ"] }
+];
+
+let currentDim = 1;
+const t1Completed = true;
+
+function renderDimList() {
+  const c = document.getElementById('dimList');
+  c.innerHTML = DIMS.map(d => {
+    const mx = d.questions.length*4, sm = d.scores.reduce((a,b)=>a+b,0), pct = Math.round(sm/mx*100);
+    return `<div class="dim-item ${d.id===currentDim?'active':''}" onclick="selectDim(${d.id})">
+      <div class="dim-num">${d.id}</div>
+      <div class="dim-info"><div class="dim-name">${d.name}</div><div class="dim-name-en">${d.nameEn}</div></div>
+      <div class="dim-right"><div class="dim-pct">${pct}%</div><div class="dim-weight">น้ำหนัก ${d.weight}%</div>
+        <div class="dim-bar-mini"><div class="dim-bar-mini-fill" style="width:${pct}%"></div></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderAssessTable() {
+  const d = DIMS[currentDim-1];
+  const mx = d.questions.length*4, sm = d.scores.reduce((a,b)=>a+b,0), pct = Math.round(sm/mx*100);
+  const stMap = {
+    done:       '<span class="st-badge st-done">✅ เสร็จสิ้น</span>',
+    assessing:  '<span class="st-badge st-assessing">🔄 กำลังประเมิน</span>',
+    fix:        '<span class="st-badge st-fix">⚠ ต้องแก้ไข</span>',
+    pending:    '<span class="st-badge st-pending">⏸ ยังไม่ประเมิน</span>',
+    waiting:    '<span class="st-badge" style="background:#e3f2fd;color:#1976d2;border:1px solid #1976d2;">🕐 รอตรวจ</span>',
+    evidence:   '<span class="st-badge" style="background:#f3e5f5;color:#7b1fa2;border:1px solid #7b1fa2;">📎 รอหลักฐาน</span>'
+  };
+  const lbl = ['ไม่มี','มีบ้าง','พื้นฐาน','ดี','ดีมาก'];
+  const rows = d.questions.map((q,i) => {
+    const sc = d.scores[i], qn = d.startQ+i;
+    const btns = `<div class="score-btn-group"><div class="sbg-row">${[0,1,2,3,4].map(v=>`<div class="sb${sc===v?' active-'+v:''}" onclick="updateScore(${d.id},${i},${v},this.parentNode.parentNode)" title="${v}-${lbl[v]}">${v}</div>`).join('')}</div><div class="sbg-label">${lbl[sc]}</div></div>`;
+    const file = sc>0 ? `<div class="file-chip">📄 หลักฐาน_${qn}.pdf</div><div class="file-sz">รอแนบ</div><div class="file-acts"><div class="file-btn">⬇</div><div class="file-btn">🗑</div></div>` : `<div class="upload-btn">⬆ แนบไฟล์</div>`;
+    return `<tr><td class="td-num">${qn}</td><td><div class="crit-text">${q}</div></td><td>${btns}</td><td>${file}</td><td><textarea class="note-input" rows="2">${d.notes[i]||''}</textarea></td><td><div class="suggest-text">${d.suggests[i]||''}</div></td><td>${stMap[d.statuses[i]]||stMap.pending}</td></tr>`;
+  }).join('');
+  document.getElementById('assessCard').innerHTML = `
+    <div class="assess-head">
+      <div class="assess-head-left"><div class="assess-icon">${d.icon}</div>
+        <div><div class="assess-title">มิติที่ ${d.id}: ${d.name} / ${d.nameEn}</div>
+          <div class="assess-desc">ประเมิน ${d.questions.length} ข้อ (ข้อที่ ${d.startQ}–${d.startQ+d.questions.length-1}) | น้ำหนัก ${d.weight}% | คะแนน 0–4 ต่อข้อ | คะแนนเต็ม ${mx}</div></div></div>
+      <div class="assess-meta"><div class="meta-pill">น้ำหนัก ${d.weight}%</div>
+        <div><div class="score-now">คะแนนมิตินี้ (raw)</div><div><span class="score-now-val">${sm}</span><span class="score-now-max"> / ${mx}</span></div><div class="score-now">(${pct}%)</div></div></div>
+    </div>
+    <div class="assess-table-wrap"><table class="at"><thead><tr><th>ข้อ</th><th>ตัวดำเนินการ / เกณฑ์ประเมิน</th><th style="min-width:136px;">คะแนน (0–4)</th><th>หลักฐาน/ไฟล์</th><th>บันทึกผู้ประเมิน</th><th>ข้อเสนอแนะ</th><th>สถานะ</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="assess-footer"><div class="footer-score-area"><div class="label">คะแนนรวมมิตินี้ (raw score)</div><div class="score" id="dimRawScore">${sm} <span style="font-size:12px;color:#bbb;font-weight:400;">/ ${mx} คะแนน (${pct}%)</span></div><div class="footer-meta">บันทึกล่าสุด 20 พ.ค. 2569 14:35 โดย นางสาวศิริวรรณ จันทร์ดี</div></div>
+    <div style="display:flex;gap:7px;"><button class="btn-draft">💾 บันทึกร่าง</button><button class="btn-submit">บันทึกและถัดไป →</button></div></div>`;
+}
+
+function updateScore(dimId, qIdx, val, groupEl) {
+  DIMS[dimId-1].scores[qIdx] = val;
+  const lbl = ['ไม่มี','มีบ้าง','พื้นฐาน','ดี','ดีมาก'];
+  groupEl.querySelectorAll('.sb').forEach((b,v) => b.className = 'sb'+(v===val?' active-'+v:''));
+  const l = groupEl.querySelector('.sbg-label'); if(l) l.textContent = lbl[val];
+  refreshScores();
+}
+function refreshScores() {
+  const d = DIMS[currentDim-1], mx = d.questions.length*4, sm = d.scores.reduce((a,b)=>a+b,0), pct = Math.round(sm/mx*100);
+  const el = document.getElementById('dimRawScore');
+  if(el) el.innerHTML = `${sm} <span style="font-size:12px;color:#bbb;font-weight:400;">/ ${mx} คะแนน (${pct}%)</span>`;
+  let total = 0;
+  DIMS.forEach(dim => { const m=dim.questions.length*4, s=dim.scores.reduce((a,b)=>a+b,0); total+=(s/m)*dim.weight; });
+  document.getElementById('totalScore').innerHTML = total.toFixed(2)+'<span style="font-size:10px;color:#bbb;font-weight:400;">/100</span>';
+}
+function selectDim(id) { currentDim=id; renderDimList(); renderAssessTable(); }
+function selectRound(el, round) {
+  if(round==='T0'||round==='T1') setRound(el,round);
+  else if(t1Completed) setRound(el,round); else showLock();
+}
+function setRound(el, round) {
+  document.querySelectorAll('.round-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const p = {T0:100,T1:62,T2:40,T3:20,T4:5}[round]||62;
+  document.getElementById('progressFill').style.width=p+'%';
+  document.getElementById('progressPct').textContent=p+'%';
+}
+function showLock() { document.getElementById('lockOverlay').classList.add('show'); }
+function closeLock() { document.getElementById('lockOverlay').classList.remove('show'); }
+document.getElementById('lockOverlay').addEventListener('click', e=>{ if(e.target===document.getElementById('lockOverlay')) closeLock(); });
+
+// ===== REPORTS DATA =====
+const RPT_TEMPLATES = [
+  {name:"รายงานสรุปภาพรวมโครงการ",icon:"📊",bg:"#FFF0E5",date:"29 เม.ย. 2569"},
+  {name:"รายงานข้อมูลร้านอาหาร",icon:"🏪",bg:"#FFF0E5",date:"30 เม.ย. 2569"},
+  {name:"รายงานผลการประเมิน T0/T1",icon:"✅",bg:"#e8f5e9",date:"30 เม.ย. 2569"},
+  {name:"รายงาน Red Flag",icon:"🚩",bg:"#ffebee",date:"27 เม.ย. 2569"},
+  {name:"รายงานคะแนน Pitching",icon:"⭐",bg:"#fff8e1",date:"27 เม.ย. 2569"},
+  {name:"รายงาน Top 20 Incubation",icon:"🏆",bg:"#fff8e1",date:"30 เม.ย. 2569"},
+  {name:"รายงาน IDP",icon:"📋",bg:"#e3f2fd",date:"29 เม.ย. 2569"},
+  {name:"รายงานรายจังหวัด",icon:"📍",bg:"#f3e5f5",date:"28 เม.ย. 2569"}
+];
+const RPT_ROWS = [
+  {name:"รายงานสรุปภาพรวมโครงการ_เม.ย.2569",type:"สรุปโครงการ",fmt:"PDF",date:"30 เม.ย. 2569 09:30",user:"ศิริวรรณ จ.",st:"done"},
+  {name:"รายงานข้อมูลร้านอาหาร_จังหวัดชลบุรี",type:"ข้อมูลร้านอาหาร",fmt:"XLSX",date:"30 เม.ย. 2569 09:15",user:"ศิริวรรณ จ.",st:"done"},
+  {name:"รายงานผลการประเมิน T0 T1_เม.ย.2569",type:"ผลการประเมิน T0/T1",fmt:"PDF",date:"30 เม.ย. 2569 08:50",user:"ศิริวรรณ จ.",st:"done"},
+  {name:"รายงาน Red Flag_เม.ย.2569",type:"Red Flag",fmt:"PDF",date:"29 เม.ย. 2569 16:40",user:"กนกวรรณ ป.",st:"done"},
+  {name:"รายงานคะแนนพิชชิ่ง_เม.ย.2569",type:"คะแนน Pitching",fmt:"XLSX",date:"29 เม.ย. 2569 15:20",user:"ศิริวรรณ จ.",st:"done"},
+  {name:"Top20_ร้านอาหาร_โครงการ2_2569",type:"Top 20",fmt:"PDF",date:"29 เม.ย. 2569 14:05",user:"ศิริวรรณ จ.",st:"process"},
+  {name:"รายงาน IDP_จังหวัดจันทบุรี",type:"IDP",fmt:"XLSX",date:"29 เม.ย. 2569 11:30",user:"ศิริวรรณ จ.",st:"done"},
+  {name:"รายงานรายจังหวัด_ภาคตะวันออก",type:"รายจังหวัด",fmt:"PDF",date:"28 เม.ย. 2569 17:10",user:"กนกวรรณ ป.",st:"done"}
+];
+const RPT_ACTS = [
+  {time:"30 เม.ย. 2569 09:45",action:"ดาวน์โหลดรายงาน",name:"รายงานข้อมูลร้านอาหาร_จังหวัดชลบุรี",fmt:"Excel",user:"ศิริวรรณ จ.",st:"done"},
+  {time:"30 เม.ย. 2569 08:00",action:"กำหนดส่งออกอัตโนมัติ",name:"รายงานสรุปภาพรวมโครงการ (รายสัปดาห์)",fmt:"PDF",user:"ระบบอัตโนมัติ",st:"process"},
+  {time:"29 เม.ย. 2569 17:30",action:"ดาวน์โหลดรายงาน",name:"รายงานคะแนนพิชชิ่ง_เม.ย.2569",fmt:"Excel",user:"กนกวรรณ ป.",st:"done"}
+];
+
+let rptInited = false;
+function rptInit() {
+  if(rptInited) return; rptInited = true;
+  // templates
+  document.getElementById('templateGrid').innerHTML = RPT_TEMPLATES.map((t,i)=>`
+    <div class="tpl-card" id="tpl-${i}" onclick="rptSelTpl(${i})">
+      <div class="tpl-icon" style="background:${t.bg};">${t.icon}</div>
+      <div class="tpl-name">${t.name}</div>
+      <div class="tpl-date">ไปล่าสุด ${t.date}</div>
+      <div class="tpl-badges">
+        <span class="badge-pdf" onclick="event.stopPropagation();rptQuickExport('PDF','${t.name}')">PDF</span>
+        <span class="badge-xlsx" onclick="event.stopPropagation();rptQuickExport('XLSX','${t.name}')">XLSX</span>
+      </div>
+    </div>`).join('');
+  // table
+  const fc = {PDF:'fmt-pdf',XLSX:'fmt-xlsx',CSV:'fmt-csv'};
+  const sc = {done:'<span class="rpt-st-done">เสร็จสมบูรณ์</span>',process:'<span class="rpt-st-process">กำลังดำเนินการ</span>',pending:'<span class="rpt-st-pending">รอดำเนินการ</span>'};
+  document.getElementById('reportTableBody').innerHTML = RPT_ROWS.map(r=>`
+    <tr><td><span style="font-weight:500;color:#333;">${r.name}</span></td>
+    <td><span class="type-tag">${r.type}</span></td>
+    <td><span class="${fc[r.fmt]||'fmt-pdf'}">${r.fmt}</span></td>
+    <td style="color:#666;">${r.date}</td><td style="color:#555;">${r.user}</td>
+    <td>${sc[r.st]||sc.pending}</td>
+    <td><div class="dl-btn" onclick="rptQuickExport('${r.fmt}','${r.name}')">⬇</div></td>
+    <td><button class="more-btn">⋮</button></td></tr>`).join('');
+  // activity
+  const af = {PDF:'fmt-pdf',Excel:'fmt-xlsx',CSV:'fmt-csv'};
+  document.getElementById('activityList').innerHTML = RPT_ACTS.map(a=>`
+    <div class="activity-row">
+      <div class="act-time">${a.time}</div><div class="act-action">${a.action}</div>
+      <div class="act-name">${a.name}</div>
+      <div class="act-fmt"><span class="${af[a.fmt]||''}">${a.fmt}</span></div>
+      <div class="act-user">${a.user}</div>
+      <div class="act-status">${a.st==='done'?'<span class="rpt-st-done">สำเร็จ</span>':'<span class="rpt-st-process">กำลังดำเนินการ</span>'}</div>
+      <div><div class="dl-btn">⬇</div></div>
+    </div>`).join('');
+  rptSelTpl(0);
+}
+function rptSelTpl(i) {
+  document.querySelectorAll('.tpl-card').forEach(c=>c.classList.remove('selected'));
+  const el = document.getElementById('tpl-'+i);
+  if(el) el.classList.add('selected');
+  rptOpenPanel(RPT_TEMPLATES[i].name);
+}
+function rptOpenPanel(name) {
+  document.getElementById('rightPanel').classList.add('open');
+  document.getElementById('rptBody').classList.add('panel-open');
+  if(name) document.getElementById('selectedReportName').textContent = name;
+}
+function rptClosePanel() {
+  document.getElementById('rightPanel').classList.remove('open');
+  const b = document.getElementById('rptBody'); if(b) b.classList.remove('panel-open');
+  document.querySelectorAll('.tpl-card').forEach(c=>c.classList.remove('selected'));
+}
+function rptQuickExport(fmt,name) { showToast('✅ กำลังสร้าง '+fmt+': '+name.substring(0,30)+'...'); }
+function exportAction(fmt) { showToast('✅ ส่งออก '+fmt+' สำเร็จ: '+document.getElementById('selectedReportName').textContent.substring(0,28)+'...'); rptClosePanel(); }
+function selFmt(fmt,el) {
+  document.querySelectorAll('.fmt-option').forEach(o=>o.className='fmt-option');
+  el.classList.add('sel-'+fmt);
+}
+function toggleCheck(el) {
+  const b = el.querySelector('.check-box');
+  b.classList.toggle('checked'); b.textContent = b.classList.contains('checked')?'✓':'';
+}
+
+// ===== SHARED =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.opacity='1'; t.style.transform='translateY(0)';
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateY(80px)'; }, 2800);
+}
+
+function anToggle(el, mode) {
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const main = document.querySelector('.main');
+  const icon = document.getElementById('collapseIcon');
+  const collapsed = sb.classList.toggle('collapsed');
+  main.classList.toggle('collapsed', collapsed);
+  icon.textContent = collapsed ? '▶' : '◀';
+}
+
+// INIT
+renderDimList();
+renderAssessTable();
+ovInit();
+
+// ===== OVERVIEW INIT =====
+function ovInit() {
+  // already rendered statically
+}
+
+// ===== RESTAURANT PROFILES DATA =====
+const RP_STORES = [
+  { id:1, name:'บ้านริมน้ำ จันทบุรี', prov:'จันทบุรี', type:'อาหารไทย',
+    status:'ประเมิน T1 แล้ว', score:92.45, assessor:'อ.กัณฑ์กัส', date:'20 พ.ค. 2569',
+    owner:'คุณสมชาย ริมเอิน', tel:'081-234-5678', email:'banrimnam.cbt@gmail.com',
+    addr:'12/3 หมู่ 2 ต.วัดใหม่ อ.เมืองจันทบุรี จ.จันทบุรี 22000',
+    sales:'120,000 – 150,000', problem:'การบริหารต้นทุนวัตถุดิบสูง, การตลาดออนไลน์ยังน้อย',
+    goal:'เพิ่มยอดขาย 20% ภายใน 6 เดือน, พัฒนามาตรฐานบริการ',
+    t0:'18 เม.ย. 2569', t1:'20 พ.ค. 2569', reg:'12 มี.ค. 2569', icon:'🍜' },
+  { id:2, name:'คัวทะเลสด', prov:'ชลบุรี', type:'อาหารทะเล',
+    status:'ประเมิน T0 แล้ว', score:91.12, assessor:'อ.พิสุทธิ์', date:'18 พ.ค. 2569',
+    owner:'คุณวิชัย ทะเลสวย', tel:'089-345-6789', email:'kuatale@gmail.com',
+    addr:'45 ถ.ชลบุรี-พัทยา ต.บ้านสวน อ.เมืองชลบุรี จ.ชลบุรี 20000',
+    sales:'200,000 – 250,000', problem:'ระบบสต็อกวัตถุดิบ, การวางแผนการตลาด',
+    goal:'ขยายช่องทาง Delivery, ทำ Brand Identity',
+    t0:'15 เม.ย. 2569', t1:'', reg:'10 มี.ค. 2569', icon:'🦐' },
+  { id:3, name:'สวนริมสุข Cafe', prov:'ระยอง', type:'คาเฟ่',
+    status:'ผ่านเข้ารอบ', score:90.31, assessor:'อ.จิรากรณ์', date:'17 พ.ค. 2569',
+    owner:'คุณพรทิพย์ สุขใจ', tel:'085-456-7890', email:'suanrimsuk@gmail.com',
+    addr:'78 หมู่ 5 ต.เนินพระ อ.เมืองระยอง จ.ระยอง 21000',
+    sales:'80,000 – 100,000', problem:'ต้นทุนแรงงานสูง, Seasonal demand',
+    goal:'พัฒนา Signature Menu, เพิ่มช่องทาง Online',
+    t0:'12 เม.ย. 2569', t1:'16 พ.ค. 2569', reg:'8 มี.ค. 2569', icon:'☕' },
+  { id:4, name:'ตราดซีฟู้ด', prov:'ตราด', type:'อาหารทะเล',
+    status:'ประเมิน T1 แล้ว', score:89.78, assessor:'อ.กัณฑ์กัส', date:'16 พ.ค. 2569',
+    owner:'คุณสุรชัย ทะเลตราด', tel:'087-567-8901', email:'tradseafood@gmail.com',
+    addr:'22 ถ.ตราด-แหลมงอบ ต.วังกระแจะ อ.เมืองตราด จ.ตราด 23000',
+    sales:'150,000 – 180,000', problem:'ต้นทุนวัตถุดิบผันผวน, แรงงานขาดแคลน',
+    goal:'ทำระบบจัดการ SOP, เพิ่ม Catering Service',
+    t0:'10 เม.ย. 2569', t1:'15 พ.ค. 2569', reg:'5 มี.ค. 2569', icon:'🦞' },
+  { id:5, name:'ฉะเชิงเทรา กูร์เมต์', prov:'ฉะเชิงเทรา', type:'อาหารไทย',
+    status:'ลงทะเบียนแล้ว', score:null, assessor:'', date:'',
+    owner:'คุณนภา แปดริ้ว', tel:'082-678-9012', email:'ccgourmet@gmail.com',
+    addr:'55 ถ.มหาจักรพรรดิ์ ต.หน้าเมือง อ.เมืองฉะเชิงเทรา จ.ฉะเชิงเทรา 24000',
+    sales:'60,000 – 80,000', problem:'ระบบบัญชียังไม่เป็นระบบ',
+    goal:'เพิ่มยอดขาย, ทำระบบบัญชีพื้นฐาน',
+    t0:'', t1:'', reg:'15 มี.ค. 2569', icon:'🍽' },
+  { id:6, name:'บ้านสวนเพลินใจ', prov:'ปราจีนบุรี', type:'อาหารไทย',
+    status:'ประเมิน T0 แล้ว', score:88.21, assessor:'อ.พิสุทธิ์', date:'15 พ.ค. 2569',
+    owner:'คุณมานะ เพลินใจ', tel:'083-789-0123', email:'baansuan@gmail.com',
+    addr:'12 ม.3 ต.ดงขี้เหล็ก อ.เมืองปราจีนบุรี จ.ปราจีนบุรี 25000',
+    sales:'50,000 – 70,000', problem:'การตลาดออนไลน์, Brand Identity',
+    goal:'สร้าง Social Media, พัฒนาเมนู Signature',
+    t0:'14 เม.ย. 2569', t1:'', reg:'18 มี.ค. 2569', icon:'🌿' },
+  { id:7, name:'ครัวบ้านคลอง', prov:'สระแก้ว', type:'อาหารไทย',
+    status:'ลงทะเบียนแล้ว', score:null, assessor:'', date:'',
+    owner:'คุณสมพร คลองสวย', tel:'086-890-1234', email:'kruaklhong@gmail.com',
+    addr:'88 ม.1 ต.สระแก้ว อ.เมืองสระแก้ว จ.สระแก้ว 27000',
+    sales:'40,000 – 55,000', problem:'ต้นทุนสูง, ยอดขายไม่สม่ำเสมอ',
+    goal:'ลดต้นทุน 15%, เพิ่มช่องทางขาย',
+    t0:'', t1:'', reg:'20 มี.ค. 2569', icon:'🏡' },
+  { id:8, name:'เม็ดทราย ซีไซด์', prov:'ชลบุรี', type:'คาเฟ่/เบเกอรี่',
+    status:'ประเมิน T1 แล้ว', score:86.74, assessor:'อ.จิรากรณ์', date:'15 พ.ค. 2569',
+    owner:'คุณอุษา ทรายทอง', tel:'084-901-2345', email:'metsai.seaside@gmail.com',
+    addr:'234 ถ.พัทยาเหนือ ต.นาเกลือ อ.บางละมุง จ.ชลบุรี 20150',
+    sales:'90,000 – 120,000', problem:'การบริหารต้นทุน, ระบบ POS',
+    goal:'ติดตั้งระบบ POS, ขยายเมนู',
+    t0:'8 เม.ย. 2569', t1:'14 พ.ค. 2569', reg:'6 มี.ค. 2569', icon:'🧁' },
+];
+
+let rpInited = false;
+let rpSelectedId = 1;
+
+function rpInit() {
+  if(rpInited) return; rpInited = true;
+  rpRender(RP_STORES);
+  rpShowDetail(RP_STORES[0]);
+}
+
+const RP_ST_HTML = {
+  'ประเมิน T1 แล้ว': '<span class="st-t1">ประเมิน T1 แล้ว</span>',
+  'ประเมิน T0 แล้ว': '<span class="st-t0">ประเมิน T0 แล้ว</span>',
+  'ผ่านเข้ารอบ': '<span class="st-pass">ผ่านเข้ารอบ</span>',
+  'ลงทะเบียนแล้ว': '<span class="st-reg">ลงทะเบียนแล้ว</span>',
+};
+
+function rpRender(stores) {
+  const tbody = document.getElementById('rpTableBody');
+  if(!tbody) return;
+  tbody.innerHTML = stores.map(s => `
+    <tr class="${s.id===rpSelectedId?'selected':''}" onclick="rpShowDetail(${JSON.stringify(s).replace(/"/g,'&quot;')})">
+      <td>
+        <div class="rest-name-cell">
+          <div class="rest-thumb-sm">${s.icon}</div>
+          <div><div class="rest-nm">${s.name}</div><div class="rest-type-sm">${s.type}</div></div>
+        </div>
+      </td>
+      <td style="font-size:11px;color:#555;">${s.prov}</td>
+      <td style="font-size:11px;color:#666;">${s.type}</td>
+      <td>${RP_ST_HTML[s.status]||s.status}</td>
+      <td>${s.score?`<span class="tbl-score">${s.score}</span>`:'<span style="color:#ccc;">—</span>'}</td>
+      <td><div class="tbl-assessor">${s.assessor}</div><div class="tbl-date">${s.date}</div></td>
+      <td>
+        <div class="tbl-actions">
+          <div class="tbl-act-btn" title="ดูรายละเอียด">👁</div>
+          <div class="tbl-act-btn" title="แก้ไข">✏</div>
+          <div class="tbl-act-btn" title="เพิ่มเติม">⋮</div>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function rpShowDetail(store) {
+  if(typeof store === 'string') store = JSON.parse(store);
+  rpSelectedId = store.id;
+  // Re-render table to update selected row
+  rpRender(RP_STORES.filter(s => {
+    const q = document.getElementById('rpSearchInput')?.value?.toLowerCase()||'';
+    const prov = document.getElementById('rpProvFilter')?.value||'';
+    const type = document.getElementById('rpTypeFilter')?.value||'';
+    const stat = document.getElementById('rpStatusFilter')?.value||'';
+    return (!q||s.name.toLowerCase().includes(q)||s.owner.toLowerCase().includes(q))
+      &&(!prov||s.prov===prov)&&(!type||s.type===type)&&(!stat||s.status===stat);
+  }));
+  
+  const tl = [
+    {label:'ลงทะเบียนร้านอาหาร', date:store.reg, done:!!store.reg},
+    {label:'ประเมิน T0', date:store.t0, done:!!store.t0},
+    {label:'ประเมิน T1', date:store.t1, done:!!store.t1},
+    {label:'รอประกาศผลการคัดเลือก', date:'', done:false},
+  ];
+  
+  const tlHTML = tl.map((t,i) => `
+    <div>
+      <div class="rpd-tl-item">
+        <div class="rpd-tl-dot ${t.done?'rpd-tl-done':'rpd-tl-pending'}">${t.done?'✓':''}</div>
+        <div><div class="rpd-tl-text">${t.label}</div><div class="rpd-tl-date">${t.date}</div></div>
+      </div>
+      ${i<tl.length-1?'<div class="rpd-tl-line" style="margin-left:8px;"></div>':''}
+    </div>`).join('');
+  
+  document.getElementById('rpDetail').innerHTML = `
+    <div class="rpd-hero" style="position:relative;background:linear-gradient(135deg,#F17128,#e8835a);">
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:50px;">${store.icon}</div>
+      <div class="rpd-hero-overlay" style="position:absolute;">
+        <div class="rpd-name">${store.name}</div>
+        <div class="rpd-loc">📍 ${store.prov} &nbsp;|&nbsp; 🍽 ${store.type}</div>
+      </div>
+      <div class="rpd-badge-wrap" style="position:absolute;top:8px;right:8px;">${RP_ST_HTML[store.status]||''}</div>
+    </div>
+    <div class="rpd-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <div class="rpd-section">
+            <div class="rpd-section-title">ข้อมูลติดต่อ</div>
+            <div class="rpd-info-grid">
+              <div class="rpd-info-label">เจ้าของร้าน</div><div class="rpd-info-val">${store.owner}</div>
+              <div class="rpd-info-label">เบอร์โทร</div><div class="rpd-info-val">${store.tel}</div>
+              <div class="rpd-info-label">อีเมล</div><div class="rpd-info-val" style="font-size:10px;">${store.email}</div>
+              <div class="rpd-info-label">ที่อยู่</div><div class="rpd-info-val" style="font-size:10px;line-height:1.4;">${store.addr}</div>
+              <div class="rpd-info-label">ยอดขาย/เดือน</div><div class="rpd-info-val" style="color:#F17128;">${store.sales} บาท</div>
+            </div>
+            <div class="rpd-social" style="margin-top:6px;">
+              <div class="rpd-social-btn" style="background:#1877f2;color:#fff;border-color:#1877f2;">f</div>
+              <div class="rpd-social-btn" style="background:#06c755;color:#fff;border-color:#06c755;">L</div>
+              <div class="rpd-social-btn" style="background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:#fff;border-color:#dc2743;">📷</div>
+              <span class="rpd-social-link">ดูเพิ่มเติม</span>
+            </div>
+          </div>
+          <div class="rpd-section">
+            <div class="rpd-section-title">ปัญหาสำคัญ</div>
+            ${store.problem.split(',').map(p=>`<span class="rpd-tag">${p.trim()}</span>`).join('')}
+          </div>
+          <div class="rpd-section">
+            <div class="rpd-section-title">เป้าหมายการพัฒนา</div>
+            ${store.goal.split(',').map(g=>`<span class="rpd-tag rpd-tag-blue">${g.trim()}</span>`).join('')}
+          </div>
+        </div>
+        <div>
+          <div class="rpd-section">
+            <div class="rpd-section-title" style="display:flex;justify-content:space-between;">เอกสารที่อัปโหลด <span style="color:#F17128;font-size:9px;cursor:pointer;">ดูทั้งหมด</span></div>
+            <div class="rpd-docs">
+              <div class="rpd-doc"><div class="rpd-doc-icon rpd-doc-pdf">📄</div><div class="rpd-doc-name">สำเนาใบประเมิน.pdf</div></div>
+              <div class="rpd-doc"><div class="rpd-doc-icon rpd-doc-xlsx">📊</div><div class="rpd-doc-name">ใบคูณต้นทุน.xlsx</div></div>
+              <div class="rpd-doc"><div class="rpd-doc-icon rpd-doc-docx">📝</div><div class="rpd-doc-name">แบบฟอร์มสัญญา.docx</div></div>
+            </div>
+          </div>
+          <div class="rpd-section">
+            <div class="rpd-section-title" style="display:flex;justify-content:space-between;">ภาพเมนูอาหาร <span style="color:#F17128;font-size:9px;cursor:pointer;">ดูทั้งหมด</span></div>
+            <div class="rpd-photos">
+              <div class="rpd-photo">🍜</div>
+              <div class="rpd-photo">🍤</div>
+              <div class="rpd-photo">🥗</div>
+              <div class="rpd-photo" style="position:relative;">🍛<div class="rpd-photo-more">+12<br>ทั้งหมด</div></div>
+            </div>
+          </div>
+          <div class="rpd-section">
+            <div class="rpd-section-title">สถานะเข้าร่วมโครงการ</div>
+            ${tlHTML}
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function rpFilter() {
+  const q = (document.getElementById('rpSearchInput')?.value||'').toLowerCase();
+  const prov = document.getElementById('rpProvFilter')?.value||'';
+  const type = document.getElementById('rpTypeFilter')?.value||'';
+  const stat = document.getElementById('rpStatusFilter')?.value||'';
+  const filtered = RP_STORES.filter(s =>
+    (!q||s.name.toLowerCase().includes(q)||s.owner.toLowerCase().includes(q)||s.prov.includes(q))
+    &&(!prov||s.prov===prov)&&(!type||s.type===type)&&(!stat||s.status===stat)
+  );
+  rpRender(filtered);
+  const info = document.getElementById('rpPagInfo');
+  if(info) info.textContent = `แสดง 1 – ${Math.min(8,filtered.length)} จาก ${filtered.length} ร้าน`;
+}
+</script>
+</body>
+</html>

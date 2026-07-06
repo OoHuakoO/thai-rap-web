@@ -19,7 +19,7 @@ function getScenario(request: Request): string {
 
 function serverError(): Response {
   return HttpResponse.json<ApiErrorResponse>(
-    { message: 'Internal server error', statusCode: 500 },
+    { success: false, error: { code: 'SYS_001', message: 'Internal server error' } },
     { status: 500 }
   )
 }

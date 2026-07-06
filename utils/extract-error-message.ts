@@ -7,8 +7,8 @@ export function extractErrorMessage(error: unknown): string {
 
   if (error instanceof Error) {
     const axiosError = error as AxiosError<ApiErrorResponse>
-    if (axiosError.response?.data?.message) {
-      return axiosError.response.data.message
+    if (axiosError.response?.data?.error?.message) {
+      return axiosError.response.data.error.message
     }
     return error.message
   }

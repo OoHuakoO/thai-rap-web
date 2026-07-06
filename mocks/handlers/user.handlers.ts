@@ -16,28 +16,28 @@ function getScenario(request: Request): string {
 
 function unauthorized(): Response {
   return HttpResponse.json<ApiErrorResponse>(
-    { message: 'Unauthorized', statusCode: 401 },
+    { success: false, error: { code: 'AUTH_003', message: 'Unauthorized' } },
     { status: 401 }
   );
 }
 
 function forbidden(): Response {
   return HttpResponse.json<ApiErrorResponse>(
-    { message: 'Forbidden resource', statusCode: 403 },
+    { success: false, error: { code: 'PERM_001', message: 'Forbidden resource' } },
     { status: 403 }
   );
 }
 
 function serverError(): Response {
   return HttpResponse.json<ApiErrorResponse>(
-    { message: 'Internal server error', statusCode: 500 },
+    { success: false, error: { code: 'SYS_001', message: 'Internal server error' } },
     { status: 500 }
   );
 }
 
 function notFound(entity = 'Resource'): Response {
   return HttpResponse.json<ApiErrorResponse>(
-    { message: `${entity} not found`, statusCode: 404 },
+    { success: false, error: { code: 'DB_002', message: `${entity} not found` } },
     { status: 404 }
   );
 }
@@ -79,11 +79,8 @@ export const userHandlers = [
     const start = (page - 1) * limit;
 
     return HttpResponse.json<PaginatedResponse<User>>({
-      data: users.slice(start, start + limit),
-      total,
-      page,
-      limit,
-      totalPages,
+      items: users.slice(start, start + limit),
+      meta: { page, limit, total, totalPages },
     });
   }),
 
@@ -111,11 +108,14 @@ export const userHandlers = [
     if (scenario === 'validation-error' || !body.name || !body.email) {
       return HttpResponse.json<ApiErrorResponse>(
         {
-          message: 'Validation failed',
-          statusCode: 422,
-          errors: {
-            ...((!body.name) && { name: ['Name is required'] }),
-            ...((!body.email) && { email: ['Email is required'] }),
+          success: false,
+          error: {
+            code: 'VALID_001',
+            message: 'Validation failed',
+            details: [
+              ...(!body.name ? [{ field: 'name', message: 'Name is required' }] : []),
+              ...(!body.email ? [{ field: 'email', message: 'Email is required' }] : []),
+            ],
           },
         },
         { status: 422 }

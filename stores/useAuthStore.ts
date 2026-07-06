@@ -1,14 +1,19 @@
+'use client'
+
 import { useState, useEffect } from 'react'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { AuthUser, Role, Permission } from '@/types/auth.types'
+import type { AuthTokens } from '@/features/auth/types/auth-response.types'
 import { hasPermission } from '@/constants/permissions'
 
 interface AuthState {
   user: AuthUser | null
-  token: string | null
+  accessToken: string | null
+  refreshToken: string | null
   isAuthenticated: boolean
-  login: (user: AuthUser, token: string) => void
+  login: (user: AuthUser, tokens: AuthTokens) => void
+  setTokens: (tokens: AuthTokens) => void
   logout: () => void
   can: (permission: Permission) => boolean
   hasRole: (role: Role | Role[]) => boolean
@@ -18,11 +23,23 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
-      token: null,
+      accessToken: null,
+      refreshToken: null,
       isAuthenticated: false,
 
-      login: (user, token) => set({ user, token, isAuthenticated: true }),
-      logout: () => set({ user: null, token: null, isAuthenticated: false }),
+      login: (user, tokens) =>
+        set({
+          user,
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          isAuthenticated: true,
+        }),
+
+      setTokens: (tokens) =>
+        set({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken }),
+
+      logout: () =>
+        set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false }),
 
       can: (permission) => {
         const { user } = get()
@@ -41,7 +58,8 @@ export const useAuthStore = create<AuthState>()(
       name: 'auth-storage',
       partialize: (state) => ({
         user: state.user,
-        token: state.token,
+        accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
     }

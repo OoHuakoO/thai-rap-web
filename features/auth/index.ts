@@ -1,3 +1,5 @@
 export { LoginForm } from './components/login-form'
+export { RegisterForm } from './components/register-form'
 export { authService } from './services/auth.service'
 export { useLogin } from './hooks/use-login'
+export { useRegister } from './hooks/use-register'

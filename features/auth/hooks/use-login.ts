@@ -12,8 +12,8 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: authService.login,
-    onSuccess: ({ user, token }) => {
-      login(user, token)
+    onSuccess: ({ user, tokens }) => {
+      login(user, tokens)
       router.replace(ROUTES.HOME)
     },
   })

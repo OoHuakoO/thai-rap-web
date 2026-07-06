@@ -15,7 +15,7 @@ interface ApiErrorParams {
   message: string
   statusCode: number
   code: ErrorCode
-  details?: Record<string, string[]>
+  details?: { field: string; message: string }[]
   requestId?: string
   isNetworkError?: boolean
   isCancelled?: boolean
@@ -25,7 +25,7 @@ interface ApiErrorParams {
 export class ApiError extends Error {
   readonly statusCode: number
   readonly code: ErrorCode
-  readonly details?: Record<string, string[]>
+  readonly details?: { field: string; message: string }[]
   readonly requestId?: string
   readonly isNetworkError: boolean
   readonly isCancelled: boolean

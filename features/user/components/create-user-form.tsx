@@ -18,18 +18,18 @@ import { useCreateUser } from '../hooks/use-users'
 const createUserSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
-  role: z.enum(['admin', 'assessor', 'mentor', 'entrepreneur', 'judge', 'me_team']),
+  role: z.enum(['ADMIN', 'ASSESSOR', 'MENTOR', 'ENTREPRENEUR', 'JUDGE', 'ME_TEAM']),
 })
 
 type CreateUserFormValues = z.infer<typeof createUserSchema>
 
 const ROLE_OPTIONS: { value: CreateUserFormValues['role']; label: string }[] = [
-  { value: 'entrepreneur', label: 'ผู้ประกอบการ' },
-  { value: 'assessor',     label: 'ผู้ประเมิน (Assessor)' },
-  { value: 'mentor',       label: 'ที่ปรึกษา (Mentor / Coach)' },
-  { value: 'judge',        label: 'กรรมการ Pitching' },
-  { value: 'me_team',      label: 'ทีม M&E' },
-  { value: 'admin',        label: 'ผู้ดูแลระบบ (Admin / PMO)' },
+  { value: 'ENTREPRENEUR', label: 'ผู้ประกอบการ' },
+  { value: 'ASSESSOR',     label: 'ผู้ประเมิน (Assessor)' },
+  { value: 'MENTOR',       label: 'ที่ปรึกษา (Mentor / Coach)' },
+  { value: 'JUDGE',        label: 'กรรมการ Pitching' },
+  { value: 'ME_TEAM',      label: 'ทีม M&E' },
+  { value: 'ADMIN',        label: 'ผู้ดูแลระบบ (Admin / PMO)' },
 ]
 
 export function CreateUserForm() {
@@ -44,7 +44,7 @@ export function CreateUserForm() {
     formState: { errors },
   } = useForm<CreateUserFormValues>({
     resolver: zodResolver(createUserSchema),
-    defaultValues: { role: 'entrepreneur' },
+    defaultValues: { role: 'ENTREPRENEUR' },
   })
 
   const onSubmit = (data: CreateUserFormValues) => {

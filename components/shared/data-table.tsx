@@ -9,6 +9,8 @@ interface DataTableProps<T extends object> {
   isLoading?: boolean;
   emptyMessage?: string;
   className?: string;
+  onRowClick?: (row: T) => void;
+  isRowSelected?: (row: T) => boolean;
 }
 
 export function DataTable<T extends object>({
@@ -18,6 +20,8 @@ export function DataTable<T extends object>({
   isLoading = false,
   emptyMessage = 'No data available.',
   className,
+  onRowClick,
+  isRowSelected,
 }: DataTableProps<T>) {
   return (
     <div className={cn('w-full overflow-x-auto rounded-md border', className)}>
@@ -57,7 +61,12 @@ export function DataTable<T extends object>({
             data.map((row) => (
               <tr
                 key={String(row[keyField])}
-                className="border-b transition-colors last:border-0 hover:bg-muted/30"
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+                className={cn(
+                  'border-b transition-colors last:border-0 hover:bg-muted/30',
+                  onRowClick && 'cursor-pointer',
+                  isRowSelected?.(row) && 'bg-orange/10 hover:bg-orange/10'
+                )}
               >
                 {columns.map((col) => (
                   <td
