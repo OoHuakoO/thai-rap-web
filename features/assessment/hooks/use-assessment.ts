@@ -6,6 +6,7 @@ export const assessmentKeys = {
   all: ['assessments'] as const,
   byStore: (storeId: string) => ['assessments', 'by-store', storeId] as const,
   byStoreRound: (storeId: string, round: Round) => ['assessments', storeId, round] as const,
+  rank: (storeId: string, round: Round) => ['assessments', 'rank', storeId, round] as const,
 }
 
 export const dimensionKeys = {
@@ -59,5 +60,23 @@ export function useSubmitAssessment(storeId: string, round: Round, assessmentId:
       queryClient.invalidateQueries({ queryKey: assessmentKeys.byStoreRound(storeId, round) })
       queryClient.invalidateQueries({ queryKey: assessmentKeys.byStore(storeId) })
     },
+  })
+}
+
+export function useUpdateNotes(storeId: string, round: Round, assessmentId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (notes: string) => assessmentService.updateNotes(assessmentId, notes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: assessmentKeys.byStoreRound(storeId, round) })
+    },
+  })
+}
+
+export function useAssessmentRank(storeId: string, round: Round) {
+  return useQuery({
+    queryKey: assessmentKeys.rank(storeId, round),
+    queryFn: () => assessmentService.getRank(storeId, round),
+    enabled: !!storeId && !!round,
   })
 }

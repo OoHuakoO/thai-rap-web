@@ -11,12 +11,20 @@ export const storeKeys = {
   all: ['stores'] as const,
   list: (params?: StoreQueryParams) => ['stores', 'list', params ?? {}] as const,
   detail: (id: string) => ['stores', id] as const,
+  stats: () => ['stores', 'stats'] as const,
 }
 
 export function useStores(params?: StoreQueryParams) {
   return useQuery({
     queryKey: storeKeys.list(params),
     queryFn: () => storeService.getAll(params),
+  })
+}
+
+export function useStoreStats() {
+  return useQuery({
+    queryKey: storeKeys.stats(),
+    queryFn: () => storeService.getStats(),
   })
 }
 

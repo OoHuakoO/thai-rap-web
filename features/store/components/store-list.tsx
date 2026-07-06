@@ -68,12 +68,44 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
       ),
     },
     { key: 'province', header: 'จังหวัด' },
+    { key: 'storeType', header: 'ประเภท' },
     {
       key: 'status',
       header: 'สถานะ',
       cell: (row) => (
         <StatusBadge status={STATUS_VARIANT[row.status]} label={STORE_STATUS_LABELS[row.status]} />
       ),
+    },
+    {
+      key: 'latestScore',
+      header: 'คะแนนล่าสุด',
+      cell: (row) =>
+        typeof row.latestScore === 'number' ? (
+          <span className="text-sm font-bold text-orange">{row.latestScore.toFixed(2)}</span>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
+    },
+    {
+      key: 'latestAssessorName',
+      header: 'ผู้ประเมิน',
+      cell: (row) =>
+        row.latestAssessorName ? (
+          <div>
+            <p className="text-xs font-medium text-charcoal">{row.latestAssessorName}</p>
+            {row.latestAssessedAt && (
+              <p className="text-[10px] text-muted-foreground">
+                {new Date(row.latestAssessedAt).toLocaleDateString('th-TH', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+              </p>
+            )}
+          </div>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
     },
     {
       key: 'actions',

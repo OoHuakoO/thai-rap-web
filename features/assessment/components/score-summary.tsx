@@ -1,15 +1,41 @@
 'use client'
 
 import { Card, CardContent } from '@/components/ui/card'
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart'
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis } from 'recharts'
 import { ProgressBar } from '@/components/shared/progress-bar'
+import { StatusBadge, type StatusVariant } from '@/components/shared/status-badge'
 import { cn } from '@/utils/cn'
-import { useDimensions } from '../hooks/use-assessment'
+import { useDimensions, useAssessmentRank } from '../hooks/use-assessment'
 import { getZone, ZONE_DESCRIPTIONS, ZONE_COLORS, ZONE_BADGE_CLASSES } from '../utils/zone'
 import { RED_FLAG_LABELS } from '../types/assessment.types'
-import type { AssessmentQuestion, RedFlag } from '../types/assessment.types'
-import type { Store } from '@/features/store'
+import type { AssessmentQuestion, RedFlag, Round } from '../types/assessment.types'
+import { STORE_STATUS_LABELS } from '@/features/store'
+import type { Store, StoreStatus } from '@/features/store'
+
+const STATUS_VARIANT: Record<StoreStatus, StatusVariant> = {
+  REGISTERED: 'new',
+  T0_COMPLETED: 'pending',
+  CAMP_COMPLETED: 'pending',
+  T1_COMPLETED: 'pending',
+  PITCHING_COMPLETED: 'pending',
+  SELECTED: 'pass',
+  CONDITIONAL_SELECTED: 'warning',
+  WAITING_LIST: 'pending',
+  NOT_SELECTED: 'fail',
+  FIELD_AUDITED: 'pending',
+  IDP_CREATED: 'pending',
+  COMPLETED: 'active',
+}
+
+const radarChartConfig = {
+  thisStore: { label: 'ร้านนี้', color: 'var(--color-orange)' },
+  average: { label: 'ค่าเฉลี่ย', color: 'var(--color-dark-nav)' },
+} satisfies ChartConfig
 
 interface ScoreSummaryProps {
+  storeId: string
+  round: Round
   store?: Store
   selectedDimId: number
   totalScore: number | null
@@ -19,6 +45,8 @@ interface ScoreSummaryProps {
 }
 
 export function ScoreSummary({
+  storeId,
+  round,
   store,
   selectedDimId,
   totalScore,
@@ -27,6 +55,7 @@ export function ScoreSummary({
   isSubmitted,
 }: ScoreSummaryProps) {
   const { data: dimensions } = useDimensions()
+  const { data: rank } = useAssessmentRank(storeId, round)
 
   const score = totalScore ?? 0
   const zone = getZone(score)
@@ -42,17 +71,35 @@ export function ScoreSummary({
 
   const selectedDim = dimensionScores.find((d) => d.id === selectedDimId)
 
+  const improvementPoints = [...dimensionScores]
+    .sort((a, b) => a.pct - b.pct)
+    .slice(0, 3)
+
+  const radarData = dimensionScores.map((dim) => {
+    const avg = rank?.dimensionAverages.find((a) => a.dimensionId === dim.id)?.avgPct ?? 0
+    return { dimension: `มิติ ${dim.id}`, thisStore: dim.pct, average: avg }
+  })
+
   return (
     <Card>
       <CardContent className="space-y-3 pt-5">
-        <div>
+        <div className="flex items-center justify-between">
           <p className="text-sm font-bold text-charcoal">สรุปผลการประเมินร้าน</p>
-          {store && (
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {store.name} · {store.province}
-            </p>
-          )}
+          <span className="cursor-default text-[9.5px] text-orange underline">ดูรายงานฉบับเต็ม →</span>
         </div>
+
+        {store && (
+          <div className="flex items-center gap-2 border-b pb-2.5">
+            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-orange to-orange-light text-base text-white">
+              🍜
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-bold text-charcoal">{store.name}</p>
+              <p className="truncate text-[10px] text-muted-foreground">{store.province}</p>
+            </div>
+            <StatusBadge status={STATUS_VARIANT[store.status]} label={STORE_STATUS_LABELS[store.status]} />
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-2">
           <div className="rounded-lg bg-muted/40 p-2.5 text-center">
@@ -70,6 +117,25 @@ export function ScoreSummary({
             </p>
           </div>
         </div>
+
+        {rank && (
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-lg bg-muted/40 p-2 text-center">
+              <p className="text-[9px] text-muted-foreground">อันดับในจังหวัด</p>
+              <p className="text-sm font-extrabold text-[var(--color-dark-nav)]">
+                {rank.provinceRank ?? '—'}
+                <span className="text-[10px] font-normal text-muted-foreground"> / {rank.provinceTotal}</span>
+              </p>
+            </div>
+            <div className="rounded-lg bg-muted/40 p-2 text-center">
+              <p className="text-[9px] text-muted-foreground">อันดับในทั้งหมด</p>
+              <p className="text-sm font-extrabold text-[var(--color-dark-nav)]">
+                {rank.overallRank ?? '—'}
+                <span className="text-[10px] font-normal text-muted-foreground"> / {rank.overallTotal}</span>
+              </p>
+            </div>
+          </div>
+        )}
 
         <div
           className={cn(
@@ -104,8 +170,47 @@ export function ScoreSummary({
           </div>
         )}
 
+        {improvementPoints.length > 0 && (
+          <div className="border-t pt-2.5">
+            <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold text-orange">
+              จุดที่ควรเร่งพัฒนา
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange text-[9px] font-bold text-white">
+                {improvementPoints.length}
+              </span>
+            </p>
+            <ul className="space-y-1">
+              {improvementPoints.map((dim) => (
+                <li key={dim.id} className="flex items-start gap-1.5 text-[11px] leading-tight text-charcoal">
+                  <span className="mt-1 h-1 w-1 flex-shrink-0 rounded-full bg-orange" />
+                  {dim.name} (มิติ {dim.id})
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <div className="border-t pt-2.5">
           <p className="mb-1.5 text-[11px] font-bold text-charcoal">เปรียบเทียบ 8 มิติ</p>
+          <ChartContainer config={radarChartConfig} style={{ height: 210 }}>
+            <RadarChart data={radarData}>
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <PolarGrid />
+              <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 8 }} />
+              <Radar
+                dataKey="thisStore"
+                stroke="var(--color-thisStore)"
+                fill="var(--color-thisStore)"
+                fillOpacity={0.25}
+              />
+              <Radar
+                dataKey="average"
+                stroke="var(--color-average)"
+                fill="var(--color-average)"
+                fillOpacity={0.08}
+                strokeDasharray="4 3"
+              />
+            </RadarChart>
+          </ChartContainer>
           <div className="space-y-1.5">
             {dimensionScores.map((dim) => (
               <ProgressBar key={dim.id} value={dim.pct} label={dim.nameEn} showPercentage />

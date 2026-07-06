@@ -29,6 +29,23 @@ export const STORE_STATUS_LABELS: Record<StoreStatus, string> = {
   COMPLETED: 'ติดตามผลครบแล้ว',
 }
 
+export interface StoreDocument {
+  name: string
+  fileType: 'pdf' | 'xlsx' | 'docx'
+}
+
+export const PROVINCE_OPTIONS = [
+  'จันทบุรี',
+  'ชลบุรี',
+  'ระยอง',
+  'ตราด',
+  'ฉะเชิงเทรา',
+  'ปราจีนบุรี',
+  'สระแก้ว',
+] as const
+
+export const STORE_TYPE_OPTIONS = ['อาหารไทย', 'อาหารทะเล', 'คาเฟ่', 'คาเฟ่/เบเกอรี่'] as const
+
 export interface Store {
   id: string
   name: string
@@ -43,7 +60,11 @@ export interface Store {
   mainProblems: string | null
   goals: string | null
   photos: string[]
+  documents: StoreDocument[]
   status: StoreStatus
+  latestScore: number | null
+  latestAssessorName: string | null
+  latestAssessedAt: string | null
   createdAt: string
   updatedAt: string
 }
@@ -74,3 +95,18 @@ export interface StoreQueryParams {
 }
 
 export type PaginatedStores = PaginatedResponse<Store>
+
+export interface ProvinceDistribution {
+  province: string
+  count: number
+  pct: number
+}
+
+export interface StoreStats {
+  total: number
+  targetTotal: number
+  t0CompletedCount: number
+  t1CompletedCount: number
+  passedCount: number
+  byProvince: ProvinceDistribution[]
+}

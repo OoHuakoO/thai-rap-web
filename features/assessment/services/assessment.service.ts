@@ -4,6 +4,7 @@ import type {
   Assessment,
   AssessmentSummary,
   AssessmentQuestion,
+  AssessmentRank,
   CreateAssessmentDto,
   UpdateScoreDto,
   Dimension,
@@ -41,6 +42,12 @@ export const assessmentService = {
 
   submit: (assessmentId: string) =>
     api.post<Assessment>(`/assessments/${assessmentId}/submit`).then((res) => res.data),
+
+  updateNotes: (assessmentId: string, notes: string) =>
+    api.patch<Assessment>(`/assessments/${assessmentId}/notes`, { notes }).then((res) => res.data),
+
+  getRank: (storeId: string, round: Round) =>
+    api.get<AssessmentRank>('/assessments/rank', { params: { storeId, round } }).then((res) => res.data),
 
   remove: (assessmentId: string) => api.delete(`/assessments/${assessmentId}`),
 }

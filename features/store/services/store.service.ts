@@ -6,11 +6,14 @@ import type {
   StoreQueryParams,
   PaginatedStores,
   StoreStatus,
+  StoreStats,
 } from '../types/store.types'
 
 export const storeService = {
   getAll: (params?: StoreQueryParams) =>
     api.get<PaginatedStores>('/stores', { params }).then((res) => res.data),
+
+  getStats: () => api.get<StoreStats>('/stores/stats').then((res) => res.data),
 
   getById: (id: string) => api.get<Store>(`/stores/${id}`).then((res) => res.data),
 

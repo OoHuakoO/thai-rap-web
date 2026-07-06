@@ -107,6 +107,8 @@ export const assessmentDb = {
   findAllByStore: (storeId: string): AssessmentSummary[] =>
     assessments.filter((a) => a.storeId === storeId).map(summarize),
 
+  findAllByRound: (round: Round): Assessment[] => assessments.filter((a) => a.round === round),
+
   findById: (id: string): Assessment | null => assessments.find((a) => a.id === id) ?? null,
 
   create: (storeId: string, round: Round, assessorId: string): Assessment => {
@@ -120,6 +122,7 @@ export const assessmentDb = {
       status: 'DRAFT',
       totalScore: null,
       zone: null,
+      notes: null,
       createdAt: now,
       updatedAt: now,
       submittedAt: null,
@@ -132,6 +135,7 @@ export const assessmentDb = {
         rawScore: null,
         note: null,
         suggestion: null,
+        evidence: [],
       })),
       redFlags: [],
     }
@@ -142,15 +146,29 @@ export const assessmentDb = {
   updateScore: (
     assessmentId: string,
     questionId: number,
-    data: { rawScore: number; note?: string; suggestion?: string }
+    data: { rawScore: number; note?: string; suggestion?: string; evidence?: string[] }
   ): Assessment | null => {
     const assessment = assessments.find((a) => a.id === assessmentId)
     if (!assessment) return null
     assessment.questions = assessment.questions.map((q) =>
       q.questionId === questionId
-        ? { ...q, rawScore: data.rawScore, note: data.note ?? q.note, suggestion: data.suggestion ?? q.suggestion }
+        ? {
+            ...q,
+            rawScore: data.rawScore,
+            note: data.note ?? q.note,
+            suggestion: data.suggestion ?? q.suggestion,
+            evidence: data.evidence ?? q.evidence,
+          }
         : q
     )
+    assessment.updatedAt = new Date().toISOString()
+    return assessment
+  },
+
+  updateNotes: (assessmentId: string, notes: string): Assessment | null => {
+    const assessment = assessments.find((a) => a.id === assessmentId)
+    if (!assessment) return null
+    assessment.notes = notes
     assessment.updatedAt = new Date().toISOString()
     return assessment
   },
@@ -182,4 +200,22 @@ export const assessmentDb = {
     assessments = assessments.filter((a) => a.id !== assessmentId)
     return assessments.length < prev
   },
+}
+
+export function getDimensionAverages(round: Round): Map<number, number> {
+  const submitted = assessments.filter((a) => a.round === round && a.status === 'SUBMITTED')
+  const averages = new Map<number, number>()
+  for (const dim of dimensionSeed) {
+    if (submitted.length === 0) {
+      averages.set(dim.id, 0)
+      continue
+    }
+    const pctSum = submitted.reduce((sum, a) => {
+      const dimQuestions = a.questions.filter((q) => q.dimensionId === dim.id)
+      const raw = dimQuestions.reduce((acc, q) => acc + (q.rawScore ?? 0), 0)
+      return sum + (raw / (dim.questionCount * 4)) * 100
+    }, 0)
+    averages.set(dim.id, Math.round((pctSum / submitted.length) * 10) / 10)
+  }
+  return averages
 }

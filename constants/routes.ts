@@ -12,6 +12,7 @@ export const ROUTES = {
 
   // Assessment
   ASSESSMENT: '/assessment',
+  ASSESSMENT_PICK_ROUND: (storeId: string) => `/assessment/${storeId}`,
   ASSESSMENT_DETAIL: (storeId: string, round: string) => `/assessment/${storeId}/${round}`,
 
   // Analytics

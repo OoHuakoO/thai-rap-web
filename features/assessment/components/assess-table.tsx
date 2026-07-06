@@ -10,6 +10,7 @@ interface AssessTableProps {
   highlightedId: number | null
   onScoreChange: (questionId: number, score: number) => void
   onNoteChange: (questionId: number, note: string) => void
+  onEvidenceChange: (questionId: number, evidence: string[]) => void
 }
 
 export function AssessTable({
@@ -19,6 +20,7 @@ export function AssessTable({
   highlightedId,
   onScoreChange,
   onNoteChange,
+  onEvidenceChange,
 }: AssessTableProps) {
   const sorted = [...questions].sort((a, b) => a.questionNo - b.questionNo)
   const max = sorted.length * 4
@@ -53,6 +55,7 @@ export function AssessTable({
               <th className="px-2 py-2 text-left font-semibold">ข้อ</th>
               <th className="px-2 py-2 text-left font-semibold">ตัวดำเนินการ / เกณฑ์ประเมิน</th>
               <th className="px-2 py-2 text-left font-semibold">คะแนน (0–4)</th>
+              <th className="px-2 py-2 text-left font-semibold">หลักฐาน/ไฟล์</th>
               <th className="px-2 py-2 text-left font-semibold">บันทึกผู้ประเมิน</th>
               <th className="px-2 py-2 text-left font-semibold">ข้อเสนอแนะ</th>
               <th className="px-2 py-2 text-left font-semibold">สถานะ</th>
@@ -67,6 +70,7 @@ export function AssessTable({
                 highlighted={highlightedId === q.questionId}
                 onScoreChange={(score) => onScoreChange(q.questionId, score)}
                 onNoteChange={(note) => onNoteChange(q.questionId, note)}
+                onEvidenceChange={(evidence) => onEvidenceChange(q.questionId, evidence)}
               />
             ))}
           </tbody>

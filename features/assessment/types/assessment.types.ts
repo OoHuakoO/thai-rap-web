@@ -68,6 +68,7 @@ export interface AssessmentQuestion {
   rawScore: number | null
   note: string | null
   suggestion: string | null
+  evidence: string[]
 }
 
 export interface Assessment {
@@ -78,6 +79,7 @@ export interface Assessment {
   status: AssessmentStatus
   totalScore: number | null
   zone: string | null
+  notes: string | null
   createdAt: string
   updatedAt: string
   submittedAt: string | null
@@ -107,6 +109,7 @@ export interface UpdateScoreDto {
   rawScore: number
   note?: string
   suggestion?: string
+  evidence?: string[]
 }
 
 export interface BulkScoreItem extends UpdateScoreDto {
@@ -116,6 +119,19 @@ export interface BulkScoreItem extends UpdateScoreDto {
 export interface AssessmentProgress {
   scored: number
   total: number
+}
+
+export interface DimensionAverage {
+  dimensionId: number
+  avgPct: number
+}
+
+export interface AssessmentRank {
+  overallRank: number | null
+  overallTotal: number
+  provinceRank: number | null
+  provinceTotal: number
+  dimensionAverages: DimensionAverage[]
 }
 
 export const TOTAL_QUESTIONS = 50

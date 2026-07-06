@@ -19,6 +19,7 @@ export interface NavItem {
   href: string
   icon: LucideIcon
   allowedRoles: Role[]
+  disabled?: boolean
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -28,6 +29,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: ROUTES.HOME,
     icon: LayoutDashboard,
     allowedRoles: ['ADMIN', 'ASSESSOR', 'MENTOR', 'ME_TEAM', 'JUDGE'],
+    disabled: true,
   },
   {
     label: 'Stores',
@@ -49,6 +51,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: ROUTES.ANALYTICS,
     icon: BarChart3,
     allowedRoles: ['ADMIN', 'ASSESSOR', 'MENTOR', 'ME_TEAM', 'ENTREPRENEUR'],
+    disabled: true,
   },
   {
     label: 'Pitching',
@@ -56,6 +59,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: ROUTES.PITCHING,
     icon: Trophy,
     allowedRoles: ['ADMIN', 'ASSESSOR', 'JUDGE', 'ME_TEAM'],
+    disabled: true,
   },
   {
     label: 'Reports',
@@ -63,6 +67,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: ROUTES.REPORTS,
     icon: FileText,
     allowedRoles: ['ADMIN', 'ASSESSOR', 'MENTOR', 'ME_TEAM'],
+    disabled: true,
   },
   {
     label: 'Users',
@@ -70,6 +75,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: ROUTES.USERS,
     icon: Users,
     allowedRoles: ['ADMIN', 'ME_TEAM'],
+    disabled: true,
   },
   {
     label: 'Settings',
@@ -77,6 +83,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: ROUTES.SETTINGS,
     icon: Settings,
     allowedRoles: ['ADMIN'],
+    disabled: true,
   },
 ]
 
@@ -87,6 +94,7 @@ export const NAV_BOTTOM_ITEMS: NavItem[] = [
     href: ROUTES.MANUAL,
     icon: BookOpen,
     allowedRoles: ['ADMIN', 'ASSESSOR', 'MENTOR', 'ENTREPRENEUR', 'JUDGE', 'ME_TEAM'],
+    disabled: true,
   },
 ]
 

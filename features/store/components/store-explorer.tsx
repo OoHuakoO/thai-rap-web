@@ -17,29 +17,55 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { PaginationBar } from '@/components/shared/pagination-bar'
 import { useDebounce } from '@/hooks/use-debounce'
 import { StoreList } from './store-list'
 import { StoreDetail } from './store-detail'
 import { CreateStoreForm } from './create-store-form'
-import { STORE_STATUS_LABELS } from '../types/store.types'
+import { StoreStatsBar } from './store-stats-bar'
+import { useStores } from '../hooks/use-stores'
+import { STORE_STATUS_LABELS, PROVINCE_OPTIONS, STORE_TYPE_OPTIONS } from '../types/store.types'
 import type { StoreStatus, StoreQueryParams } from '../types/store.types'
 
 const STATUS_OPTIONS = Object.entries(STORE_STATUS_LABELS) as [StoreStatus, string][]
+const DEFAULT_LIMIT = 10
 
 export function StoreExplorer() {
   const [search, setSearch] = useState('')
-  const [province, setProvince] = useState('')
+  const [province, setProvince] = useState<string>('ALL')
+  const [storeType, setStoreType] = useState<string>('ALL')
   const [status, setStatus] = useState<StoreStatus | 'ALL'>('ALL')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(DEFAULT_LIMIT)
 
   const debouncedSearch = useDebounce(search, 300)
-  const debouncedProvince = useDebounce(province, 300)
 
   const query: StoreQueryParams = {
+    page,
+    limit,
     ...(debouncedSearch && { search: debouncedSearch }),
-    ...(debouncedProvince && { province: debouncedProvince }),
+    ...(province !== 'ALL' && { province }),
+    ...(storeType !== 'ALL' && { storeType }),
     ...(status !== 'ALL' && { status }),
+  }
+
+  const { data } = useStores(query)
+
+  const handleProvinceChange = (value: string) => {
+    setProvince(value)
+    setPage(1)
+  }
+
+  const handleStoreTypeChange = (value: string) => {
+    setStoreType(value)
+    setPage(1)
+  }
+
+  const handleStatusChange = (value: StoreStatus | 'ALL') => {
+    setStatus(value)
+    setPage(1)
   }
 
   return (
@@ -51,8 +77,11 @@ export function StoreExplorer() {
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="ค้นหาชื่อร้าน, เจ้าของ..."
+              onChange={(e) => {
+                setSearch(e.target.value)
+                setPage(1)
+              }}
+              placeholder="ค้นหาชื่อร้าน, เจ้าของ, เบอร์โทร..."
               className="pl-8"
             />
           </div>
@@ -60,16 +89,44 @@ export function StoreExplorer() {
 
         <div className="w-40">
           <label className="mb-1 block text-[10px] text-muted-foreground">จังหวัด</label>
-          <Input
-            value={province}
-            onChange={(e) => setProvince(e.target.value)}
-            placeholder="ทั้งหมด"
-          />
+          <Select value={province} onValueChange={handleProvinceChange}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">ทั้งหมด</SelectItem>
+              {PROVINCE_OPTIONS.map((p) => (
+                <SelectItem key={p} value={p}>
+                  {p}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="w-40">
+          <label className="mb-1 block text-[10px] text-muted-foreground">ประเภทร้าน</label>
+          <Select value={storeType} onValueChange={handleStoreTypeChange}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">ทั้งหมด</SelectItem>
+              {STORE_TYPE_OPTIONS.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {t}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="w-48">
           <label className="mb-1 block text-[10px] text-muted-foreground">สถานะ</label>
-          <Select value={status} onValueChange={(v) => setStatus(v as StoreStatus | 'ALL')}>
+          <Select
+            value={status}
+            onValueChange={(v) => handleStatusChange(v as StoreStatus | 'ALL')}
+          >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -91,13 +148,27 @@ export function StoreExplorer() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_380px]">
-        <StoreList query={query} selectedId={selectedId} onSelect={setSelectedId} />
+        <div className="space-y-0 overflow-hidden rounded-xl border bg-card shadow-sm">
+          <StoreList query={query} selectedId={selectedId} onSelect={setSelectedId} />
+          {data && data.meta.total > 0 && (
+            <PaginationBar
+              page={data.meta.page}
+              limit={data.meta.limit}
+              total={data.meta.total}
+              totalPages={data.meta.totalPages}
+              onPageChange={setPage}
+              onLimitChange={(l) => {
+                setLimit(l)
+                setPage(1)
+              }}
+              itemLabel="ร้าน"
+            />
+          )}
+        </div>
 
-        <div className="rounded-xl border bg-card shadow-sm">
+        <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
           {selectedId ? (
-            <div className="p-4">
-              <StoreDetail storeId={selectedId} />
-            </div>
+            <StoreDetail storeId={selectedId} />
           ) : (
             <div className="flex h-full flex-col items-center justify-center gap-2 p-10 text-center text-muted-foreground">
               <span className="text-4xl">🏪</span>
@@ -106,6 +177,8 @@ export function StoreExplorer() {
           )}
         </div>
       </div>
+
+      <StoreStatsBar />
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">

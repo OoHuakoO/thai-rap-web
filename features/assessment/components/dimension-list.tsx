@@ -99,7 +99,10 @@ export function DimensionList({
       </div>
 
       <div className="flex items-center justify-between border-t bg-muted/20 px-3 py-2.5">
-        <span className="text-[10px] text-muted-foreground">คะแนนรวมถ่วงน้ำหนัก</span>
+        <div>
+          <span className="block text-[10px] text-muted-foreground">คะแนนรวมถ่วงน้ำหนัก</span>
+          <span className="cursor-default text-[9px] text-orange underline">ดูรูปภาพผลทั้งหมด →</span>
+        </div>
         <span className="text-base font-extrabold text-orange">
           {(totalScore ?? 0).toFixed(2)}
           <span className="text-[10px] font-normal text-muted-foreground">/100</span>

@@ -1,11 +1,13 @@
 import { http, HttpResponse } from 'msw'
-import { storeDb } from '../fixtures/store.fixtures'
+import { storeDb, STORE_TARGET_TOTAL } from '../fixtures/store.fixtures'
 import { createStoreFromDto } from '../factories/store.factory'
 import type {
   Store,
   CreateStoreDto,
   UpdateStoreDto,
   StoreStatus,
+  StoreStats,
+  ProvinceDistribution,
 } from '@/features/store/types/store.types'
 import type { ApiErrorResponse, PaginatedResponse } from '@/types/api.types'
 import { API_URL } from '@/constants'
@@ -53,6 +55,7 @@ export const storeHandlers = [
     const url = new URL(request.url)
     const search = url.searchParams.get('search')?.toLowerCase()
     const province = url.searchParams.get('province')
+    const storeType = url.searchParams.get('storeType')
     const status = url.searchParams.get('status')
 
     let stores = storeDb.getAll()
@@ -62,6 +65,7 @@ export const storeHandlers = [
       )
     }
     if (province) stores = stores.filter((s) => s.province === province)
+    if (storeType) stores = stores.filter((s) => s.storeType === storeType)
     if (status) stores = stores.filter((s) => s.status === status)
 
     const page = Number(url.searchParams.get('page') ?? 1)
@@ -73,6 +77,40 @@ export const storeHandlers = [
     return HttpResponse.json<PaginatedResponse<Store>>({
       items: stores.slice(start, start + limit),
       meta: { page, limit, total, totalPages },
+    })
+  }),
+
+  http.get(`${BASE_URL}/stats`, ({ request }) => {
+    const scenario = getScenario(request)
+    if (scenario === 'server-error') return serverError()
+
+    const stores = storeDb.getAll()
+    const total = stores.length
+    const t0CompletedCount = stores.filter((s) => s.latestScore !== null).length
+    const t1CompletedCount = stores.filter((s) => s.status === 'T1_COMPLETED').length
+    const passedCount = stores.filter((s) =>
+      ['SELECTED', 'CONDITIONAL_SELECTED'].includes(s.status)
+    ).length
+
+    const provinceCounts = new Map<string, number>()
+    for (const s of stores) {
+      provinceCounts.set(s.province, (provinceCounts.get(s.province) ?? 0) + 1)
+    }
+    const byProvince: ProvinceDistribution[] = Array.from(provinceCounts.entries())
+      .map(([province, count]) => ({
+        province,
+        count,
+        pct: total === 0 ? 0 : Math.round((count / total) * 1000) / 10,
+      }))
+      .sort((a, b) => b.count - a.count)
+
+    return HttpResponse.json<StoreStats>({
+      total,
+      targetTotal: STORE_TARGET_TOTAL,
+      t0CompletedCount,
+      t1CompletedCount,
+      passedCount,
+      byProvince,
     })
   }),
 

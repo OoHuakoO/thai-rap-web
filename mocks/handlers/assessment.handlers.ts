@@ -1,13 +1,16 @@
 import { http, HttpResponse } from 'msw'
-import { assessmentDb, dimensionSeed, questionSeed } from '../fixtures/assessment.fixtures'
+import { assessmentDb, dimensionSeed, questionSeed, getDimensionAverages } from '../fixtures/assessment.fixtures'
+import { storeDb } from '../fixtures/store.fixtures'
 import type {
   Assessment,
   AssessmentSummary,
   AssessmentQuestion,
+  AssessmentRank,
   CreateAssessmentDto,
   UpdateScoreDto,
   Dimension,
   Question,
+  Round,
 } from '@/features/assessment/types/assessment.types'
 import type { ApiErrorResponse, PaginatedResponse } from '@/types/api.types'
 import { API_URL } from '@/constants'
@@ -65,6 +68,44 @@ export const assessmentHandlers = [
       items,
       meta: { page: 1, limit: items.length || 1, total: items.length, totalPages: 1 },
     })
+  }),
+
+  http.get(`${BASE_URL}/assessments/rank`, ({ request }) => {
+    if (getScenario(request) === 'server-error') return serverError()
+    const url = new URL(request.url)
+    const storeId = url.searchParams.get('storeId')
+    const round = url.searchParams.get('round') as Round | null
+    if (!storeId || !round) return notFound('ASSESS_003', 'storeId and round are required')
+
+    const store = storeDb.findById(storeId)
+    const ranked = [...assessmentDb.findAllByRound(round)].sort(
+      (a, b) => (b.totalScore ?? 0) - (a.totalScore ?? 0)
+    )
+    const overallIndex = ranked.findIndex((a) => a.storeId === storeId)
+    const provinceRanked = store
+      ? ranked.filter((a) => storeDb.findById(a.storeId)?.province === store.province)
+      : []
+    const provinceIndex = provinceRanked.findIndex((a) => a.storeId === storeId)
+
+    const dimensionAverages = Array.from(getDimensionAverages(round).entries()).map(
+      ([dimensionId, avgPct]) => ({ dimensionId, avgPct })
+    )
+
+    return HttpResponse.json<AssessmentRank>({
+      overallRank: overallIndex === -1 ? null : overallIndex + 1,
+      overallTotal: ranked.length,
+      provinceRank: provinceIndex === -1 ? null : provinceIndex + 1,
+      provinceTotal: provinceRanked.length,
+      dimensionAverages,
+    })
+  }),
+
+  http.patch(`${BASE_URL}/assessments/:id/notes`, async ({ request, params }) => {
+    if (getScenario(request) === 'server-error') return serverError()
+    const body = (await request.json()) as { notes: string }
+    const updated = assessmentDb.updateNotes(params.id as string, body.notes)
+    if (!updated) return notFound('ASSESS_001', 'Assessment not found')
+    return HttpResponse.json<Assessment>(updated)
   }),
 
   http.get(`${BASE_URL}/assessments/:id`, ({ request, params }) => {

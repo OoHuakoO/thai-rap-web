@@ -1,4 +1,6 @@
 export { AssessmentForm } from './components/assessment-form'
+export { AssessmentStoreList } from './components/assessment-store-list'
+export { AssessmentStorePicker } from './components/assessment-store-picker'
 export { RoundPills } from './components/round-pills'
 export { RoundPicker } from './components/round-picker'
 export {
@@ -7,6 +9,8 @@ export {
   useAssessment,
   useUpdateScore,
   useSubmitAssessment,
+  useUpdateNotes,
+  useAssessmentRank,
 } from './hooks/use-assessment'
 export { ROUND_LABELS, TOTAL_QUESTIONS } from './types/assessment.types'
 export type {
@@ -16,5 +20,7 @@ export type {
   Assessment,
   AssessmentQuestion,
   AssessmentSummary,
+  AssessmentRank,
+  DimensionAverage,
   RedFlag,
 } from './types/assessment.types'

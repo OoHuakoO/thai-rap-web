@@ -2,16 +2,26 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
 import { Loading } from '@/components/shared/loading'
 import { ProgressBar } from '@/components/shared/progress-bar'
+import { Button } from '@/components/ui/button'
 import { extractErrorMessage } from '@/utils/extract-error-message'
 import { useStore } from '@/features/store'
+import { AssessmentStorePicker } from './assessment-store-picker'
 import { RoundPills } from './round-pills'
 import { DimensionList } from './dimension-list'
 import { AssessTable } from './assess-table'
 import { ScoreSummary } from './score-summary'
 import { SubmitBar } from './submit-bar'
-import { useAssessment, useDimensions, useSubmitAssessment, useUpdateScore } from '../hooks/use-assessment'
+import { TimelineArea } from './timeline-area'
+import {
+  assessmentKeys,
+  useAssessment,
+  useDimensions,
+  useSubmitAssessment,
+  useUpdateScore,
+} from '../hooks/use-assessment'
 import { TOTAL_QUESTIONS } from '../types/assessment.types'
 import type { Round } from '../types/assessment.types'
 
@@ -21,6 +31,7 @@ interface AssessmentFormProps {
 }
 
 export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
+  const queryClient = useQueryClient()
   const { data: store } = useStore(storeId)
   const { data: assessment, isLoading, isError, error } = useAssessment(storeId, round)
   const { data: dimensions } = useDimensions()
@@ -61,6 +72,20 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
     )
   }
 
+  const handleEvidenceChange = (questionId: number, evidence: string[]) => {
+    const question = assessment.questions.find((q) => q.questionId === questionId)
+    if (question?.rawScore === null || question?.rawScore === undefined) return
+    updateScore.mutate(
+      { questionId, rawScore: question.rawScore, note: question.note ?? undefined, evidence },
+      { onError: (err) => toast.error(extractErrorMessage(err)) }
+    )
+  }
+
+  const handleSaveDraft = () => {
+    queryClient.invalidateQueries({ queryKey: assessmentKeys.byStoreRound(storeId, round) })
+    toast.success('บันทึกร่างเรียบร้อย')
+  }
+
   const handleSubmit = () => {
     const firstUnscored = [...assessment.questions]
       .sort((a, b) => a.questionNo - b.questionNo)
@@ -92,10 +117,7 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end gap-4 rounded-xl border bg-card p-3 shadow-sm">
-        <div>
-          <p className="text-[10px] text-muted-foreground">ร้านอาหาร</p>
-          <p className="text-sm font-bold text-charcoal">{store?.name ?? '—'}</p>
-        </div>
+        <AssessmentStorePicker storeId={storeId} storeName={store?.name} round={round} />
         <div>
           <p className="mb-1 text-[10px] text-muted-foreground">รอบประเมิน</p>
           <RoundPills storeId={storeId} activeRound={round} />
@@ -107,6 +129,14 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
             <span className="text-sm font-bold text-orange">{progressPct}%</span>
           </div>
         </div>
+        <Button
+          variant="outline"
+          className="ml-auto gap-1.5 border-orange text-orange hover:bg-orange/10 hover:text-orange"
+          onClick={handleSaveDraft}
+          disabled={locked}
+        >
+          💾 บันทึกร่าง
+        </Button>
       </div>
 
       {dimensions && (
@@ -127,11 +157,14 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
               highlightedId={highlightedId}
               onScoreChange={handleScoreChange}
               onNoteChange={handleNoteChange}
+              onEvidenceChange={handleEvidenceChange}
             />
           )}
 
           <ScoreSummary
+            storeId={storeId}
             store={store}
+            round={round}
             selectedDimId={selectedDim}
             totalScore={assessment.totalScore}
             questions={assessment.questions}
@@ -149,6 +182,8 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
           onSubmit={handleSubmit}
         />
       </div>
+
+      <TimelineArea storeId={storeId} round={round} assessmentId={assessment.id} notes={assessment.notes} />
     </div>
   )
 }

@@ -36,8 +36,23 @@ export function Sidebar({ className }: SidebarProps) {
 
       {/* Main nav */}
       <nav aria-label="Main navigation" className="flex flex-1 flex-col gap-0.5">
-        {navItems.map(({ labelTh, href, icon: Icon }) => {
+        {navItems.map(({ labelTh, href, icon: Icon, disabled }) => {
           const isActive = href === ROUTES.HOME ? pathname === href : pathname.startsWith(href)
+
+          if (disabled) {
+            return (
+              <span
+                key={href}
+                aria-disabled="true"
+                title="ยังไม่เปิดใช้งาน"
+                className="flex cursor-not-allowed items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-gray-500 opacity-50"
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                {labelTh}
+              </span>
+            )
+          }
+
           return (
             <Link
               key={href}
@@ -61,16 +76,28 @@ export function Sidebar({ className }: SidebarProps) {
         <>
           <Separator className="my-2 bg-white/10" />
           <nav aria-label="Help navigation" className="flex flex-col gap-0.5">
-            {bottomItems.map(({ labelTh, href, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-                {labelTh}
-              </Link>
-            ))}
+            {bottomItems.map(({ labelTh, href, icon: Icon, disabled }) =>
+              disabled ? (
+                <span
+                  key={href}
+                  aria-disabled="true"
+                  title="ยังไม่เปิดใช้งาน"
+                  className="flex cursor-not-allowed items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-gray-500 opacity-50"
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {labelTh}
+                </span>
+              ) : (
+                <Link
+                  key={href}
+                  href={href}
+                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {labelTh}
+                </Link>
+              )
+            )}
           </nav>
         </>
       )}
