@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const REGISTERABLE_ROLES = ['ENTREPRENEUR', 'ASSESSOR', 'MENTOR', 'JUDGE', 'ME_TEAM'] as const
+export const REGISTERABLE_ROLES = ['ENTREPRENEUR', 'ASSESSOR'] as const
 
 export const registerSchema = z
   .object({

@@ -13,7 +13,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     if (hasHydrated && isAuthenticated) {
-      router.replace(ROUTES.HOME)
+      router.replace(ROUTES.ASSESSMENT)
     }
   }, [hasHydrated, isAuthenticated, router])
 
