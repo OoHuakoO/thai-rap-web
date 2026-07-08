@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useState } from 'react';
 import { QUERY_STALE_TIME_MS } from '@/constants';
 import { MockProvider } from './mock-provider';
+import { AuthBootstrap } from './auth-bootstrap';
 import { Toaster } from '@/components/ui/sonner';
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -24,6 +25,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <MockProvider>
       <QueryClientProvider client={queryClient}>
+        <AuthBootstrap />
         {children}
         <Toaster position="top-right" richColors />
         <ReactQueryDevtools initialIsOpen={false} />

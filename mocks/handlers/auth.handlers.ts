@@ -1,5 +1,6 @@
 import { http, HttpResponse } from 'msw'
 import { userDb } from '../fixtures/user.fixtures'
+import { authSession } from '../fixtures/auth.fixtures'
 import { createUser } from '../factories/user.factory'
 import type {
   LoginDto,
@@ -39,10 +40,16 @@ function serverError(): Response {
   )
 }
 
+function refreshTokenInvalid(): Response {
+  return HttpResponse.json<ApiErrorResponse>(
+    { success: false, error: { code: 'AUTH_004', message: 'Refresh token is invalid' } },
+    { status: 401 }
+  )
+}
+
 function mockTokens(userId: string): AuthTokens {
   return {
     accessToken: `mock-access-${userId}`,
-    refreshToken: `mock-refresh-${userId}`,
     expiresIn: 900,
   }
 }
@@ -58,6 +65,7 @@ export const authHandlers = [
     const found = userDb.getAll().find((u) => u.email === body.email)
     if (!found) return unauthorized()
 
+    authSession.set(found.id)
     const user: AuthUser = { id: found.id, name: found.name, email: found.email, role: found.role }
     return HttpResponse.json<LoginResponse>({ user, tokens: mockTokens(found.id) })
   }),
@@ -75,6 +83,7 @@ export const authHandlers = [
     const created = createUser({ name: body.name, email: body.email, role: body.role })
     userDb.create(created)
 
+    authSession.set(created.id)
     const user: AuthUser = { id: created.id, name: created.name, email: created.email, role: created.role }
     return HttpResponse.json<RegisterResponse>(
       { user, tokens: mockTokens(created.id) },
@@ -82,19 +91,15 @@ export const authHandlers = [
     )
   }),
 
-  http.post(`${BASE_URL}/refresh`, async ({ request }) => {
-    const scenario = getScenario(request)
-    if (scenario === 'server-error') return serverError()
+  http.post(`${BASE_URL}/refresh`, () => {
+    const userId = authSession.get()
+    if (!userId) return refreshTokenInvalid()
 
-    const body = (await request.json()) as { refreshToken?: string }
-    if (!body.refreshToken?.startsWith('mock-refresh-')) {
-      return HttpResponse.json<ApiErrorResponse>(
-        { success: false, error: { code: 'AUTH_004', message: 'Refresh token is invalid' } },
-        { status: 401 }
-      )
-    }
-
-    const userId = body.refreshToken.replace('mock-refresh-', '')
     return HttpResponse.json<AuthTokens>(mockTokens(userId))
+  }),
+
+  http.post(`${BASE_URL}/logout`, () => {
+    authSession.clear()
+    return HttpResponse.json(null)
   }),
 ]

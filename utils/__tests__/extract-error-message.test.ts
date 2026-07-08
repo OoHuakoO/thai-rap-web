@@ -1,4 +1,3 @@
-// Run with: npx vitest (requires vitest + @testing-library setup from Sprint 8)
 import { describe, it, expect } from 'vitest'
 import { ApiError } from '@/services/api-error'
 import { extractErrorMessage } from '../extract-error-message'

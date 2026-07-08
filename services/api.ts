@@ -1,7 +1,7 @@
 import axios from 'axios'
 import type { InternalAxiosRequestConfig } from 'axios'
 import { toast } from 'sonner'
-import { API_URL, API_TIMEOUT_MS } from '@/constants'
+import { API_URL, API_TIMEOUT_MS, HTTP_STATUS } from '@/constants'
 import { ROUTES } from '@/constants/routes'
 import { useAuthStore } from '@/stores/useAuthStore'
 import type { AuthTokens } from '@/features/auth/types/auth-response.types'
@@ -11,21 +11,21 @@ export const api = axios.create({
   baseURL: API_URL,
   headers: { 'Content-Type': 'application/json' },
   timeout: API_TIMEOUT_MS,
+  withCredentials: true,
 })
 
-api.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
-    try {
-      const raw = localStorage.getItem('auth-storage')
-      if (raw) {
-        const { state } = JSON.parse(raw) as { state: { accessToken?: string } }
-        if (state?.accessToken) {
-          config.headers.Authorization = `Bearer ${state.accessToken}`
-        }
-      }
-    } catch {
-      // storage unavailable or malformed — proceed without token
-    }
+const REFRESH_BUFFER_MS = 10_000
+
+api.interceptors.request.use(async (config) => {
+  const { accessToken, expiresAt } = useAuthStore.getState()
+  let token = accessToken
+
+  if (token && expiresAt && expiresAt - Date.now() < REFRESH_BUFFER_MS) {
+    token = await refreshAccessToken()
+  }
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
   }
   return config
 })
@@ -44,20 +44,25 @@ api.interceptors.response.use((response) => {
 
 const AUTH_ENDPOINTS_WITHOUT_RETRY = ['/auth/login', '/auth/register', '/auth/refresh']
 
-function isAuthEndpointWithoutRetry(url?: string): boolean {
-  return !!url && AUTH_ENDPOINTS_WITHOUT_RETRY.some((path) => url.includes(path))
+// Login/register failures are shown inline on the auth form — a global
+// logout+redirect on their 401 would blow away that form before the user
+// ever sees why (e.g. wrong password).
+const AUTH_ENDPOINTS_WITHOUT_REDIRECT = ['/auth/login', '/auth/register']
+
+function matchesAuthEndpoint(url: string | undefined, endpoints: string[]): boolean {
+  return !!url && endpoints.some((path) => url.includes(path))
 }
 
 let refreshPromise: Promise<string | null> | null = null
 
+// refreshToken is never held client-side — it travels only as an httpOnly
+// cookie, sent automatically via `withCredentials`.
 async function doRefreshAccessToken(): Promise<string | null> {
-  const { refreshToken } = useAuthStore.getState()
-  if (!refreshToken) return null
-
   try {
     const res = await axios.post<{ success: boolean; data: AuthTokens }>(
       `${API_URL}/auth/refresh`,
-      { refreshToken }
+      {},
+      { withCredentials: true }
     )
     const tokens = res.data.data
     useAuthStore.getState().setTokens(tokens)
@@ -67,9 +72,9 @@ async function doRefreshAccessToken(): Promise<string | null> {
   }
 }
 
-// Concurrent 401s share a single in-flight refresh call instead of each
-// triggering their own POST /auth/refresh.
-function refreshAccessToken(): Promise<string | null> {
+// Concurrent 401s (and concurrent proactive refreshes) share a single
+// in-flight call instead of each triggering their own POST /auth/refresh.
+export function refreshAccessToken(): Promise<string | null> {
   if (!refreshPromise) {
     refreshPromise = doRefreshAccessToken().finally(() => {
       refreshPromise = null
@@ -95,10 +100,10 @@ api.interceptors.response.use(
       : undefined
 
     if (
-      apiError.statusCode === 401 &&
+      apiError.statusCode === HTTP_STATUS.UNAUTHORIZED &&
       originalRequest &&
       !originalRequest._retry &&
-      !isAuthEndpointWithoutRetry(originalRequest.url)
+      !matchesAuthEndpoint(originalRequest.url, AUTH_ENDPOINTS_WITHOUT_RETRY)
     ) {
       originalRequest._retry = true
       const newAccessToken = await refreshAccessToken()
@@ -110,17 +115,18 @@ api.interceptors.response.use(
 
     if (typeof window !== 'undefined') {
       switch (apiError.statusCode) {
-        case 401:
-          useAuthStore.getState().logout()
-          localStorage.removeItem('auth-storage')
-          window.location.href = `${ROUTES.LOGIN}?returnUrl=${encodeURIComponent(window.location.pathname)}`
+        case HTTP_STATUS.UNAUTHORIZED:
+          if (!matchesAuthEndpoint(originalRequest?.url, AUTH_ENDPOINTS_WITHOUT_REDIRECT)) {
+            useAuthStore.getState().logout()
+            window.location.href = `${ROUTES.LOGIN}?returnUrl=${encodeURIComponent(window.location.pathname)}`
+          }
           break
 
-        case 403:
+        case HTTP_STATUS.FORBIDDEN:
           window.location.href = ROUTES.ERROR_403
           break
 
-        case 429: {
+        case HTTP_STATUS.RATE_LIMITED: {
           const seconds = apiError.retryAfter
           const msg = seconds
             ? `คำขอมากเกินไป กรุณาลองอีกครั้งใน ${seconds} วินาที`
@@ -129,13 +135,13 @@ api.interceptors.response.use(
           break
         }
 
-        case 500:
-        case 502:
-        case 504:
+        case HTTP_STATUS.SERVER_ERROR:
+        case HTTP_STATUS.BAD_GATEWAY:
+        case HTTP_STATUS.GATEWAY_TIMEOUT:
           window.location.href = ROUTES.ERROR_500
           break
 
-        case 503:
+        case HTTP_STATUS.SERVICE_UNAVAILABLE:
           window.location.href = ROUTES.ERROR_503
           break
       }

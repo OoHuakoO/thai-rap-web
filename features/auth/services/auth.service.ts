@@ -7,4 +7,6 @@ export const authService = {
 
   register: (data: RegisterDto) =>
     api.post<RegisterResponse>('/auth/register', data).then((res) => res.data),
+
+  logout: () => api.post<void>('/auth/logout').then((res) => res.data),
 }

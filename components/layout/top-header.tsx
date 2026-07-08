@@ -6,13 +6,15 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { cn } from '@/utils/cn'
 import { Bell, LogOut } from 'lucide-react'
 import { ROLE_LABELS } from '@/types/auth.types'
+import { useLogout } from '@/features/auth'
 
 interface TopHeaderProps {
   className?: string
 }
 
 export function TopHeader({ className }: TopHeaderProps) {
-  const { user, logout } = useAuthStore()
+  const user = useAuthStore((s) => s.user)
+  const { mutate: logout } = useLogout()
 
   return (
     <header
@@ -38,7 +40,7 @@ export function TopHeader({ className }: TopHeaderProps) {
               <p className="text-[11px] text-muted-foreground leading-tight">{ROLE_LABELS[user.role]}</p>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={logout} aria-label="Log out" className="h-8 w-8">
+          <Button variant="ghost" size="icon" onClick={() => logout()} aria-label="Log out" className="h-8 w-8">
             <LogOut className="h-4 w-4" />
           </Button>
         </>

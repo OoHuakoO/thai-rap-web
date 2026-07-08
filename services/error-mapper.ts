@@ -2,17 +2,18 @@ import axios from 'axios'
 import { ApiError } from './api-error'
 import type { ErrorCode } from './api-error'
 import type { ApiErrorResponse } from '@/types/api.types'
+import { HTTP_STATUS } from '@/constants/http-status'
 
 function codeFromStatus(status: number): ErrorCode {
   switch (status) {
-    case 400: return 'BAD_REQUEST'
-    case 401: return 'UNAUTHORIZED'
-    case 403: return 'FORBIDDEN'
-    case 404: return 'NOT_FOUND'
-    case 429: return 'RATE_LIMITED'
-    case 503: return 'SERVICE_UNAVAILABLE'
+    case HTTP_STATUS.BAD_REQUEST: return 'BAD_REQUEST'
+    case HTTP_STATUS.UNAUTHORIZED: return 'UNAUTHORIZED'
+    case HTTP_STATUS.FORBIDDEN: return 'FORBIDDEN'
+    case HTTP_STATUS.NOT_FOUND: return 'NOT_FOUND'
+    case HTTP_STATUS.RATE_LIMITED: return 'RATE_LIMITED'
+    case HTTP_STATUS.SERVICE_UNAVAILABLE: return 'SERVICE_UNAVAILABLE'
     default:
-      if (status >= 500) return 'SERVER_ERROR'
+      if (status >= HTTP_STATUS.SERVER_ERROR) return 'SERVER_ERROR'
       return 'UNKNOWN'
   }
 }
