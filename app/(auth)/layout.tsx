@@ -4,18 +4,19 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore, useHasHydrated } from '@/stores/useAuthStore'
 import { Loading } from '@/components/shared/loading'
-import { ROUTES } from '@/constants/routes'
+import { getDefaultRouteForRole } from '@/constants/nav-config'
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const role = useAuthStore((s) => s.user?.role)
   const hasHydrated = useHasHydrated()
   const router = useRouter()
 
   useEffect(() => {
-    if (hasHydrated && isAuthenticated) {
-      router.replace(ROUTES.ASSESSMENT)
+    if (hasHydrated && isAuthenticated && role) {
+      router.replace(getDefaultRouteForRole(role))
     }
-  }, [hasHydrated, isAuthenticated, router])
+  }, [hasHydrated, isAuthenticated, role, router])
 
   if (!hasHydrated) return <Loading className="min-h-screen" />
   if (isAuthenticated) return null

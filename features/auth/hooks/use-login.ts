@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { authService } from '../services/auth.service'
 import { useAuthStore } from '@/stores/useAuthStore'
-import { ROUTES } from '@/constants/routes'
+import { getDefaultRouteForRole } from '@/constants/nav-config'
 
 export function useLogin() {
   const login = useAuthStore((s) => s.login)
@@ -14,7 +14,7 @@ export function useLogin() {
     mutationFn: authService.login,
     onSuccess: ({ user, tokens }) => {
       login(user, tokens)
-      router.replace(ROUTES.ASSESSMENT)
+      router.replace(getDefaultRouteForRole(user.role))
     },
   })
 }

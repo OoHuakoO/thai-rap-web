@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select'
 import { ROUTES } from '@/constants/routes'
 import { ROLE_LABELS } from '@/types/auth.types'
+import type { Role } from '@/types/auth.types'
 import { registerSchema, REGISTERABLE_ROLES } from '../schemas/register.schema'
 import type { RegisterFormValues } from '../schemas/register.schema'
 import { useRegister } from '../hooks/use-register'
@@ -83,8 +84,12 @@ export function RegisterForm() {
                 <SelectValue placeholder="เลือกบทบาท" />
               </SelectTrigger>
               <SelectContent>
-                {REGISTERABLE_ROLES.map((role) => (
-                  <SelectItem key={role} value={role}>
+                {(Object.keys(ROLE_LABELS) as Role[]).map((role) => (
+                  <SelectItem
+                    key={role}
+                    value={role}
+                    disabled={!REGISTERABLE_ROLES.includes(role as (typeof REGISTERABLE_ROLES)[number])}
+                  >
                     {ROLE_LABELS[role]}
                   </SelectItem>
                 ))}

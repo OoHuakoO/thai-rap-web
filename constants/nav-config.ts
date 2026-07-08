@@ -104,3 +104,8 @@ export function getNavItemsForRole(role: Role): NavItem[] {
 export function getBottomNavItemsForRole(role: Role): NavItem[] {
   return NAV_BOTTOM_ITEMS.filter((item) => item.allowedRoles.includes(role))
 }
+
+export function getDefaultRouteForRole(role: Role): string {
+  const firstAccessible = getNavItemsForRole(role).find((item) => !item.disabled)
+  return firstAccessible?.href ?? ROUTES.HOME
+}

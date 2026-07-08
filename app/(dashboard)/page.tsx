@@ -1,13 +1,4 @@
 import type { Metadata } from 'next'
-import {
-  KpiRow,
-  ProvinceDonut,
-  IncubationStepper,
-  ProvinceBarChart,
-  ActivityFeed,
-  Top20Table,
-  ReportsStatusTable,
-} from '@/features/dashboard'
 
 export const metadata: Metadata = {
   title: 'Dashboard | Thai Rap',
@@ -28,27 +19,6 @@ export default function DashboardPage() {
           ประปีงบประมาณ พ.ศ. 2569
         </p>
       </div>
-
-      {/* KPI row */}
-      <KpiRow />
-
-      {/* Row 2: Donut | Top20 | Incubation (3 equal columns) */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <ProvinceDonut />
-        <Top20Table />
-        <IncubationStepper />
-      </div>
-
-      {/* Row 3: BarChart (2/3) | Activity (1/3) */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <ProvinceBarChart />
-        </div>
-        <ActivityFeed />
-      </div>
-
-      {/* Row 4: Reports status */}
-      <ReportsStatusTable />
     </div>
   )
 }
