@@ -52,6 +52,27 @@ export function useUpdateScore(storeId: string, round: Round, assessmentId: stri
   })
 }
 
+export function useUploadEvidence(storeId: string, round: Round, assessmentId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ questionId, file }: { questionId: number; file: File }) =>
+      assessmentService.uploadEvidence(assessmentId, questionId, file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: assessmentKeys.byStoreRound(storeId, round) })
+    },
+  })
+}
+
+export function useDeleteEvidence(storeId: string, round: Round, assessmentId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (evidenceId: string) => assessmentService.deleteEvidence(assessmentId, evidenceId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: assessmentKeys.byStoreRound(storeId, round) })
+    },
+  })
+}
+
 export function useSubmitAssessment(storeId: string, round: Round, assessmentId: string) {
   const queryClient = useQueryClient()
   return useMutation({

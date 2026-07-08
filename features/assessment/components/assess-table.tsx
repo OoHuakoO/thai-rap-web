@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import { QuestionRow } from './question-row'
 import type { AssessmentQuestion, Dimension } from '../types/assessment.types'
 
@@ -8,9 +9,13 @@ interface AssessTableProps {
   questions: AssessmentQuestion[]
   locked: boolean
   highlightedId: number | null
+  isUploading?: boolean
   onScoreChange: (questionId: number, score: number) => void
   onNoteChange: (questionId: number, note: string) => void
-  onEvidenceChange: (questionId: number, evidence: string[]) => void
+  onUploadEvidence: (questionId: number, file: File) => void
+  onDeleteEvidence: (evidenceId: string) => void
+  onSaveDraft: () => void
+  onSaveNext: () => void
 }
 
 export function AssessTable({
@@ -18,9 +23,13 @@ export function AssessTable({
   questions,
   locked,
   highlightedId,
+  isUploading,
   onScoreChange,
   onNoteChange,
-  onEvidenceChange,
+  onUploadEvidence,
+  onDeleteEvidence,
+  onSaveDraft,
+  onSaveNext,
 }: AssessTableProps) {
   const sorted = [...questions].sort((a, b) => a.questionNo - b.questionNo)
   const max = sorted.length * 4
@@ -28,7 +37,7 @@ export function AssessTable({
   const pct = max === 0 ? 0 : Math.round((sum / max) * 100)
 
   return (
-    <div className="rounded-xl border bg-card shadow-sm">
+    <div id="assess-card" className="rounded-xl border bg-card shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b px-4 py-3">
         <div>
           <p className="text-sm font-bold text-charcoal">
@@ -68,21 +77,37 @@ export function AssessTable({
                 question={q}
                 locked={locked}
                 highlighted={highlightedId === q.questionId}
+                isUploading={isUploading}
                 onScoreChange={(score) => onScoreChange(q.questionId, score)}
                 onNoteChange={(note) => onNoteChange(q.questionId, note)}
-                onEvidenceChange={(evidence) => onEvidenceChange(q.questionId, evidence)}
+                onUploadEvidence={(file) => onUploadEvidence(q.questionId, file)}
+                onDeleteEvidence={onDeleteEvidence}
               />
             ))}
           </tbody>
         </table>
       </div>
 
-      <div className="flex items-center justify-between border-t bg-muted/20 px-4 py-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t bg-muted/20 px-4 py-2.5">
         <div>
           <p className="text-[10px] text-muted-foreground">คะแนนรวมมิตินี้ (raw score)</p>
           <p className="text-base font-extrabold text-orange">
             {sum} <span className="text-xs font-normal text-muted-foreground">/ {max} คะแนน ({pct}%)</span>
           </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 border-orange text-orange hover:bg-orange/10 hover:text-orange"
+            onClick={onSaveDraft}
+            disabled={locked}
+          >
+            💾 บันทึกร่าง
+          </Button>
+          <Button size="sm" onClick={onSaveNext} disabled={locked}>
+            บันทึกและถัดไป →
+          </Button>
         </div>
       </div>
     </div>

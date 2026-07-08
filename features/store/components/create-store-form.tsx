@@ -18,6 +18,10 @@ const createStoreSchema = z.object({
   phone: z.string().min(1, 'กรุณากรอกเบอร์โทร'),
   address: z.string().min(1, 'กรุณากรอกที่อยู่'),
   email: z.string().email('อีเมลไม่ถูกต้อง').optional().or(z.literal('')),
+  avgRevenue: z
+    .string()
+    .optional()
+    .refine((v) => !v || /^\d+$/.test(v), 'กรอกตัวเลขเท่านั้น'),
   mainProblems: z.string().optional(),
   goals: z.string().optional(),
 })
@@ -42,7 +46,11 @@ export function CreateStoreForm({ onSuccess }: CreateStoreFormProps) {
 
   const onSubmit = (data: CreateStoreFormValues) => {
     createStore(
-      { ...data, email: data.email || undefined },
+      {
+        ...data,
+        email: data.email || undefined,
+        avgRevenue: data.avgRevenue ? Number(data.avgRevenue) : undefined,
+      },
       {
         onSuccess: () => {
           reset()
@@ -101,6 +109,14 @@ export function CreateStoreForm({ onSuccess }: CreateStoreFormProps) {
           <Label htmlFor="email">อีเมล (ไม่บังคับ)</Label>
           <Input id="email" type="email" {...register('email')} placeholder="somsri@example.com" />
           {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="avgRevenue">ยอดขายเฉลี่ย/เดือน บาท (ไม่บังคับ)</Label>
+          <Input id="avgRevenue" inputMode="numeric" {...register('avgRevenue')} placeholder="15000" />
+          {errors.avgRevenue && (
+            <p className="text-xs text-destructive">{errors.avgRevenue.message}</p>
+          )}
         </div>
       </div>
 

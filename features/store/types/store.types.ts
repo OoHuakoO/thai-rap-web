@@ -20,7 +20,7 @@ export const STORE_STATUS_LABELS: Record<StoreStatus, string> = {
   CAMP_COMPLETED: 'เข้าค่ายแล้ว',
   T1_COMPLETED: 'ประเมิน T1 แล้ว',
   PITCHING_COMPLETED: 'นำเสนอ Pitching แล้ว',
-  SELECTED: 'ผ่านเข้า Incubation',
+  SELECTED: 'ผ่านเข้ารอบ',
   CONDITIONAL_SELECTED: 'ผ่านแบบมีเงื่อนไข',
   WAITING_LIST: 'รายชื่อสำรอง',
   NOT_SELECTED: 'ยังไม่ผ่าน',

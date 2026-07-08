@@ -29,7 +29,6 @@ export const NAV_ITEMS: NavItem[] = [
     href: ROUTES.HOME,
     icon: LayoutDashboard,
     allowedRoles: ['ADMIN', 'ASSESSOR', 'MENTOR', 'ME_TEAM', 'JUDGE'],
-    disabled: true,
   },
   {
     label: 'Stores',

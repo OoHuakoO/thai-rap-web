@@ -18,9 +18,11 @@ import { TimelineArea } from './timeline-area'
 import {
   assessmentKeys,
   useAssessment,
+  useDeleteEvidence,
   useDimensions,
   useSubmitAssessment,
   useUpdateScore,
+  useUploadEvidence,
 } from '../hooks/use-assessment'
 import { TOTAL_QUESTIONS } from '../types/assessment.types'
 import type { Round } from '../types/assessment.types'
@@ -40,6 +42,8 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
 
   const updateScore = useUpdateScore(storeId, round, assessment?.id ?? '')
   const submitAssessment = useSubmitAssessment(storeId, round, assessment?.id ?? '')
+  const uploadEvidence = useUploadEvidence(storeId, round, assessment?.id ?? '')
+  const deleteEvidence = useDeleteEvidence(storeId, round, assessment?.id ?? '')
 
   if (isLoading) return <Loading className="py-16" />
 
@@ -72,18 +76,42 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
     )
   }
 
-  const handleEvidenceChange = (questionId: number, evidence: string[]) => {
-    const question = assessment.questions.find((q) => q.questionId === questionId)
-    if (question?.rawScore === null || question?.rawScore === undefined) return
-    updateScore.mutate(
-      { questionId, rawScore: question.rawScore, note: question.note ?? undefined, evidence },
-      { onError: (err) => toast.error(extractErrorMessage(err)) }
+  const handleUploadEvidence = (questionId: number, file: File) => {
+    uploadEvidence.mutate(
+      { questionId, file },
+      {
+        onSuccess: () => toast.success(`แนบไฟล์ ${file.name} แล้ว`),
+        onError: (err) => toast.error(extractErrorMessage(err)),
+      }
     )
+  }
+
+  const handleDeleteEvidence = (evidenceId: string) => {
+    deleteEvidence.mutate(evidenceId, {
+      onSuccess: () => toast.success('ลบไฟล์แล้ว'),
+      onError: (err) => toast.error(extractErrorMessage(err)),
+    })
   }
 
   const handleSaveDraft = () => {
     queryClient.invalidateQueries({ queryKey: assessmentKeys.byStoreRound(storeId, round) })
     toast.success('บันทึกร่างเรียบร้อย')
+  }
+
+  const maxDim = dimensions?.length ?? 8
+
+  const handleSaveNext = () => {
+    queryClient.invalidateQueries({ queryKey: assessmentKeys.byStoreRound(storeId, round) })
+    if (selectedDim < maxDim) {
+      setSelectedDim(selectedDim + 1)
+      requestAnimationFrame(() => {
+        document.getElementById('assess-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+      toast.success(`บันทึกแล้ว — ไปมิติที่ ${selectedDim + 1}`)
+    } else {
+      document.getElementById('submit-bar')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      toast.success('บันทึกแล้ว — ครบทุกมิติ พร้อม Submit')
+    }
   }
 
   const handleSubmit = () => {
@@ -129,18 +157,23 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
             <span className="text-sm font-bold text-orange">{progressPct}%</span>
           </div>
         </div>
-        <Button
-          variant="outline"
-          className="ml-auto gap-1.5 border-orange text-orange hover:bg-orange/10 hover:text-orange"
-          onClick={handleSaveDraft}
-          disabled={locked}
-        >
-          💾 บันทึกร่าง
-        </Button>
+        <div className="ml-auto flex items-center gap-2">
+          <Button
+            variant="outline"
+            className="gap-1.5 border-orange text-orange hover:bg-orange/10 hover:text-orange"
+            onClick={handleSaveDraft}
+            disabled={locked}
+          >
+            💾 บันทึกร่าง
+          </Button>
+          <Button onClick={handleSaveNext} disabled={locked}>
+            บันทึกและถัดไป →
+          </Button>
+        </div>
       </div>
 
       {dimensions && (
-        <div className="grid grid-cols-1 gap-3 xl:grid-cols-[220px_1fr_280px] xl:items-start">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[205px_minmax(0,1fr)_270px] lg:items-start">
           <DimensionList
             dimensions={dimensions}
             questions={assessment.questions}
@@ -155,9 +188,13 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
               questions={dimQuestions}
               locked={locked}
               highlightedId={highlightedId}
+              isUploading={uploadEvidence.isPending}
               onScoreChange={handleScoreChange}
               onNoteChange={handleNoteChange}
-              onEvidenceChange={handleEvidenceChange}
+              onUploadEvidence={handleUploadEvidence}
+              onDeleteEvidence={handleDeleteEvidence}
+              onSaveDraft={handleSaveDraft}
+              onSaveNext={handleSaveNext}
             />
           )}
 
@@ -174,7 +211,7 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
         </div>
       )}
 
-      <div className="rounded-xl border bg-card px-4 py-3 shadow-sm">
+      <div id="submit-bar" className="rounded-xl border bg-card px-4 py-3 shadow-sm">
         <SubmitBar
           scored={scoredCount}
           isSubmitted={locked}

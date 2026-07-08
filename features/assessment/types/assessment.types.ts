@@ -59,6 +59,15 @@ export interface RedFlag {
   resolved: boolean
 }
 
+export interface EvidenceFile {
+  id: string
+  filename: string
+  fileType: string
+  fileSize: number
+  url: string
+  uploadedAt: string
+}
+
 export interface AssessmentQuestion {
   questionId: number
   questionNo: number
@@ -68,7 +77,7 @@ export interface AssessmentQuestion {
   rawScore: number | null
   note: string | null
   suggestion: string | null
-  evidence: string[]
+  evidence: EvidenceFile[]
 }
 
 export interface Assessment {
@@ -109,7 +118,6 @@ export interface UpdateScoreDto {
   rawScore: number
   note?: string
   suggestion?: string
-  evidence?: string[]
 }
 
 export interface BulkScoreItem extends UpdateScoreDto {

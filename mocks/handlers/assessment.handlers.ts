@@ -7,6 +7,7 @@ import type {
   AssessmentQuestion,
   AssessmentRank,
   CreateAssessmentDto,
+  EvidenceFile,
   UpdateScoreDto,
   Dimension,
   Question,
@@ -132,8 +133,35 @@ export const assessmentHandlers = [
       body
     )
     if (!updated) return notFound('ASSESS_001', 'Assessment not found')
-    const question = updated.questions.find((q) => q.questionId === Number(params.questionId))!
+    const question = updated.questions.find((q) => q.questionId === Number(params.questionId))
+    if (!question) return notFound('ASSESS_007', 'Question not found')
     return HttpResponse.json<AssessmentQuestion>(question)
+  }),
+
+  http.post(`${BASE_URL}/assessments/:id/scores/:questionId/evidence`, async ({ request, params }) => {
+    if (getScenario(request) === 'server-error') return serverError()
+    const form = await request.formData()
+    const file = form.get('file')
+    if (!(file instanceof File)) {
+      return HttpResponse.json<ApiErrorResponse>(
+        { success: false, error: { code: 'FILE_001', message: 'file is required' } },
+        { status: 400 }
+      )
+    }
+    const created = assessmentDb.addEvidence(params.id as string, Number(params.questionId), {
+      filename: file.name,
+      fileType: file.type,
+      fileSize: file.size,
+    })
+    if (!created) return notFound('ASSESS_001', 'Assessment or scored question not found')
+    return HttpResponse.json<EvidenceFile>(created, { status: 201 })
+  }),
+
+  http.delete(`${BASE_URL}/assessments/:id/evidence/:evidenceId`, ({ request, params }) => {
+    if (getScenario(request) === 'server-error') return serverError()
+    const removed = assessmentDb.removeEvidence(params.id as string, params.evidenceId as string)
+    if (!removed) return notFound('FILE_003', 'Evidence file not found')
+    return new HttpResponse(null, { status: 200 })
   }),
 
   http.post(`${BASE_URL}/assessments/:id/submit`, ({ request, params }) => {

@@ -6,6 +6,7 @@ import { useDebounce } from '@/hooks/use-debounce'
 import { Textarea } from '@/components/ui/textarea'
 import { StatusBadge, type StatusVariant } from '@/components/shared/status-badge'
 import { cn } from '@/utils/cn'
+import { buildFileUrl } from '@/utils/build-file-url'
 import { ScoreButtonGroup } from './score-button-group'
 import type { AssessmentQuestion } from '../types/assessment.types'
 
@@ -16,22 +17,32 @@ function getStatus(score: number | null): { variant: StatusVariant; label: strin
   return { variant: 'pass', label: '✅ เสร็จสิ้น' }
 }
 
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
 interface QuestionRowProps {
   question: AssessmentQuestion
   locked: boolean
   highlighted?: boolean
+  isUploading?: boolean
   onScoreChange: (score: number) => void
   onNoteChange: (note: string) => void
-  onEvidenceChange: (evidence: string[]) => void
+  onUploadEvidence: (file: File) => void
+  onDeleteEvidence: (evidenceId: string) => void
 }
 
 export function QuestionRow({
   question,
   locked,
   highlighted,
+  isUploading,
   onScoreChange,
   onNoteChange,
-  onEvidenceChange,
+  onUploadEvidence,
+  onDeleteEvidence,
 }: QuestionRowProps) {
   const [note, setNote] = useState(question.note ?? '')
   const debouncedNote = useDebounce(note, 600)
@@ -52,11 +63,9 @@ export function QuestionRow({
 
   const handleFileSelected = (files: FileList | null) => {
     if (!files || files.length === 0) return
-    onEvidenceChange([...evidence, ...Array.from(files).map((f) => f.name)])
-  }
-
-  const handleRemoveEvidence = (name: string) => {
-    onEvidenceChange(evidence.filter((e) => e !== name))
+    for (const file of Array.from(files)) {
+      onUploadEvidence(file)
+    }
   }
 
   return (
@@ -82,18 +91,30 @@ export function QuestionRow({
       </td>
       <td className="min-w-[120px] px-2 py-2.5">
         <div className="flex flex-col gap-1">
-          {evidence.map((name) => (
+          {evidence.map((file) => (
             <div
-              key={name}
+              key={file.id}
               className="flex items-center gap-1 rounded border border-orange bg-cream px-1.5 py-0.5 text-[9.5px] text-orange"
             >
               <Paperclip className="h-2.5 w-2.5 flex-shrink-0" />
-              <span className="truncate">{name}</span>
+              <a
+                href={buildFileUrl(file.url)}
+                target="_blank"
+                rel="noreferrer"
+                className="truncate hover:underline"
+                title={`${file.filename} (${formatFileSize(file.fileSize)})`}
+              >
+                {file.filename}
+              </a>
+              <span className="flex-shrink-0 text-[8.5px] text-muted-foreground">
+                {formatFileSize(file.fileSize)}
+              </span>
               {!locked && (
                 <button
                   type="button"
-                  onClick={() => handleRemoveEvidence(name)}
+                  onClick={() => onDeleteEvidence(file.id)}
                   className="flex-shrink-0 text-orange/70 hover:text-destructive"
+                  aria-label={`ลบไฟล์ ${file.filename}`}
                 >
                   <X className="h-2.5 w-2.5" />
                 </button>
@@ -103,17 +124,19 @@ export function QuestionRow({
           {canAttach && (
             <button
               type="button"
+              disabled={isUploading}
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-1 rounded border border-dashed border-border px-1.5 py-0.5 text-[9.5px] text-muted-foreground hover:border-orange hover:text-orange"
+              className="flex items-center gap-1 rounded border border-dashed border-border px-1.5 py-0.5 text-[9.5px] text-muted-foreground hover:border-orange hover:text-orange disabled:opacity-50"
             >
               <Upload className="h-2.5 w-2.5" />
-              แนบไฟล์
+              {isUploading ? 'กำลังอัปโหลด...' : 'แนบไฟล์'}
             </button>
           )}
           <input
             ref={fileInputRef}
             type="file"
             multiple
+            accept="image/jpeg,image/png,image/webp,application/pdf,.xlsx"
             className="hidden"
             onChange={(e) => {
               handleFileSelected(e.target.files)

@@ -3,6 +3,7 @@ import type {
   Question,
   Assessment,
   AssessmentSummary,
+  EvidenceFile,
   Round,
 } from '@/features/assessment/types/assessment.types'
 
@@ -146,7 +147,7 @@ export const assessmentDb = {
   updateScore: (
     assessmentId: string,
     questionId: number,
-    data: { rawScore: number; note?: string; suggestion?: string; evidence?: string[] }
+    data: { rawScore: number; note?: string; suggestion?: string }
   ): Assessment | null => {
     const assessment = assessments.find((a) => a.id === assessmentId)
     if (!assessment) return null
@@ -157,12 +158,47 @@ export const assessmentDb = {
             rawScore: data.rawScore,
             note: data.note ?? q.note,
             suggestion: data.suggestion ?? q.suggestion,
-            evidence: data.evidence ?? q.evidence,
           }
         : q
     )
     assessment.updatedAt = new Date().toISOString()
     return assessment
+  },
+
+  addEvidence: (
+    assessmentId: string,
+    questionId: number,
+    file: { filename: string; fileType: string; fileSize: number }
+  ): EvidenceFile | null => {
+    const assessment = assessments.find((a) => a.id === assessmentId)
+    if (!assessment) return null
+    const question = assessment.questions.find((q) => q.questionId === questionId)
+    if (!question || question.rawScore === null) return null
+    idCounter += 1
+    const evidence: EvidenceFile = {
+      id: `mock-evidence-${idCounter}`,
+      ...file,
+      url: `/uploads/evidence/${assessmentId}/mock-evidence-${idCounter}`,
+      uploadedAt: new Date().toISOString(),
+    }
+    question.evidence = [...question.evidence, evidence]
+    assessment.updatedAt = new Date().toISOString()
+    return evidence
+  },
+
+  removeEvidence: (assessmentId: string, evidenceId: string): boolean => {
+    const assessment = assessments.find((a) => a.id === assessmentId)
+    if (!assessment) return false
+    let removed = false
+    assessment.questions = assessment.questions.map((q) => {
+      if (q.evidence.some((e) => e.id === evidenceId)) {
+        removed = true
+        return { ...q, evidence: q.evidence.filter((e) => e.id !== evidenceId) }
+      }
+      return q
+    })
+    if (removed) assessment.updatedAt = new Date().toISOString()
+    return removed
   },
 
   updateNotes: (assessmentId: string, notes: string): Assessment | null => {

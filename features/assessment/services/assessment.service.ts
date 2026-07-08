@@ -6,6 +6,7 @@ import type {
   AssessmentQuestion,
   AssessmentRank,
   CreateAssessmentDto,
+  EvidenceFile,
   UpdateScoreDto,
   Dimension,
   Round,
@@ -42,6 +43,21 @@ export const assessmentService = {
 
   submit: (assessmentId: string) =>
     api.post<Assessment>(`/assessments/${assessmentId}/submit`).then((res) => res.data),
+
+  uploadEvidence: (assessmentId: string, questionId: number, file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    // Explicit multipart header — the client default of application/json would
+    // make axios serialize the FormData to JSON instead of a multipart body.
+    return api
+      .post<EvidenceFile>(`/assessments/${assessmentId}/scores/${questionId}/evidence`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      .then((res) => res.data)
+  },
+
+  deleteEvidence: (assessmentId: string, evidenceId: string) =>
+    api.delete(`/assessments/${assessmentId}/evidence/${evidenceId}`),
 
   updateNotes: (assessmentId: string, notes: string) =>
     api.patch<Assessment>(`/assessments/${assessmentId}/notes`, { notes }).then((res) => res.data),
