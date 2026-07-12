@@ -3,7 +3,10 @@
 export const colors = {
   orange: '#F17128',      // primary CTA, active nav
   orangeLight: '#F58544', // hover states, secondary CTA
+  orangeDark: '#C75B1A',  // project banner title
   cream: '#FFF0E5',       // tinted backgrounds, highlights
+  creamSoft: '#FDF5EC',   // project banner gradient start
+  creamLight: '#FFF8F2',  // project banner gradient end
   charcoal: '#58595B',    // body text, secondary labels
   white: '#FFFFFF',       // page background, card bg
   purple: '#7C3AED',      // secondary badges

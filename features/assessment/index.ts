@@ -1,3 +1,4 @@
+export { AssessmentEntry } from './components/assessment-entry'
 export { AssessmentForm } from './components/assessment-form'
 export { AssessmentStoreList } from './components/assessment-store-list'
 export { AssessmentStorePicker } from './components/assessment-store-picker'

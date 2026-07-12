@@ -76,7 +76,7 @@ export function DimensionList({
                 {dim.id}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[11px] font-semibold leading-tight text-charcoal">
+                <span className="block text-[11px] font-semibold leading-tight text-charcoal">
                   {dim.name}
                 </span>
                 <span className="block truncate text-[9px] leading-tight text-muted-foreground">

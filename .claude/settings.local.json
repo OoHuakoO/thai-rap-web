@@ -40,7 +40,24 @@
       "Bash(node -e ' *)",
       "Bash(xargs cat)",
       "Bash(grep -E '\\\\.\\(ts|tsx\\)$')",
-      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({**d.get\\('devDependencies',{}\\), **d.get\\('dependencies',{}\\)}, indent=2\\)\\)\")"
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({**d.get\\('devDependencies',{}\\), **d.get\\('dependencies',{}\\)}, indent=2\\)\\)\")",
+      "Bash(echo \"tsc-exit:$?\")",
+      "Bash(npx eslint *)",
+      "Bash(echo \"eslint-exit:$?\")",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" --max-time 3 http://localhost:4000/api/v1/health)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" --max-time 3 http://localhost:4000)",
+      "Bash(npx vitest *)",
+      "Bash(python3 -c \"import sys; print\\(sys.version\\)\")",
+      "Bash(swift render.swift CI_Logo.pdf)",
+      "Bash(swift extract.swift CI_Logo.pdf 3 70 222 183 133 mark.png)",
+      "Bash(swift extract.swift CI_Logo.pdf 4 440 248 340 96 lockup.png)",
+      "Bash(ps -p 8125 -o pid,ppid,command)",
+      "Bash(ps -p 8122 -o pid,ppid,command)",
+      "Bash(lsof -nP -iTCP:3000 -sTCP:LISTEN)",
+      "Read(//Users/khomsarkkornprakit/thai-rap/**)",
+      "Read(//Users/khomsarkkornprakit/thai-rap/thai-rap-api/prisma/**)",
+      "Bash(docker exec *)"
     ]
   }
 }

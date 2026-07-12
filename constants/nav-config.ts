@@ -24,36 +24,36 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   {
-    label: 'Dashboard',
+    label: 'Project Overview',
     labelTh: 'ภาพรวมโครงการ',
     href: ROUTES.HOME,
     icon: LayoutDashboard,
     allowedRoles: ['ADMIN', 'ASSESSOR', 'MENTOR', 'ME_TEAM', 'JUDGE'],
   },
   {
-    label: 'Stores',
+    label: 'Restaurant Profiles',
     labelTh: 'ข้อมูลร้านอาหาร',
     href: ROUTES.STORES,
     icon: UtensilsCrossed,
     allowedRoles: ['ADMIN', 'ASSESSOR', 'MENTOR', 'ME_TEAM', 'ENTREPRENEUR'],
   },
   {
-    label: 'Assessment',
+    label: 'Restaurant Assessment',
     labelTh: 'แบบประเมินร้าน',
     href: ROUTES.ASSESSMENT,
     icon: ClipboardList,
     allowedRoles: ['ADMIN', 'ASSESSOR'],
   },
   {
-    label: 'Analytics',
-    labelTh: 'วิเคราะห์ศักยภาพ',
+    label: 'Performance Analytics',
+    labelTh: 'วิเคราะห์ผลการดำเนิน',
     href: ROUTES.ANALYTICS,
     icon: BarChart3,
     allowedRoles: ['ADMIN', 'ASSESSOR', 'MENTOR', 'ME_TEAM', 'ENTREPRENEUR'],
     disabled: true,
   },
   {
-    label: 'Pitching',
+    label: 'Pitching & Ranking',
     labelTh: 'คะแนนพิชชิ่ง',
     href: ROUTES.PITCHING,
     icon: Trophy,
@@ -61,7 +61,7 @@ export const NAV_ITEMS: NavItem[] = [
     disabled: true,
   },
   {
-    label: 'Reports',
+    label: 'Reports & Export',
     labelTh: 'รายงานและส่งออก',
     href: ROUTES.REPORTS,
     icon: FileText,
@@ -69,7 +69,7 @@ export const NAV_ITEMS: NavItem[] = [
     disabled: true,
   },
   {
-    label: 'Users',
+    label: 'Users & Roles',
     labelTh: 'ผู้ใช้งานและสิทธิ์',
     href: ROUTES.USERS,
     icon: Users,
@@ -89,7 +89,7 @@ export const NAV_ITEMS: NavItem[] = [
 export const NAV_BOTTOM_ITEMS: NavItem[] = [
   {
     label: 'User Manual',
-    labelTh: 'คู่มือผู้ใช้งาน',
+    labelTh: 'คู่มือการใช้งาน',
     href: ROUTES.MANUAL,
     icon: BookOpen,
     allowedRoles: ['ADMIN', 'ASSESSOR', 'MENTOR', 'ENTREPRENEUR', 'JUDGE', 'ME_TEAM'],

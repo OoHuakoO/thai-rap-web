@@ -31,7 +31,10 @@ const config: Config = {
   		colors: {
   			orange: 'var(--color-orange)',
   			'orange-light': 'var(--color-orange-light)',
+  			'orange-dark': 'var(--color-orange-dark)',
   			cream: 'var(--color-cream)',
+  			'cream-soft': 'var(--color-cream-soft)',
+  			'cream-light': 'var(--color-cream-light)',
   			charcoal: 'var(--color-charcoal)',
   			purple: 'var(--color-purple)',
   			'dark-nav': 'var(--color-dark-nav)',

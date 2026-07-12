@@ -35,25 +35,39 @@ export function AssessTable({
   const max = sorted.length * 4
   const sum = sorted.reduce((acc, q) => acc + (q.rawScore ?? 0), 0)
   const pct = max === 0 ? 0 : Math.round((sum / max) * 100)
+  const firstNo = sorted[0]?.questionNo
+  const lastNo = sorted[sorted.length - 1]?.questionNo
+  const rangeText = firstNo && lastNo ? ` (ข้อที่ ${firstNo}–${lastNo})` : ''
 
   return (
     <div id="assess-card" className="rounded-xl border bg-card shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b px-4 py-3">
-        <div>
-          <p className="text-sm font-bold text-charcoal">
-            มิติที่ {dimension.id}: {dimension.name}
-          </p>
-          <p className="mt-0.5 max-w-[420px] text-xs text-muted-foreground">
-            ประเมิน {sorted.length} ข้อ | น้ำหนัก {dimension.weight}% | คะแนน 0–4 ต่อข้อ | คะแนนเต็ม {max}
-          </p>
+        <div className="flex items-start gap-2.5">
+          <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-orange to-orange-light text-lg">
+            🍽
+          </span>
+          <div>
+            <p className="text-sm font-bold text-charcoal">
+              มิติที่ {dimension.id}: {dimension.name}{' '}
+              <span className="font-normal text-muted-foreground">/ {dimension.nameEn}</span>
+            </p>
+            <p className="mt-0.5 max-w-[420px] text-xs text-muted-foreground">
+              ประเมิน {sorted.length} ข้อ{rangeText} | น้ำหนัก {dimension.weight}% | คะแนน 0–4 ต่อข้อ | คะแนนเต็ม {max}
+            </p>
+          </div>
         </div>
-        <div className="text-right">
-          <p className="text-[10px] text-muted-foreground">คะแนนมิตินี้ (raw)</p>
-          <p className="text-lg font-extrabold text-orange">
-            {sum}
-            <span className="text-xs font-normal text-muted-foreground"> / {max}</span>
-          </p>
-          <p className="text-[10px] text-muted-foreground">({pct}%)</p>
+        <div className="flex items-center gap-2.5">
+          <span className="rounded-full bg-muted px-2.5 py-1 text-[10.5px] font-medium text-muted-foreground">
+            น้ำหนัก {dimension.weight}%
+          </span>
+          <div className="text-right">
+            <p className="text-[10px] text-muted-foreground">คะแนนมิตินี้ (raw)</p>
+            <p className="text-lg font-extrabold text-orange">
+              {sum}
+              <span className="text-xs font-normal text-muted-foreground"> / {max}</span>
+            </p>
+            <p className="text-[10px] text-muted-foreground">({pct}%)</p>
+          </div>
         </div>
       </div>
 
