@@ -73,3 +73,67 @@ export function useDeleteStore() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: storeKeys.all }),
   })
 }
+
+export function useUploadStoreDocument(storeId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (file: File) => storeService.uploadDocument(storeId, file),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: storeKeys.detail(storeId) }),
+  })
+}
+
+export function useDeleteStoreDocument(storeId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (documentId: string) => storeService.deleteDocument(storeId, documentId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: storeKeys.detail(storeId) }),
+  })
+}
+
+export function useUploadStorePhoto(storeId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (file: File) => storeService.uploadPhoto(storeId, file),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: storeKeys.detail(storeId) }),
+  })
+}
+
+export function useDeleteStorePhoto(storeId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (url: string) => storeService.deletePhoto(storeId, url),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: storeKeys.detail(storeId) }),
+  })
+}
+
+export function useUploadStoreLogo(storeId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (file: File) => storeService.uploadLogo(storeId, file),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: storeKeys.detail(storeId) }),
+  })
+}
+
+export function useDeleteStoreLogo(storeId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => storeService.deleteLogo(storeId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: storeKeys.detail(storeId) }),
+  })
+}
+
+export function useUploadStorefrontPhoto(storeId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (file: File) => storeService.uploadStorefrontPhoto(storeId, file),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: storeKeys.detail(storeId) }),
+  })
+}
+
+export function useDeleteStorefrontPhoto(storeId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (url: string) => storeService.deleteStorefrontPhoto(storeId, url),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: storeKeys.detail(storeId) }),
+  })
+}

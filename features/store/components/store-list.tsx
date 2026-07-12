@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { Eye, Trash2 } from 'lucide-react'
+import { Eye, Pencil, Trash2 } from 'lucide-react'
 import { DataTable } from '@/components/shared/data-table'
 import { StatusBadge, type StatusVariant } from '@/components/shared/status-badge'
 import { Button } from '@/components/ui/button'
 import { ROUTES } from '@/constants/routes'
 import { extractErrorMessage } from '@/utils/extract-error-message'
+import { buildFileUrl } from '@/utils/build-file-url'
 import { useStores, useDeleteStore } from '../hooks/use-stores'
 import { STORE_STATUS_LABELS } from '../types/store.types'
 import type { Store, StoreStatus, StoreQueryParams } from '../types/store.types'
@@ -55,8 +56,13 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
       header: 'ร้าน',
       cell: (row) => (
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-orange to-orange-light text-base text-white">
-            🍜
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-orange to-orange-light text-base text-white">
+            {row.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={buildFileUrl(row.logoUrl)} alt={row.name} className="h-full w-full object-cover" />
+            ) : (
+              '🍜'
+            )}
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-charcoal">{row.name}</p>
@@ -115,6 +121,11 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
           <Button variant="outline" size="icon" className="h-7 w-7" asChild>
             <Link href={ROUTES.STORE_DETAIL(row.id)} title="ดูรายละเอียดเต็ม">
               <Eye className="h-3.5 w-3.5" />
+            </Link>
+          </Button>
+          <Button variant="outline" size="icon" className="h-7 w-7" asChild>
+            <Link href={ROUTES.STORE_EDIT(row.id)} title="แก้ไขร้าน" onClick={(e) => e.stopPropagation()}>
+              <Pencil className="h-3.5 w-3.5" />
             </Link>
           </Button>
           <Button

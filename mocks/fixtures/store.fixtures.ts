@@ -1,4 +1,9 @@
-import type { Store, UpdateStoreDto, StoreStatus } from '@/features/store/types/store.types'
+import type {
+  Store,
+  UpdateStoreDto,
+  StoreStatus,
+  StoreDocument,
+} from '@/features/store/types/store.types'
 
 const seed: Store[] = [
   {
@@ -12,13 +17,28 @@ const seed: Store[] = [
     address: '12/3 หมู่ 2 ต.วัดใหม่ อ.เมืองจันทบุรี จ.จันทบุรี 22000',
     socialLinks: { facebook: 'https://facebook.com/banrimnam' },
     avgRevenue: 135000,
-    mainProblems: 'การบริหารต้นทุนวัตถุดิบสูง, การตลาดออนไลน์ยังน้อย',
-    goals: 'เพิ่มยอดขาย 20% ภายใน 6 เดือน, พัฒนามาตรฐานบริการ',
+    mainProblems: ['การบริหารต้นทุนวัตถุดิบสูง', 'การตลาดออนไลน์ยังน้อย'],
+    goals: ['เพิ่มยอดขาย 20% ภายใน 6 เดือน', 'พัฒนามาตรฐานบริการ'],
     photos: [],
+    logoUrl: null,
+    storefrontPhotos: [],
     documents: [
-      { name: 'สำเนาใบประเมิน.pdf', fileType: 'pdf' },
-      { name: 'ใบคูณต้นทุน.xlsx', fileType: 'xlsx' },
-      { name: 'แบบฟอร์มสัญญา.docx', fileType: 'docx' },
+      {
+        id: 'doc-1',
+        filename: 'สำเนาใบประเมิน.pdf',
+        fileType: 'application/pdf',
+        fileSize: 245000,
+        url: '/uploads/stores/1/documents/doc-1.pdf',
+        uploadedAt: '2026-05-20T00:00:00Z',
+      },
+      {
+        id: 'doc-2',
+        filename: 'ใบคูณต้นทุน.xlsx',
+        fileType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        fileSize: 58000,
+        url: '/uploads/stores/1/documents/doc-2.xlsx',
+        uploadedAt: '2026-05-20T00:00:00Z',
+      },
     ],
     status: 'T1_COMPLETED',
     latestScore: 92.45,
@@ -38,9 +58,11 @@ const seed: Store[] = [
     address: '45 ถ.ชลบุรี-พัทยา ต.บ้านสวน อ.เมืองชลบุรี จ.ชลบุรี 20000',
     socialLinks: {},
     avgRevenue: 225000,
-    mainProblems: 'ระบบสต็อกวัตถุดิบ, การวางแผนการตลาด',
-    goals: 'ขยายช่องทาง Delivery, ทำ Brand Identity',
+    mainProblems: ['ระบบสต็อกวัตถุดิบ', 'การวางแผนการตลาด'],
+    goals: ['ขยายช่องทาง Delivery', 'ทำ Brand Identity'],
     photos: [],
+    logoUrl: null,
+    storefrontPhotos: [],
     documents: [],
     status: 'T0_COMPLETED',
     latestScore: 91.12,
@@ -60,9 +82,11 @@ const seed: Store[] = [
     address: '78 หมู่ 5 ต.เนินพระ อ.เมืองระยอง จ.ระยอง 21000',
     socialLinks: { facebook: 'https://facebook.com/suanrimsukcafe' },
     avgRevenue: 90000,
-    mainProblems: 'ต้นทุนแรงงานสูง, Seasonal demand',
-    goals: 'พัฒนา Signature Menu, เพิ่มช่องทาง Online',
+    mainProblems: ['ต้นทุนแรงงานสูง', 'Seasonal demand'],
+    goals: ['พัฒนา Signature Menu', 'เพิ่มช่องทาง Online'],
     photos: [],
+    logoUrl: null,
+    storefrontPhotos: [],
     documents: [],
     status: 'SELECTED',
     latestScore: 90.31,
@@ -82,9 +106,11 @@ const seed: Store[] = [
     address: '22 ถ.ตราด-แหลมงอบ ต.วังกระแจะ อ.เมืองตราด จ.ตราด 23000',
     socialLinks: {},
     avgRevenue: 165000,
-    mainProblems: 'ต้นทุนวัตถุดิบผันผวน, แรงงานขาดแคลน',
-    goals: 'ทำระบบจัดการ SOP, เพิ่ม Catering Service',
+    mainProblems: ['ต้นทุนวัตถุดิบผันผวน', 'แรงงานขาดแคลน'],
+    goals: ['ทำระบบจัดการ SOP', 'เพิ่ม Catering Service'],
     photos: [],
+    logoUrl: null,
+    storefrontPhotos: [],
     documents: [],
     status: 'T1_COMPLETED',
     latestScore: 89.78,
@@ -104,9 +130,11 @@ const seed: Store[] = [
     address: '55 ถ.มหาจักรพรรดิ์ ต.หน้าเมือง อ.เมืองฉะเชิงเทรา จ.ฉะเชิงเทรา 24000',
     socialLinks: {},
     avgRevenue: 70000,
-    mainProblems: 'ระบบบัญชียังไม่เป็นระบบ',
-    goals: 'เพิ่มยอดขาย, ทำระบบบัญชีพื้นฐาน',
+    mainProblems: ['ระบบบัญชียังไม่เป็นระบบ'],
+    goals: ['เพิ่มยอดขาย', 'ทำระบบบัญชีพื้นฐาน'],
     photos: [],
+    logoUrl: null,
+    storefrontPhotos: [],
     documents: [],
     status: 'REGISTERED',
     latestScore: null,
@@ -126,9 +154,11 @@ const seed: Store[] = [
     address: '12 ม.3 ต.ดงขี้เหล็ก อ.เมืองปราจีนบุรี จ.ปราจีนบุรี 25000',
     socialLinks: {},
     avgRevenue: 60000,
-    mainProblems: 'การตลาดออนไลน์, Brand Identity',
-    goals: 'สร้าง Social Media, พัฒนาเมนู Signature',
+    mainProblems: ['การตลาดออนไลน์', 'Brand Identity'],
+    goals: ['สร้าง Social Media', 'พัฒนาเมนู Signature'],
     photos: [],
+    logoUrl: null,
+    storefrontPhotos: [],
     documents: [],
     status: 'T0_COMPLETED',
     latestScore: 88.21,
@@ -148,9 +178,11 @@ const seed: Store[] = [
     address: '88 ม.1 ต.สระแก้ว อ.เมืองสระแก้ว จ.สระแก้ว 27000',
     socialLinks: {},
     avgRevenue: 47500,
-    mainProblems: 'ต้นทุนสูง, ยอดขายไม่สม่ำเสมอ',
-    goals: 'ลดต้นทุน 15%, เพิ่มช่องทางขาย',
+    mainProblems: ['ต้นทุนสูง', 'ยอดขายไม่สม่ำเสมอ'],
+    goals: ['ลดต้นทุน 15%', 'เพิ่มช่องทางขาย'],
     photos: [],
+    logoUrl: null,
+    storefrontPhotos: [],
     documents: [],
     status: 'REGISTERED',
     latestScore: null,
@@ -170,9 +202,11 @@ const seed: Store[] = [
     address: '234 ถ.พัทยาเหนือ ต.นาเกลือ อ.บางละมุง จ.ชลบุรี 20150',
     socialLinks: { facebook: 'https://facebook.com/metsaiseaside' },
     avgRevenue: 105000,
-    mainProblems: 'การบริหารต้นทุน, ระบบ POS',
-    goals: 'ติดตั้งระบบ POS, ขยายเมนู',
+    mainProblems: ['การบริหารต้นทุน', 'ระบบ POS'],
+    goals: ['ติดตั้งระบบ POS', 'ขยายเมนู'],
     photos: [],
+    logoUrl: null,
+    storefrontPhotos: [],
     documents: [],
     status: 'T1_COMPLETED',
     latestScore: 86.74,
@@ -221,5 +255,70 @@ export const storeDb = {
     const prev = store.length
     store = store.filter((s) => s.id !== id)
     return store.length < prev
+  },
+
+  addDocument: (id: string, doc: StoreDocument): Store | null => {
+    const idx = store.findIndex((s) => s.id === id)
+    if (idx === -1) return null
+    const updated: Store = { ...store[idx], documents: [...store[idx].documents, doc] }
+    store = [...store.slice(0, idx), updated, ...store.slice(idx + 1)]
+    return updated
+  },
+
+  removeDocument: (id: string, documentId: string): Store | null => {
+    const idx = store.findIndex((s) => s.id === id)
+    if (idx === -1) return null
+    const updated: Store = {
+      ...store[idx],
+      documents: store[idx].documents.filter((d) => d.id !== documentId),
+    }
+    store = [...store.slice(0, idx), updated, ...store.slice(idx + 1)]
+    return updated
+  },
+
+  addPhoto: (id: string, url: string): Store | null => {
+    const idx = store.findIndex((s) => s.id === id)
+    if (idx === -1) return null
+    const updated: Store = { ...store[idx], photos: [...store[idx].photos, url] }
+    store = [...store.slice(0, idx), updated, ...store.slice(idx + 1)]
+    return updated
+  },
+
+  removePhoto: (id: string, url: string): Store | null => {
+    const idx = store.findIndex((s) => s.id === id)
+    if (idx === -1) return null
+    const updated: Store = { ...store[idx], photos: store[idx].photos.filter((p) => p !== url) }
+    store = [...store.slice(0, idx), updated, ...store.slice(idx + 1)]
+    return updated
+  },
+
+  setLogo: (id: string, logoUrl: string | null): Store | null => {
+    const idx = store.findIndex((s) => s.id === id)
+    if (idx === -1) return null
+    const updated: Store = { ...store[idx], logoUrl }
+    store = [...store.slice(0, idx), updated, ...store.slice(idx + 1)]
+    return updated
+  },
+
+  addStorefrontPhoto: (id: string, url: string): Store | null => {
+    const idx = store.findIndex((s) => s.id === id)
+    if (idx === -1) return null
+    const updated: Store = {
+      ...store[idx],
+      storefrontPhotos: [...store[idx].storefrontPhotos, url],
+    }
+    store = [...store.slice(0, idx), updated, ...store.slice(idx + 1)]
+    return updated
+  },
+
+  removeStorefrontPhoto: (id: string, url: string): Store | null => {
+    const idx = store.findIndex((s) => s.id === id)
+    if (idx === -1) return null
+    const updated: Store = {
+      ...store[idx],
+      storefrontPhotos: store[idx].storefrontPhotos.filter((p) => p !== url),
+    }
+    store = [...store.slice(0, idx), updated, ...store.slice(idx + 1)]
+    return updated
   },
 }

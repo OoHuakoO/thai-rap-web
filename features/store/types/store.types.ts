@@ -30,8 +30,12 @@ export const STORE_STATUS_LABELS: Record<StoreStatus, string> = {
 };
 
 export interface StoreDocument {
-  name: string;
-  fileType: 'pdf' | 'xlsx' | 'docx';
+  id: string;
+  filename: string;
+  fileType: string;
+  fileSize: number;
+  url: string;
+  uploadedAt: string;
 }
 
 export const STORE_TYPE_OPTIONS = ['อาหารไทย', 'อาหารทะเล', 'คาเฟ่', 'คาเฟ่/เบเกอรี่'] as const;
@@ -47,9 +51,11 @@ export interface Store {
   address: string;
   socialLinks: Record<string, string>;
   avgRevenue: number | null;
-  mainProblems: string | null;
-  goals: string | null;
+  mainProblems: string[];
+  goals: string[];
   photos: string[];
+  logoUrl: string | null;
+  storefrontPhotos: string[];
   documents: StoreDocument[];
   status: StoreStatus;
   latestScore: number | null;
@@ -69,8 +75,8 @@ export interface CreateStoreDto {
   address: string;
   socialLinks?: Record<string, string>;
   avgRevenue?: number;
-  mainProblems?: string;
-  goals?: string;
+  mainProblems?: string[];
+  goals?: string[];
 }
 
 export type UpdateStoreDto = Partial<CreateStoreDto>;

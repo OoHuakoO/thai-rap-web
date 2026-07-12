@@ -1,37 +1,38 @@
-'use client'
+'use client';
 
-import { useEffect, useRef, useState } from 'react'
-import { Paperclip, Upload, X } from 'lucide-react'
-import { useDebounce } from '@/hooks/use-debounce'
-import { Textarea } from '@/components/ui/textarea'
-import { StatusBadge, type StatusVariant } from '@/components/shared/status-badge'
-import { cn } from '@/utils/cn'
-import { buildFileUrl } from '@/utils/build-file-url'
-import { ScoreButtonGroup } from './score-button-group'
-import type { AssessmentQuestion } from '../types/assessment.types'
+import { useEffect, useRef, useState } from 'react';
+import { Paperclip, Upload, X } from 'lucide-react';
+import { useDebounce } from '@/hooks/use-debounce';
+import { Textarea } from '@/components/ui/textarea';
+import { StatusBadge, type StatusVariant } from '@/components/shared/status-badge';
+import { cn } from '@/utils/cn';
+import { buildFileUrl } from '@/utils/build-file-url';
+import { ScoreButtonGroup } from './score-button-group';
+import { QUESTION_ROW_TEXT } from '../constants/assessment-text.constants';
+import type { AssessmentQuestion } from '../types/assessment.types';
 
 function getStatus(score: number | null): { variant: StatusVariant; label: string } {
-  if (score === null) return { variant: 'inactive', label: '⏸ ยังไม่ประเมิน' }
-  if (score <= 1) return { variant: 'fail', label: '⚠ ต้องแก้ไข' }
-  if (score === 2) return { variant: 'warning', label: '🔄 กำลังประเมิน' }
-  return { variant: 'pass', label: '✅ เสร็จสิ้น' }
+  if (score === null) return { variant: 'inactive', label: QUESTION_ROW_TEXT.statusNotAssessed };
+  if (score <= 1) return { variant: 'fail', label: QUESTION_ROW_TEXT.statusNeedsFix };
+  if (score === 2) return { variant: 'warning', label: QUESTION_ROW_TEXT.statusInProgress };
+  return { variant: 'pass', label: QUESTION_ROW_TEXT.statusDone };
 }
 
 function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 interface QuestionRowProps {
-  question: AssessmentQuestion
-  locked: boolean
-  highlighted?: boolean
-  isUploading?: boolean
-  onScoreChange: (score: number) => void
-  onNoteChange: (note: string) => void
-  onUploadEvidence: (file: File) => void
-  onDeleteEvidence: (evidenceId: string) => void
+  question: AssessmentQuestion;
+  locked: boolean;
+  highlighted?: boolean;
+  isUploading?: boolean;
+  onScoreChange: (score: number) => void;
+  onNoteChange: (note: string) => void;
+  onUploadEvidence: (file: File) => void;
+  onDeleteEvidence: (evidenceId: string) => void;
 }
 
 export function QuestionRow({
@@ -44,29 +45,29 @@ export function QuestionRow({
   onUploadEvidence,
   onDeleteEvidence,
 }: QuestionRowProps) {
-  const [note, setNote] = useState(question.note ?? '')
-  const debouncedNote = useDebounce(note, 600)
-  const lastSent = useRef(question.note ?? '')
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [note, setNote] = useState(question.note ?? '');
+  const debouncedNote = useDebounce(note, 600);
+  const lastSent = useRef(question.note ?? '');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (debouncedNote !== lastSent.current) {
-      lastSent.current = debouncedNote
-      onNoteChange(debouncedNote)
+      lastSent.current = debouncedNote;
+      onNoteChange(debouncedNote);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedNote])
+  }, [debouncedNote]);
 
-  const status = getStatus(question.rawScore)
-  const canAttach = !locked && question.rawScore !== null
-  const evidence = question.evidence ?? []
+  const status = getStatus(question.rawScore);
+  const canAttach = !locked && question.rawScore !== null;
+  const evidence = question.evidence ?? [];
 
   const handleFileSelected = (files: FileList | null) => {
-    if (!files || files.length === 0) return
+    if (!files || files.length === 0) return;
     for (const file of Array.from(files)) {
-      onUploadEvidence(file)
+      onUploadEvidence(file);
     }
-  }
+  };
 
   return (
     <tr
@@ -83,11 +84,7 @@ export function QuestionRow({
         {question.questionText}
       </td>
       <td className="min-w-[120px] px-2 py-2.5">
-        <ScoreButtonGroup
-          value={question.rawScore}
-          disabled={locked}
-          onChange={onScoreChange}
-        />
+        <ScoreButtonGroup value={question.rawScore} disabled={locked} onChange={onScoreChange} />
       </td>
       <td className="min-w-[120px] px-2 py-2.5">
         <div className="flex flex-col gap-1">
@@ -113,8 +110,8 @@ export function QuestionRow({
                 <button
                   type="button"
                   onClick={() => onDeleteEvidence(file.id)}
-                  className="flex-shrink-0 text-orange/70 hover:text-destructive"
-                  aria-label={`ลบไฟล์ ${file.filename}`}
+                  className="text-orange/70 flex-shrink-0 hover:text-destructive"
+                  aria-label={QUESTION_ROW_TEXT.deleteFileAria(file.filename)}
                 >
                   <X className="h-2.5 w-2.5" />
                 </button>
@@ -129,7 +126,7 @@ export function QuestionRow({
               className="flex items-center gap-1 rounded border border-dashed border-border px-1.5 py-0.5 text-[9.5px] text-muted-foreground hover:border-orange hover:text-orange disabled:opacity-50"
             >
               <Upload className="h-2.5 w-2.5" />
-              {isUploading ? 'กำลังอัปโหลด...' : 'แนบไฟล์'}
+              {isUploading ? QUESTION_ROW_TEXT.uploading : QUESTION_ROW_TEXT.attachFile}
             </button>
           )}
           <input
@@ -139,15 +136,19 @@ export function QuestionRow({
             accept="image/jpeg,image/png,image/webp,application/pdf,.xlsx"
             className="hidden"
             onChange={(e) => {
-              handleFileSelected(e.target.files)
-              e.target.value = ''
+              handleFileSelected(e.target.files);
+              e.target.value = '';
             }}
           />
         </div>
       </td>
       <td className="min-w-[160px] px-2 py-2.5">
         <Textarea
-          placeholder={question.rawScore === null ? 'ให้คะแนนก่อนเพื่อบันทึกหมายเหตุ' : 'บันทึกผู้ประเมิน'}
+          placeholder={
+            question.rawScore === null
+              ? QUESTION_ROW_TEXT.notePlaceholderLocked
+              : QUESTION_ROW_TEXT.notePlaceholder
+          }
           value={note}
           onChange={(e) => setNote(e.target.value)}
           disabled={locked || question.rawScore === null}
@@ -162,5 +163,5 @@ export function QuestionRow({
         <StatusBadge status={status.variant} label={status.label} className="whitespace-nowrap" />
       </td>
     </tr>
-  )
+  );
 }

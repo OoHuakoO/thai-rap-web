@@ -8,7 +8,9 @@ export const ROUTES = {
 
   // Stores
   STORES: '/stores',
+  STORE_NEW: '/stores/new',
   STORE_DETAIL: (id: string) => `/stores/${id}`,
+  STORE_EDIT: (id: string) => `/stores/${id}/edit`,
 
   // Assessment
   ASSESSMENT: '/assessment',

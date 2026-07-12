@@ -15,6 +15,7 @@ import {
 import { cn } from '@/utils/cn';
 import { ROUTES } from '@/constants/routes';
 import { useStores, useStoreStats } from '@/features/store';
+import { STORE_PICKER_TEXT } from '../constants/assessment-text.constants';
 import type { Round } from '../types/assessment.types';
 
 interface AssessmentStorePickerProps {
@@ -39,7 +40,7 @@ export function AssessmentStorePicker({ storeId, storeName, round }: AssessmentS
   return (
     <div className="flex items-end gap-2">
       <div>
-        <p className="mb-1 text-[10px] text-muted-foreground">เลือกร้านอาหาร</p>
+        <p className="mb-1 text-[10px] text-muted-foreground">{STORE_PICKER_TEXT.selectStore}</p>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <button
@@ -59,7 +60,7 @@ export function AssessmentStorePicker({ storeId, storeName, round }: AssessmentS
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="ค้นหาร้าน..."
+              placeholder={STORE_PICKER_TEXT.searchPlaceholder}
               className="mb-2 h-8 text-xs"
             />
             <div className="max-h-64 space-y-0.5 overflow-y-auto">
@@ -81,7 +82,9 @@ export function AssessmentStorePicker({ storeId, storeName, round }: AssessmentS
                 </button>
               ))}
               {data?.items.length === 0 && (
-                <p className="px-2 py-3 text-center text-xs text-muted-foreground">ไม่พบร้าน</p>
+                <p className="px-2 py-3 text-center text-xs text-muted-foreground">
+                  {STORE_PICKER_TEXT.noStoreFound}
+                </p>
               )}
             </div>
           </PopoverContent>
@@ -89,13 +92,13 @@ export function AssessmentStorePicker({ storeId, storeName, round }: AssessmentS
       </div>
 
       <div className="w-32">
-        <p className="mb-1 text-[10px] text-muted-foreground">จังหวัด</p>
+        <p className="mb-1 text-[10px] text-muted-foreground">{STORE_PICKER_TEXT.province}</p>
         <Select value={province} onValueChange={setProvince}>
           <SelectTrigger className="h-[34px] text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="ALL">ทั้งหมด</SelectItem>
+            <SelectItem value="ALL">{STORE_PICKER_TEXT.allProvinces}</SelectItem>
             {(stats?.byProvince ?? []).map((p) => (
               <SelectItem key={p.province} value={p.province}>
                 {p.province}

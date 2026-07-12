@@ -1,18 +1,21 @@
-import { z } from 'zod'
+import { z } from 'zod';
+import { AUTH_VALIDATION_MESSAGES } from '../constants/auth-form.constants';
 
-export const REGISTERABLE_ROLES = ['ENTREPRENEUR', 'ASSESSOR'] as const
+export const REGISTERABLE_ROLES = ['ENTREPRENEUR', 'ASSESSOR'] as const;
 
 export const registerSchema = z
   .object({
-    name: z.string().min(2, 'ชื่อต้องมีอย่างน้อย 2 ตัวอักษร'),
-    email: z.string().email('อีเมลไม่ถูกต้อง'),
-    password: z.string().min(8, 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร'),
+    name: z.string().min(2, AUTH_VALIDATION_MESSAGES.nameMin),
+    email: z.string().email(AUTH_VALIDATION_MESSAGES.emailInvalid),
+    password: z.string().min(8, AUTH_VALIDATION_MESSAGES.registerPasswordMin),
     confirmPassword: z.string(),
-    role: z.enum(REGISTERABLE_ROLES, { errorMap: () => ({ message: 'กรุณาเลือกบทบาท' }) }),
+    role: z.enum(REGISTERABLE_ROLES, {
+      errorMap: () => ({ message: AUTH_VALIDATION_MESSAGES.roleRequired }),
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: 'รหัสผ่านไม่ตรงกัน',
+    message: AUTH_VALIDATION_MESSAGES.passwordMismatch,
     path: ['confirmPassword'],
-  })
+  });
 
-export type RegisterFormValues = z.infer<typeof registerSchema>
+export type RegisterFormValues = z.infer<typeof registerSchema>;

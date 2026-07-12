@@ -1,11 +1,13 @@
 'use client'
 
 import Link from 'next/link'
+import { Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Loading } from '@/components/shared/loading'
 import { StatusBadge, type StatusVariant } from '@/components/shared/status-badge'
 import { ROUTES } from '@/constants/routes'
 import { extractErrorMessage } from '@/utils/extract-error-message'
+import { buildFileUrl } from '@/utils/build-file-url'
 import { useAssessmentSummaries } from '@/features/assessment/hooks/use-assessment'
 import { useStore } from '../hooks/use-stores'
 import { STORE_STATUS_LABELS } from '../types/store.types'
@@ -36,16 +38,19 @@ const ASSESSMENT_ROUNDS = [
 
 const DECIDED_STATUSES: StoreStatus[] = ['SELECTED', 'CONDITIONAL_SELECTED', 'WAITING_LIST', 'NOT_SELECTED']
 
-const DOC_ICON: Record<'pdf' | 'xlsx' | 'docx', string> = {
-  pdf: '📄',
-  xlsx: '📊',
-  docx: '📝',
+function getDocIcon(fileType: string): { icon: string; className: string } {
+  if (fileType.includes('pdf')) return { icon: '📄', className: 'bg-destructive/10' }
+  if (fileType.includes('spreadsheet') || fileType.includes('excel')) {
+    return { icon: '📊', className: 'bg-score-green/10' }
+  }
+  if (fileType.startsWith('image/')) return { icon: '🖼', className: 'bg-blue-100' }
+  return { icon: '📝', className: 'bg-blue-100' }
 }
 
-const DOC_CLASS: Record<'pdf' | 'xlsx' | 'docx', string> = {
-  pdf: 'bg-destructive/10',
-  xlsx: 'bg-score-green/10',
-  docx: 'bg-blue-100',
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
 function formatDate(iso: string | null): string {
@@ -82,21 +87,32 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
     { label: 'รอประกาศผลการคัดเลือก', date: null, done: decided },
   ]
 
-  const problemTags = store.mainProblems?.split(',').map((p) => p.trim()).filter(Boolean) ?? []
-  const goalTags = store.goals?.split(',').map((g) => g.trim()).filter(Boolean) ?? []
-
   return (
     <div className="space-y-4">
       <div className="relative flex h-[110px] items-center justify-center overflow-hidden rounded-t-xl bg-gradient-to-br from-orange to-orange-light">
-        <span className="text-5xl">🍜</span>
+        {store.logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={buildFileUrl(store.logoUrl)}
+            alt={store.name}
+            className="h-16 w-16 rounded-full border-2 border-white object-cover"
+          />
+        ) : (
+          <span className="text-5xl">🍜</span>
+        )}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2">
           <p className="text-sm font-bold text-white">{store.name}</p>
           <p className="text-[10.5px] text-white/85">
             📍 {store.province} &nbsp;|&nbsp; 🍽 {store.storeType}
           </p>
         </div>
-        <div className="absolute right-2 top-2">
+        <div className="absolute right-2 top-2 flex items-center gap-1.5">
           <StatusBadge status={STATUS_VARIANT[store.status]} label={STORE_STATUS_LABELS[store.status]} />
+          <Button variant="secondary" size="icon" className="h-6 w-6" title="แก้ไขร้าน" asChild>
+            <Link href={ROUTES.STORE_EDIT(store.id)}>
+              <Pencil className="h-3 w-3" />
+            </Link>
+          </Button>
         </div>
       </div>
 
@@ -124,26 +140,50 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
                 </>
               )}
             </div>
-            {store.socialLinks.facebook && (
+            {(store.socialLinks.facebook || store.socialLinks.line || store.socialLinks.instagram) && (
               <div className="mt-1.5 flex items-center gap-1.5">
-                <a
-                  href={store.socialLinks.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1877f2] text-[10px] text-white"
-                  title="Facebook"
-                >
-                  f
-                </a>
+                {store.socialLinks.facebook && (
+                  <a
+                    href={store.socialLinks.facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1877f2] text-[10px] text-white"
+                    title="Facebook"
+                  >
+                    f
+                  </a>
+                )}
+                {store.socialLinks.line && (
+                  <a
+                    href={store.socialLinks.line}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-6 w-6 items-center justify-center rounded-full bg-[#06c755] text-[10px] font-bold text-white"
+                    title="LINE"
+                  >
+                    L
+                  </a>
+                )}
+                {store.socialLinks.instagram && (
+                  <a
+                    href={store.socialLinks.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#8134af] text-[10px] text-white"
+                    title="Instagram"
+                  >
+                    IG
+                  </a>
+                )}
               </div>
             )}
           </div>
 
-          {problemTags.length > 0 && (
+          {store.mainProblems.length > 0 && (
             <div>
               <p className="mb-1.5 text-xs font-bold text-charcoal">ปัญหาสำคัญ</p>
               <div className="flex flex-wrap gap-1">
-                {problemTags.map((tag) => (
+                {store.mainProblems.map((tag) => (
                   <span
                     key={tag}
                     className="rounded border border-destructive/30 bg-destructive/10 px-1.5 py-0.5 text-[9.5px] text-destructive"
@@ -155,17 +195,31 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
             </div>
           )}
 
-          {goalTags.length > 0 && (
+          {store.goals.length > 0 && (
             <div>
               <p className="mb-1.5 text-xs font-bold text-charcoal">เป้าหมายการพัฒนา</p>
               <div className="flex flex-wrap gap-1">
-                {goalTags.map((tag) => (
+                {store.goals.map((tag) => (
                   <span
                     key={tag}
                     className="rounded border border-blue-300 bg-blue-50 px-1.5 py-0.5 text-[9.5px] text-blue-700"
                   >
                     {tag}
                   </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {store.storefrontPhotos.length > 0 && (
+            <div>
+              <p className="mb-1.5 text-xs font-bold text-charcoal">รูปหน้าร้าน</p>
+              <div className="flex flex-wrap gap-2">
+                {store.storefrontPhotos.map((url) => (
+                  <div key={url} className="h-14 w-14 overflow-hidden rounded-md">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={buildFileUrl(url)} alt="รูปหน้าร้าน" className="h-full w-full object-cover" />
+                  </div>
                 ))}
               </div>
             </div>
@@ -177,19 +231,45 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
             <p className="mb-1.5 text-xs font-bold text-charcoal">เอกสารที่อัปโหลด</p>
             {(store.documents?.length ?? 0) > 0 ? (
               <div className="flex flex-wrap gap-2">
-                {store.documents.map((doc) => (
-                  <div key={doc.name} className="w-16 text-center">
-                    <div
-                      className={`mx-auto flex h-9 w-9 items-center justify-center rounded-md text-base ${DOC_CLASS[doc.fileType]}`}
-                    >
-                      {DOC_ICON[doc.fileType]}
+                {store.documents.map((doc) => {
+                  const { icon, className } = getDocIcon(doc.fileType)
+                  return (
+                    <div key={doc.id} className="w-16 text-center">
+                      <a href={buildFileUrl(doc.url)} target="_blank" rel="noreferrer">
+                        <div
+                          className={`mx-auto flex h-9 w-9 items-center justify-center rounded-md text-base ${className}`}
+                        >
+                          {icon}
+                        </div>
+                      </a>
+                      <p
+                        className="mt-0.5 truncate text-[8.5px] text-muted-foreground"
+                        title={`${doc.filename} (${formatFileSize(doc.fileSize)})`}
+                      >
+                        {doc.filename}
+                      </p>
                     </div>
-                    <p className="mt-0.5 truncate text-[8.5px] text-muted-foreground">{doc.name}</p>
+                  )
+                })}
+              </div>
+            ) : (
+              <p className="text-[10.5px] text-muted-foreground">ยังไม่มีเอกสารอัปโหลด</p>
+            )}
+          </div>
+
+          <div>
+            <p className="mb-1.5 text-xs font-bold text-charcoal">ภาพเมนูอาหาร</p>
+            {store.photos.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {store.photos.map((url) => (
+                  <div key={url} className="h-14 w-14 overflow-hidden rounded-md">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={buildFileUrl(url)} alt="ภาพเมนูอาหาร" className="h-full w-full object-cover" />
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-[10.5px] text-muted-foreground">ยังไม่มีเอกสารอัปโหลด</p>
+              <p className="text-[10.5px] text-muted-foreground">ยังไม่มีภาพเมนูอาหาร</p>
             )}
           </div>
 

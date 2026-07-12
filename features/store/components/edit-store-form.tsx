@@ -1,8 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -16,61 +13,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { toast } from 'sonner';
 import { TagInput } from '@/components/shared/tag-input';
-import { ROUTES } from '@/constants/routes';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { useProvinces } from '@/features/province';
-import { CREATE_STORE_FORM_TEXT, STORE_FORM_TEXT } from '../constants/store-form.constants';
+import { EDIT_STORE_FORM_TEXT, STORE_FORM_TEXT } from '../constants/store-form.constants';
 import { storeFormSchema } from '../schemas/store.schema';
 import type { StoreFormValues } from '../schemas/store.schema';
-import { useCreateStore } from '../hooks/use-stores';
-import { storeService } from '../services/store.service';
-import { StoreMediaPicker } from './store-media-picker';
+import { useUpdateStore } from '../hooks/use-stores';
 import type { Store } from '../types/store.types';
 
-async function uploadSelectedMedia(
-  store: Store,
-  media: {
-    logoFile: File | null;
-    storefrontFiles: File[];
-    menuFiles: File[];
-    documentFiles: File[];
-  }
-) {
-  if (media.logoFile) {
-    await storeService.uploadLogo(store.id, media.logoFile).catch((err) => {
-      toast.error(CREATE_STORE_FORM_TEXT.logoUploadError(extractErrorMessage(err)));
-    });
-  }
-  for (const file of media.storefrontFiles) {
-    await storeService.uploadStorefrontPhoto(store.id, file).catch((err) => {
-      toast.error(
-        CREATE_STORE_FORM_TEXT.storefrontUploadError(file.name, extractErrorMessage(err))
-      );
-    });
-  }
-  for (const file of media.menuFiles) {
-    await storeService.uploadPhoto(store.id, file).catch((err) => {
-      toast.error(CREATE_STORE_FORM_TEXT.menuUploadError(file.name, extractErrorMessage(err)));
-    });
-  }
-  for (const file of media.documentFiles) {
-    await storeService.uploadDocument(store.id, file).catch((err) => {
-      toast.error(CREATE_STORE_FORM_TEXT.documentUploadError(file.name, extractErrorMessage(err)));
-    });
-  }
+interface EditStoreFormProps {
+  store: Store;
+  onSuccess?: () => void;
 }
 
-export function CreateStoreForm() {
-  const router = useRouter();
-  const { mutate: createStore, isPending, isError, error } = useCreateStore();
+export function EditStoreForm({ store, onSuccess }: EditStoreFormProps) {
+  const { mutate: updateStore, isPending, isError, error } = useUpdateStore(store.id);
   const { data: provinces } = useProvinces();
-
-  const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [storefrontFiles, setStorefrontFiles] = useState<File[]>([]);
-  const [menuFiles, setMenuFiles] = useState<File[]>([]);
-  const [documentFiles, setDocumentFiles] = useState<File[]>([]);
-  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
 
   const {
     register,
@@ -79,7 +39,21 @@ export function CreateStoreForm() {
     formState: { errors },
   } = useForm<StoreFormValues>({
     resolver: zodResolver(storeFormSchema),
-    defaultValues: { mainProblems: [], goals: [] },
+    defaultValues: {
+      name: store.name,
+      province: store.province,
+      storeType: store.storeType,
+      ownerName: store.ownerName,
+      phone: store.phone,
+      address: store.address,
+      email: store.email ?? '',
+      avgRevenue: store.avgRevenue !== null ? String(store.avgRevenue) : '',
+      mainProblems: store.mainProblems,
+      goals: store.goals,
+      facebook: store.socialLinks.facebook ?? '',
+      line: store.socialLinks.line ?? '',
+      instagram: store.socialLinks.instagram ?? '',
+    },
   });
 
   const onSubmit = (data: StoreFormValues) => {
@@ -89,31 +63,21 @@ export function CreateStoreForm() {
     if (line) socialLinks.line = line;
     if (instagram) socialLinks.instagram = instagram;
 
-    createStore(
+    updateStore(
       {
         ...rest,
         email: data.email || undefined,
         avgRevenue: data.avgRevenue ? Number(data.avgRevenue) : undefined,
-        socialLinks: Object.keys(socialLinks).length > 0 ? socialLinks : undefined,
+        socialLinks,
       },
       {
-        onSuccess: async (created) => {
-          setIsUploadingMedia(true);
-          await uploadSelectedMedia(created, {
-            logoFile,
-            storefrontFiles,
-            menuFiles,
-            documentFiles,
-          });
-          setIsUploadingMedia(false);
-          toast.success(CREATE_STORE_FORM_TEXT.createSuccess);
-          router.push(ROUTES.STORE_DETAIL(created.id));
+        onSuccess: () => {
+          toast.success(EDIT_STORE_FORM_TEXT.updateSuccess);
+          onSuccess?.();
         },
       }
     );
   };
-
-  const isBusy = isPending || isUploadingMedia;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -125,23 +89,19 @@ export function CreateStoreForm() {
 
       <div className="grid grid-cols-1 gap-4">
         <div className="space-y-1.5">
-          <Label htmlFor="name">{STORE_FORM_TEXT.nameLabel}</Label>
-          <Input
-            id="name"
-            {...register('name')}
-            placeholder={CREATE_STORE_FORM_TEXT.namePlaceholder}
-          />
+          <Label htmlFor="edit-name">{STORE_FORM_TEXT.nameLabel}</Label>
+          <Input id="edit-name" {...register('name')} />
           {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="province">{STORE_FORM_TEXT.provinceLabel}</Label>
+          <Label htmlFor="edit-province">{STORE_FORM_TEXT.provinceLabel}</Label>
           <Controller
             name="province"
             control={control}
             render={({ field }) => (
               <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger id="province">
+                <SelectTrigger id="edit-province">
                   <SelectValue placeholder={STORE_FORM_TEXT.provincePlaceholder} />
                 </SelectTrigger>
                 <SelectContent>
@@ -158,58 +118,36 @@ export function CreateStoreForm() {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="storeType">{STORE_FORM_TEXT.storeTypeLabel}</Label>
-          <Input
-            id="storeType"
-            {...register('storeType')}
-            placeholder={CREATE_STORE_FORM_TEXT.storeTypePlaceholder}
-          />
+          <Label htmlFor="edit-storeType">{STORE_FORM_TEXT.storeTypeLabel}</Label>
+          <Input id="edit-storeType" {...register('storeType')} />
           {errors.storeType && (
             <p className="text-xs text-destructive">{errors.storeType.message}</p>
           )}
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="ownerName">{STORE_FORM_TEXT.ownerNameLabel}</Label>
-          <Input
-            id="ownerName"
-            {...register('ownerName')}
-            placeholder={CREATE_STORE_FORM_TEXT.ownerNamePlaceholder}
-          />
+          <Label htmlFor="edit-ownerName">{STORE_FORM_TEXT.ownerNameLabel}</Label>
+          <Input id="edit-ownerName" {...register('ownerName')} />
           {errors.ownerName && (
             <p className="text-xs text-destructive">{errors.ownerName.message}</p>
           )}
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="phone">{STORE_FORM_TEXT.phoneLabel}</Label>
-          <Input
-            id="phone"
-            {...register('phone')}
-            placeholder={CREATE_STORE_FORM_TEXT.phonePlaceholder}
-          />
+          <Label htmlFor="edit-phone">{STORE_FORM_TEXT.phoneLabel}</Label>
+          <Input id="edit-phone" {...register('phone')} />
           {errors.phone && <p className="text-xs text-destructive">{errors.phone.message}</p>}
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="email">{STORE_FORM_TEXT.emailLabel}</Label>
-          <Input
-            id="email"
-            type="email"
-            {...register('email')}
-            placeholder={CREATE_STORE_FORM_TEXT.emailPlaceholder}
-          />
+          <Label htmlFor="edit-email">{STORE_FORM_TEXT.emailLabel}</Label>
+          <Input id="edit-email" type="email" {...register('email')} />
           {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="avgRevenue">{STORE_FORM_TEXT.avgRevenueLabel}</Label>
-          <Input
-            id="avgRevenue"
-            inputMode="numeric"
-            {...register('avgRevenue')}
-            placeholder={CREATE_STORE_FORM_TEXT.avgRevenuePlaceholder}
-          />
+          <Label htmlFor="edit-avgRevenue">{STORE_FORM_TEXT.avgRevenueLabel}</Label>
+          <Input id="edit-avgRevenue" inputMode="numeric" {...register('avgRevenue')} />
           {errors.avgRevenue && (
             <p className="text-xs text-destructive">{errors.avgRevenue.message}</p>
           )}
@@ -217,12 +155,8 @@ export function CreateStoreForm() {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="address">{STORE_FORM_TEXT.addressLabel}</Label>
-        <Textarea
-          id="address"
-          {...register('address')}
-          placeholder={CREATE_STORE_FORM_TEXT.addressPlaceholder}
-        />
+        <Label htmlFor="edit-address">{STORE_FORM_TEXT.addressLabel}</Label>
+        <Textarea id="edit-address" {...register('address')} />
         {errors.address && <p className="text-xs text-destructive">{errors.address.message}</p>}
       </div>
 
@@ -265,23 +199,8 @@ export function CreateStoreForm() {
         </div>
       </div>
 
-      <StoreMediaPicker
-        logoFile={logoFile}
-        onLogoChange={setLogoFile}
-        storefrontFiles={storefrontFiles}
-        onStorefrontFilesChange={setStorefrontFiles}
-        menuFiles={menuFiles}
-        onMenuFilesChange={setMenuFiles}
-        documentFiles={documentFiles}
-        onDocumentFilesChange={setDocumentFiles}
-      />
-
-      <Button type="submit" disabled={isBusy} className="w-full">
-        {isUploadingMedia
-          ? CREATE_STORE_FORM_TEXT.uploading
-          : isPending
-            ? CREATE_STORE_FORM_TEXT.saving
-            : CREATE_STORE_FORM_TEXT.submit}
+      <Button type="submit" disabled={isPending} className="w-full">
+        {isPending ? EDIT_STORE_FORM_TEXT.saving : EDIT_STORE_FORM_TEXT.submit}
       </Button>
     </form>
   );

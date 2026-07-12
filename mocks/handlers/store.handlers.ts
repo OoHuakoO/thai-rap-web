@@ -7,6 +7,7 @@ import type {
   UpdateStoreDto,
   StoreStatus,
   StoreStats,
+  StoreDocument,
   ProvinceDistribution,
 } from '@/features/store/types/store.types'
 import type { ApiErrorResponse, PaginatedResponse } from '@/types/api.types'
@@ -169,5 +170,122 @@ export const storeHandlers = [
     const removed = storeDb.remove(params.id as string)
     if (!removed) return notFound()
     return new HttpResponse(null, { status: 200 })
+  }),
+
+  http.post(`${BASE_URL}/:id/documents`, async ({ request, params }) => {
+    const scenario = getScenario(request)
+    if (scenario === 'unauthorized') return unauthorized()
+    if (scenario === 'forbidden') return forbidden()
+    if (scenario === 'server-error') return serverError()
+
+    const formData = await request.formData()
+    const file = formData.get('file') as File | null
+    if (!file) return serverError()
+
+    const doc: StoreDocument = {
+      id: `doc-${Date.now()}`,
+      filename: file.name,
+      fileType: file.type || 'application/octet-stream',
+      fileSize: file.size,
+      url: `/uploads/stores/${params.id}/documents/${file.name}`,
+      uploadedAt: new Date().toISOString(),
+    }
+    const updated = storeDb.addDocument(params.id as string, doc)
+    if (!updated) return notFound()
+    return HttpResponse.json<StoreDocument>(doc, { status: 201 })
+  }),
+
+  http.delete(`${BASE_URL}/:id/documents/:documentId`, ({ request, params }) => {
+    const scenario = getScenario(request)
+    if (scenario === 'unauthorized') return unauthorized()
+    if (scenario === 'forbidden') return forbidden()
+    if (scenario === 'server-error') return serverError()
+
+    const updated = storeDb.removeDocument(params.id as string, params.documentId as string)
+    if (!updated) return notFound()
+    return new HttpResponse(null, { status: 200 })
+  }),
+
+  http.post(`${BASE_URL}/:id/photos`, async ({ request, params }) => {
+    const scenario = getScenario(request)
+    if (scenario === 'unauthorized') return unauthorized()
+    if (scenario === 'forbidden') return forbidden()
+    if (scenario === 'server-error') return serverError()
+
+    const formData = await request.formData()
+    const file = formData.get('file') as File | null
+    if (!file) return serverError()
+
+    const url = `/uploads/stores/${params.id}/photos/${file.name}`
+    const updated = storeDb.addPhoto(params.id as string, url)
+    if (!updated) return notFound()
+    return HttpResponse.json<string[]>(updated.photos, { status: 201 })
+  }),
+
+  http.delete(`${BASE_URL}/:id/photos`, async ({ request, params }) => {
+    const scenario = getScenario(request)
+    if (scenario === 'unauthorized') return unauthorized()
+    if (scenario === 'forbidden') return forbidden()
+    if (scenario === 'server-error') return serverError()
+
+    const body = (await request.json()) as { url: string }
+    const updated = storeDb.removePhoto(params.id as string, body.url)
+    if (!updated) return notFound()
+    return HttpResponse.json<string[]>(updated.photos)
+  }),
+
+  http.post(`${BASE_URL}/:id/logo`, async ({ request, params }) => {
+    const scenario = getScenario(request)
+    if (scenario === 'unauthorized') return unauthorized()
+    if (scenario === 'forbidden') return forbidden()
+    if (scenario === 'server-error') return serverError()
+
+    const formData = await request.formData()
+    const file = formData.get('file') as File | null
+    if (!file) return serverError()
+
+    const logoUrl = `/uploads/stores/${params.id}/logo/${file.name}`
+    const updated = storeDb.setLogo(params.id as string, logoUrl)
+    if (!updated) return notFound()
+    return HttpResponse.json<string>(logoUrl, { status: 201 })
+  }),
+
+  http.delete(`${BASE_URL}/:id/logo`, ({ request, params }) => {
+    const scenario = getScenario(request)
+    if (scenario === 'unauthorized') return unauthorized()
+    if (scenario === 'forbidden') return forbidden()
+    if (scenario === 'server-error') return serverError()
+
+    const updated = storeDb.setLogo(params.id as string, null)
+    if (!updated) return notFound()
+    return new HttpResponse(null, { status: 200 })
+  }),
+
+  http.post(`${BASE_URL}/:id/storefront-photos`, async ({ request, params }) => {
+    const scenario = getScenario(request)
+    if (scenario === 'unauthorized') return unauthorized()
+    if (scenario === 'forbidden') return forbidden()
+    if (scenario === 'server-error') return serverError()
+
+    const formData = await request.formData()
+    const file = formData.get('file') as File | null
+    if (!file) return serverError()
+
+    const url = `/uploads/stores/${params.id}/storefront-photos/${file.name}`
+    const updated = storeDb.addStorefrontPhoto(params.id as string, url)
+    if (!updated) return notFound()
+    return HttpResponse.json<string[]>(updated.storefrontPhotos, { status: 201 })
+  }),
+
+  http.delete(`${BASE_URL}/:id/storefront-photos`, async ({ request, params }) => {
+    const scenario = getScenario(request)
+    if (scenario === 'unauthorized') return unauthorized()
+    if (scenario === 'forbidden') return forbidden()
+    if (scenario === 'server-error') return serverError()
+
+    const body = (await request.json()) as { url: string }
+    const updated = storeDb.removeStorefrontPhoto(params.id as string, body.url)
+    if (!updated) return notFound()
+    return HttpResponse.json<string[]>(updated.storefrontPhotos)
   }),
 ]

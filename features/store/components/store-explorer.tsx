@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Search, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
@@ -10,13 +11,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { PaginationBar } from '@/components/shared/pagination-bar';
+import { ROUTES } from '@/constants/routes';
 import { useDebounce } from '@/hooks/use-debounce';
 import { StoreList } from './store-list';
 import { StoreDetail } from './store-detail';
-import { CreateStoreForm } from './create-store-form';
 import { StoreStatsBar } from './store-stats-bar';
 import { useStores, useStoreStats } from '../hooks/use-stores';
 import { STORE_STATUS_LABELS, STORE_TYPE_OPTIONS } from '../types/store.types';
@@ -31,7 +31,6 @@ export function StoreExplorer() {
   const [storeType, setStoreType] = useState<string>('ALL');
   const [status, setStatus] = useState<StoreStatus | 'ALL'>('ALL');
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [createOpen, setCreateOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(DEFAULT_LIMIT);
 
@@ -137,9 +136,11 @@ export function StoreExplorer() {
           </Select>
         </div>
 
-        <Button className="ml-auto gap-1.5" onClick={() => setCreateOpen(true)}>
-          <Plus className="h-4 w-4" />
-          เพิ่มร้านอาหาร
+        <Button className="ml-auto gap-1.5" asChild>
+          <Link href={ROUTES.STORE_NEW}>
+            <Plus className="h-4 w-4" />
+            เพิ่มร้านอาหาร
+          </Link>
         </Button>
       </div>
 
@@ -175,15 +176,6 @@ export function StoreExplorer() {
       </div>
 
       <StoreStatsBar />
-
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>เพิ่มร้านอาหาร</DialogTitle>
-          </DialogHeader>
-          <CreateStoreForm onSuccess={() => setCreateOpen(false)} />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

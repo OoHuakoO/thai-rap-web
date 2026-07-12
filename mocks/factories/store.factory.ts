@@ -16,9 +16,11 @@ export function createStore(overrides: Partial<Store> = {}): Store {
     address: '-',
     socialLinks: {},
     avgRevenue: null,
-    mainProblems: null,
-    goals: null,
+    mainProblems: [],
+    goals: [],
     photos: [],
+    logoUrl: null,
+    storefrontPhotos: [],
     documents: [],
     status: 'REGISTERED',
     latestScore: null,
@@ -41,7 +43,7 @@ export function createStoreFromDto(dto: CreateStoreDto): Store {
     address: dto.address,
     socialLinks: dto.socialLinks ?? {},
     avgRevenue: dto.avgRevenue ?? null,
-    mainProblems: dto.mainProblems ?? null,
-    goals: dto.goals ?? null,
+    mainProblems: dto.mainProblems ?? [],
+    goals: dto.goals ?? [],
   })
 }

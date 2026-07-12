@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Check, Lock } from 'lucide-react'
-import { cn } from '@/utils/cn'
-import { ROUTES } from '@/constants/routes'
-import { Button } from '@/components/ui/button'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Check, Lock } from 'lucide-react';
+import { cn } from '@/utils/cn';
+import { ROUTES } from '@/constants/routes';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -13,33 +13,34 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@/components/ui/dialog'
-import { useAssessmentSummaries } from '../hooks/use-assessment'
-import type { Round } from '../types/assessment.types'
+} from '@/components/ui/dialog';
+import { useAssessmentSummaries } from '../hooks/use-assessment';
+import { ROUND_PILLS_TEXT } from '../constants/assessment-text.constants';
+import type { Round } from '../types/assessment.types';
 
-const ROUNDS: Round[] = ['T0', 'T1', 'T2', 'T3', 'T4']
-const LOCKED_UNTIL_T1: Round[] = ['T2', 'T3', 'T4']
+const ROUNDS: Round[] = ['T0', 'T1', 'T2', 'T3', 'T4'];
+const LOCKED_UNTIL_T1: Round[] = ['T2', 'T3', 'T4'];
 
 interface RoundPillsProps {
-  storeId: string
-  activeRound?: Round
+  storeId: string;
+  activeRound?: Round;
 }
 
 export function RoundPills({ storeId, activeRound }: RoundPillsProps) {
-  const router = useRouter()
-  const { data: summaries } = useAssessmentSummaries(storeId)
-  const [lockOpen, setLockOpen] = useState(false)
+  const router = useRouter();
+  const { data: summaries } = useAssessmentSummaries(storeId);
+  const [lockOpen, setLockOpen] = useState(false);
 
-  const t1Submitted = summaries?.find((s) => s.round === 'T1')?.status === 'SUBMITTED'
+  const t1Submitted = summaries?.find((s) => s.round === 'T1')?.status === 'SUBMITTED';
 
   return (
     <>
       <div className="flex flex-wrap gap-1.5">
         {ROUNDS.map((round) => {
-          const summary = summaries?.find((s) => s.round === round)
-          const isSubmitted = summary?.status === 'SUBMITTED'
-          const isActive = round === activeRound
-          const isLocked = LOCKED_UNTIL_T1.includes(round) && !t1Submitted
+          const summary = summaries?.find((s) => s.round === round);
+          const isSubmitted = summary?.status === 'SUBMITTED';
+          const isActive = round === activeRound;
+          const isLocked = LOCKED_UNTIL_T1.includes(round) && !t1Submitted;
 
           return (
             <button
@@ -47,10 +48,10 @@ export function RoundPills({ storeId, activeRound }: RoundPillsProps) {
               type="button"
               onClick={() => {
                 if (isLocked) {
-                  setLockOpen(true)
-                  return
+                  setLockOpen(true);
+                  return;
                 }
-                router.push(ROUTES.ASSESSMENT_DETAIL(storeId, round))
+                router.push(ROUTES.ASSESSMENT_DETAIL(storeId, round));
               }}
               className={cn(
                 'relative rounded-full border-[1.5px] px-3.5 py-1.5 text-xs font-bold transition-all',
@@ -75,7 +76,7 @@ export function RoundPills({ storeId, activeRound }: RoundPillsProps) {
                 </span>
               )}
             </button>
-          )
+          );
         })}
       </div>
 
@@ -83,20 +84,21 @@ export function RoundPills({ storeId, activeRound }: RoundPillsProps) {
         <DialogContent className="max-w-sm text-center">
           <DialogHeader className="items-center">
             <span className="text-4xl">🔒</span>
-            <DialogTitle>ต้องทำรอบ T1 ก่อน</DialogTitle>
+            <DialogTitle>{ROUND_PILLS_TEXT.lockTitle}</DialogTitle>
             <DialogDescription>
-              ไม่สามารถเข้าถึงรอบนี้ได้
+              {ROUND_PILLS_TEXT.lockLine1}
               <br />
-              กรุณาทำการประเมินรอบ <b className="text-charcoal">T1</b> ให้เสร็จก่อน
+              {ROUND_PILLS_TEXT.lockLine2Prefix} <b className="text-charcoal">T1</b>{' '}
+              {ROUND_PILLS_TEXT.lockLine2Suffix}
               <br />
-              จึงจะสามารถเข้าถึง T2, T3, T4 ได้
+              {ROUND_PILLS_TEXT.lockLine3}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="sm:justify-center">
-            <Button onClick={() => setLockOpen(false)}>เข้าใจแล้ว</Button>
+            <Button onClick={() => setLockOpen(false)}>{ROUND_PILLS_TEXT.lockConfirm}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

@@ -1,20 +1,20 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { toast } from 'sonner'
-import { useQueryClient } from '@tanstack/react-query'
-import { Loading } from '@/components/shared/loading'
-import { ProgressBar } from '@/components/shared/progress-bar'
-import { Button } from '@/components/ui/button'
-import { extractErrorMessage } from '@/utils/extract-error-message'
-import { useStore } from '@/features/store'
-import { AssessmentStorePicker } from './assessment-store-picker'
-import { RoundPills } from './round-pills'
-import { DimensionList } from './dimension-list'
-import { AssessTable } from './assess-table'
-import { ScoreSummary } from './score-summary'
-import { SubmitBar } from './submit-bar'
-import { TimelineArea } from './timeline-area'
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
+import { Loading } from '@/components/shared/loading';
+import { ProgressBar } from '@/components/shared/progress-bar';
+import { Button } from '@/components/ui/button';
+import { extractErrorMessage } from '@/utils/extract-error-message';
+import { useStore } from '@/features/store';
+import { AssessmentStorePicker } from './assessment-store-picker';
+import { RoundPills } from './round-pills';
+import { DimensionList } from './dimension-list';
+import { AssessTable } from './assess-table';
+import { ScoreSummary } from './score-summary';
+import { SubmitBar } from './submit-bar';
+import { TimelineArea } from './timeline-area';
 import {
   assessmentKeys,
   useAssessment,
@@ -23,135 +23,144 @@ import {
   useSubmitAssessment,
   useUpdateScore,
   useUploadEvidence,
-} from '../hooks/use-assessment'
-import { TOTAL_QUESTIONS } from '../types/assessment.types'
-import type { Round } from '../types/assessment.types'
+} from '../hooks/use-assessment';
+import { ASSESSMENT_FORM_TEXT } from '../constants/assessment-text.constants';
+import { TOTAL_QUESTIONS } from '../types/assessment.types';
+import type { Round } from '../types/assessment.types';
 
 interface AssessmentFormProps {
-  storeId: string
-  round: Round
+  storeId: string;
+  round: Round;
 }
 
 export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
-  const queryClient = useQueryClient()
-  const { data: store } = useStore(storeId)
-  const { data: assessment, isLoading, isError, error } = useAssessment(storeId, round)
-  const { data: dimensions } = useDimensions()
-  const [selectedDim, setSelectedDim] = useState(1)
-  const [highlightedId, setHighlightedId] = useState<number | null>(null)
+  const queryClient = useQueryClient();
+  const { data: store } = useStore(storeId);
+  const { data: assessment, isLoading, isError, error } = useAssessment(storeId, round);
+  const { data: dimensions } = useDimensions();
+  const [selectedDim, setSelectedDim] = useState(1);
+  const [highlightedId, setHighlightedId] = useState<number | null>(null);
 
-  const updateScore = useUpdateScore(storeId, round, assessment?.id ?? '')
-  const submitAssessment = useSubmitAssessment(storeId, round, assessment?.id ?? '')
-  const uploadEvidence = useUploadEvidence(storeId, round, assessment?.id ?? '')
-  const deleteEvidence = useDeleteEvidence(storeId, round, assessment?.id ?? '')
+  const updateScore = useUpdateScore(storeId, round, assessment?.id ?? '');
+  const submitAssessment = useSubmitAssessment(storeId, round, assessment?.id ?? '');
+  const uploadEvidence = useUploadEvidence(storeId, round, assessment?.id ?? '');
+  const deleteEvidence = useDeleteEvidence(storeId, round, assessment?.id ?? '');
 
-  if (isLoading) return <Loading className="py-16" />
+  if (isLoading) return <Loading className="py-16" />;
 
   if (isError) {
-    return <p className="py-8 text-center text-destructive">{extractErrorMessage(error)}</p>
+    return <p className="py-8 text-center text-destructive">{extractErrorMessage(error)}</p>;
   }
 
-  if (!assessment) return null
+  if (!assessment) return null;
 
-  const locked = assessment.status === 'SUBMITTED'
-  const scoredCount = assessment.questions.filter((q) => q.rawScore !== null).length
-  const progressPct = Math.round((scoredCount / TOTAL_QUESTIONS) * 100)
-  const dimension = dimensions?.find((d) => d.id === selectedDim) ?? dimensions?.[0]
-  const dimQuestions = assessment.questions.filter((q) => q.dimensionId === dimension?.id)
+  const locked = assessment.status === 'SUBMITTED';
+  const scoredCount = assessment.questions.filter((q) => q.rawScore !== null).length;
+  const progressPct = Math.round((scoredCount / TOTAL_QUESTIONS) * 100);
+  const dimension = dimensions?.find((d) => d.id === selectedDim) ?? dimensions?.[0];
+  const dimQuestions = assessment.questions.filter((q) => q.dimensionId === dimension?.id);
 
   const handleScoreChange = (questionId: number, score: number) => {
-    const question = assessment.questions.find((q) => q.questionId === questionId)
+    const question = assessment.questions.find((q) => q.questionId === questionId);
     updateScore.mutate(
       { questionId, rawScore: score, note: question?.note ?? undefined },
       { onError: (err) => toast.error(extractErrorMessage(err)) }
-    )
-  }
+    );
+  };
 
   const handleNoteChange = (questionId: number, note: string) => {
-    const question = assessment.questions.find((q) => q.questionId === questionId)
-    if (question?.rawScore === null || question?.rawScore === undefined) return
+    const question = assessment.questions.find((q) => q.questionId === questionId);
+    if (question?.rawScore === null || question?.rawScore === undefined) return;
     updateScore.mutate(
       { questionId, rawScore: question.rawScore, note },
       { onError: (err) => toast.error(extractErrorMessage(err)) }
-    )
-  }
+    );
+  };
 
   const handleUploadEvidence = (questionId: number, file: File) => {
     uploadEvidence.mutate(
       { questionId, file },
       {
-        onSuccess: () => toast.success(`แนบไฟล์ ${file.name} แล้ว`),
+        onSuccess: () => toast.success(ASSESSMENT_FORM_TEXT.fileAttached(file.name)),
         onError: (err) => toast.error(extractErrorMessage(err)),
       }
-    )
-  }
+    );
+  };
 
   const handleDeleteEvidence = (evidenceId: string) => {
     deleteEvidence.mutate(evidenceId, {
-      onSuccess: () => toast.success('ลบไฟล์แล้ว'),
+      onSuccess: () => toast.success(ASSESSMENT_FORM_TEXT.fileDeleted),
       onError: (err) => toast.error(extractErrorMessage(err)),
-    })
-  }
+    });
+  };
 
   const handleSaveDraft = () => {
-    queryClient.invalidateQueries({ queryKey: assessmentKeys.byStoreRound(storeId, round) })
-    toast.success('บันทึกร่างเรียบร้อย')
-  }
+    queryClient.invalidateQueries({ queryKey: assessmentKeys.byStoreRound(storeId, round) });
+    toast.success(ASSESSMENT_FORM_TEXT.draftSaved);
+  };
 
-  const maxDim = dimensions?.length ?? 8
+  const maxDim = dimensions?.length ?? 8;
 
   const handleSaveNext = () => {
-    queryClient.invalidateQueries({ queryKey: assessmentKeys.byStoreRound(storeId, round) })
+    queryClient.invalidateQueries({ queryKey: assessmentKeys.byStoreRound(storeId, round) });
     if (selectedDim < maxDim) {
-      setSelectedDim(selectedDim + 1)
+      setSelectedDim(selectedDim + 1);
       requestAnimationFrame(() => {
-        document.getElementById('assess-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      })
-      toast.success(`บันทึกแล้ว — ไปมิติที่ ${selectedDim + 1}`)
+        document
+          .getElementById('assess-card')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      toast.success(ASSESSMENT_FORM_TEXT.savedNextDim(selectedDim + 1));
     } else {
-      document.getElementById('submit-bar')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      toast.success('บันทึกแล้ว — ครบทุกมิติ พร้อม Submit')
+      document
+        .getElementById('submit-bar')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      toast.success(ASSESSMENT_FORM_TEXT.submitAllDone);
     }
-  }
+  };
 
   const handleSubmit = () => {
     const firstUnscored = [...assessment.questions]
       .sort((a, b) => a.questionNo - b.questionNo)
-      .find((q) => q.rawScore === null)
+      .find((q) => q.rawScore === null);
 
     if (firstUnscored) {
-      setSelectedDim(firstUnscored.dimensionId)
-      setHighlightedId(firstUnscored.questionId)
+      setSelectedDim(firstUnscored.dimensionId);
+      setHighlightedId(firstUnscored.questionId);
       requestAnimationFrame(() => {
         document.getElementById(`q-${firstUnscored.questionId}`)?.scrollIntoView({
           behavior: 'smooth',
           block: 'center',
-        })
-      })
-      setTimeout(() => setHighlightedId(null), 2500)
-      return
+        });
+      });
+      setTimeout(() => setHighlightedId(null), 2500);
+      return;
     }
 
-    if (!window.confirm(`ยืนยัน Submit รอบ ${round}?\n\nหลัง Submit แล้วจะไม่สามารถแก้ไขคะแนนได้`)) {
-      return
+    if (!window.confirm(ASSESSMENT_FORM_TEXT.submitConfirm(round))) {
+      return;
     }
 
     submitAssessment.mutate(undefined, {
-      onSuccess: () => toast.success('ส่งผลการประเมินสำเร็จ'),
+      onSuccess: () => toast.success(ASSESSMENT_FORM_TEXT.submitSuccess),
       onError: (err) => toast.error(extractErrorMessage(err)),
-    })
-  }
+    });
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end gap-4 rounded-xl border bg-card p-3 shadow-sm">
         <AssessmentStorePicker storeId={storeId} storeName={store?.name} round={round} />
         <div>
-          <p className="mb-1 text-[10px] text-muted-foreground">รอบประเมิน</p>
+          <p className="mb-1 text-[10px] text-muted-foreground">
+            {ASSESSMENT_FORM_TEXT.roundLabel}
+          </p>
           <RoundPills storeId={storeId} activeRound={round} />
         </div>
         <div className="min-w-[160px] flex-1">
-          <p className="mb-1 text-[10px] text-muted-foreground">ความคืบหน้าการประเมิน</p>
+          <p className="mb-1 text-[10px] text-muted-foreground">
+            {ASSESSMENT_FORM_TEXT.progressLabel}
+          </p>
           <div className="flex items-center gap-2">
             <ProgressBar value={progressPct} className="flex-1" />
             <span className="text-sm font-bold text-orange">{progressPct}%</span>
@@ -160,14 +169,14 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
         <div className="ml-auto flex items-center gap-2">
           <Button
             variant="outline"
-            className="gap-1.5 border-orange text-orange hover:bg-orange/10 hover:text-orange"
+            className="hover:bg-orange/10 gap-1.5 border-orange text-orange hover:text-orange"
             onClick={handleSaveDraft}
             disabled={locked}
           >
-            💾 บันทึกร่าง
+            {ASSESSMENT_FORM_TEXT.saveDraft}
           </Button>
           <Button onClick={handleSaveNext} disabled={locked}>
-            บันทึกและถัดไป →
+            {ASSESSMENT_FORM_TEXT.saveNext}
           </Button>
         </div>
       </div>
@@ -220,7 +229,12 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
         />
       </div>
 
-      <TimelineArea storeId={storeId} round={round} assessmentId={assessment.id} notes={assessment.notes} />
+      <TimelineArea
+        storeId={storeId}
+        round={round}
+        assessmentId={assessment.id}
+        notes={assessment.notes}
+      />
     </div>
-  )
+  );
 }
