@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { Paperclip, Upload, X } from 'lucide-react';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Textarea } from '@/components/ui/textarea';
 import { StatusBadge, type StatusVariant } from '@/components/shared/status-badge';
 import { cn } from '@/utils/cn';
 import { buildFileUrl } from '@/utils/build-file-url';
+import { isFileSizeValid, fileTooLargeMessage } from '@/utils/validate-file-size';
 import { ScoreButtonGroup } from './score-button-group';
 import { QUESTION_ROW_TEXT } from '../constants/assessment-text.constants';
 import type { AssessmentQuestion } from '../types/assessment.types';
@@ -65,6 +67,10 @@ export function QuestionRow({
   const handleFileSelected = (files: FileList | null) => {
     if (!files || files.length === 0) return;
     for (const file of Array.from(files)) {
+      if (!isFileSizeValid(file)) {
+        toast.error(fileTooLargeMessage(file));
+        continue;
+      }
       onUploadEvidence(file);
     }
   };

@@ -5,21 +5,22 @@ import { DataTable } from '@/components/shared/data-table'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { AlertCard } from '@/components/shared/alert-card'
 import { useReportsStatus } from '../hooks/use-dashboard'
+import { REPORTS_STATUS_TABLE_TEXT } from '../constants/dashboard-cards.constants'
 import { extractErrorMessage } from '@/utils/extract-error-message'
 import type { ReportStatusItem } from '../types/dashboard.types'
 import type { TableColumn } from '@/types'
 
 const columns: TableColumn<ReportStatusItem>[] = [
-  { key: 'name', header: 'รายงาน' },
-  { key: 'type', header: 'ประเภท', className: 'text-muted-foreground' },
+  { key: 'name', header: REPORTS_STATUS_TABLE_TEXT.nameColumn },
+  { key: 'type', header: REPORTS_STATUS_TABLE_TEXT.typeColumn, className: 'text-muted-foreground' },
   {
     key: 'status',
-    header: 'สถานะ',
+    header: REPORTS_STATUS_TABLE_TEXT.statusColumn,
     cell: (row) => <StatusBadge status={row.status} />,
   },
   {
     key: 'updatedAt',
-    header: 'อัพเดต',
+    header: REPORTS_STATUS_TABLE_TEXT.updatedAtColumn,
     className: 'text-muted-foreground text-xs',
   },
 ]
@@ -40,7 +41,7 @@ export function ReportsStatusTable() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-semibold">สถานะรายงาน</CardTitle>
+        <CardTitle className="text-sm font-semibold">{REPORTS_STATUS_TABLE_TEXT.title}</CardTitle>
       </CardHeader>
       <CardContent>
         <DataTable
@@ -48,7 +49,7 @@ export function ReportsStatusTable() {
           data={data ?? []}
           keyField="id"
           isLoading={isLoading}
-          emptyMessage="ยังไม่มีรายงาน"
+          emptyMessage={REPORTS_STATUS_TABLE_TEXT.empty}
         />
       </CardContent>
     </Card>

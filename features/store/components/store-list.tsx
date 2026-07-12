@@ -1,18 +1,21 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { toast } from 'sonner'
-import { Eye, Pencil, Trash2 } from 'lucide-react'
-import { DataTable } from '@/components/shared/data-table'
-import { StatusBadge, type StatusVariant } from '@/components/shared/status-badge'
-import { Button } from '@/components/ui/button'
-import { ROUTES } from '@/constants/routes'
-import { extractErrorMessage } from '@/utils/extract-error-message'
-import { buildFileUrl } from '@/utils/build-file-url'
-import { useStores, useDeleteStore } from '../hooks/use-stores'
-import { STORE_STATUS_LABELS } from '../types/store.types'
-import type { Store, StoreStatus, StoreQueryParams } from '../types/store.types'
-import type { TableColumn } from '@/types'
+import Link from 'next/link';
+import { toast } from 'sonner';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { DataTable } from '@/components/shared/data-table';
+import { StatusBadge, type StatusVariant } from '@/components/shared/status-badge';
+import { useConfirm } from '@/components/shared/confirm-dialog';
+import { Button } from '@/components/ui/button';
+import { ROUTES } from '@/constants/routes';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { extractErrorMessage } from '@/utils/extract-error-message';
+import { buildFileUrl } from '@/utils/build-file-url';
+import { STORE_DIALOG_TEXT } from '../constants/store-dialog.constants';
+import { useStores, useDeleteStore } from '../hooks/use-stores';
+import { STORE_STATUS_LABELS } from '../types/store.types';
+import type { Store, StoreStatus, StoreQueryParams } from '../types/store.types';
+import type { TableColumn } from '@/types';
 
 const STATUS_VARIANT: Record<StoreStatus, StatusVariant> = {
   REGISTERED: 'new',
@@ -27,28 +30,36 @@ const STATUS_VARIANT: Record<StoreStatus, StatusVariant> = {
   FIELD_AUDITED: 'pending',
   IDP_CREATED: 'pending',
   COMPLETED: 'active',
-}
+};
 
 interface StoreListProps {
-  query?: StoreQueryParams
-  selectedId?: string | null
-  onSelect?: (id: string) => void
+  query?: StoreQueryParams;
+  selectedId?: string | null;
+  onSelect?: (id: string) => void;
 }
 
 export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
-  const { data, isLoading, isError, error } = useStores(query)
-  const { mutate: deleteStore, isPending: isDeleting } = useDeleteStore()
+  const can = useAuthStore((s) => s.can);
+  const { data, isLoading, isError, error } = useStores(query);
+  const { mutate: deleteStore, isPending: isDeleting } = useDeleteStore();
+  const confirm = useConfirm();
 
   if (isError) {
-    return <p className="py-8 text-center text-destructive">{extractErrorMessage(error)}</p>
+    return <p className="py-8 text-center text-destructive">{extractErrorMessage(error)}</p>;
   }
 
-  const handleDelete = (id: string, name: string) => {
-    if (!window.confirm(`ยืนยันลบร้าน "${name}"?`)) return
+  const handleDelete = async (id: string, name: string) => {
+    const confirmed = await confirm({
+      title: STORE_DIALOG_TEXT.deleteStoreTitle,
+      description: STORE_DIALOG_TEXT.deleteStoreDescription(name),
+      confirmLabel: STORE_DIALOG_TEXT.deleteConfirmLabel,
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
     deleteStore(id, {
       onError: (err) => toast.error(extractErrorMessage(err)),
-    })
-  }
+    });
+  };
 
   const columns: TableColumn<Store>[] = [
     {
@@ -59,7 +70,11 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
           <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-orange to-orange-light text-base text-white">
             {row.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={buildFileUrl(row.logoUrl)} alt={row.name} className="h-full w-full object-cover" />
+              <img
+                src={buildFileUrl(row.logoUrl)}
+                alt={row.name}
+                className="h-full w-full object-cover"
+              />
             ) : (
               '🍜'
             )}
@@ -123,28 +138,36 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
               <Eye className="h-3.5 w-3.5" />
             </Link>
           </Button>
-          <Button variant="outline" size="icon" className="h-7 w-7" asChild>
-            <Link href={ROUTES.STORE_EDIT(row.id)} title="แก้ไขร้าน" onClick={(e) => e.stopPropagation()}>
-              <Pencil className="h-3.5 w-3.5" />
-            </Link>
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-7 w-7 border-destructive/30 text-destructive hover:bg-destructive/10"
-            disabled={isDeleting}
-            title="ลบร้าน"
-            onClick={(e) => {
-              e.stopPropagation()
-              handleDelete(row.id, row.name)
-            }}
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
+          {can('store:write') && (
+            <Button variant="outline" size="icon" className="h-7 w-7" asChild>
+              <Link
+                href={ROUTES.STORE_EDIT(row.id)}
+                title="แก้ไขร้าน"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </Link>
+            </Button>
+          )}
+          {can('store:delete') && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-7 w-7 border-destructive/30 text-destructive hover:bg-destructive/10"
+              disabled={isDeleting}
+              title="ลบร้าน"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(row.id, row.name);
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          )}
         </div>
       ),
     },
-  ]
+  ];
 
   return (
     <DataTable<Store>
@@ -157,5 +180,5 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
       onRowClick={onSelect ? (row) => onSelect(row.id) : undefined}
       isRowSelected={selectedId ? (row) => row.id === selectedId : undefined}
     />
-  )
+  );
 }

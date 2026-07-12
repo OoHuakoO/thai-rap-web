@@ -1,8 +1,22 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { Plus, Upload, X } from 'lucide-react'
 import { Label } from '@/components/ui/label'
+import { isFileSizeValid, fileTooLargeMessage } from '@/utils/validate-file-size'
+
+function filterValidFiles(files: File[]): File[] {
+  const valid: File[] = []
+  for (const file of files) {
+    if (isFileSizeValid(file)) {
+      valid.push(file)
+    } else {
+      toast.error(fileTooLargeMessage(file))
+    }
+  }
+  return valid
+}
 
 interface PhotoPickerSectionProps {
   label: string
@@ -32,7 +46,7 @@ function PhotoPickerSection({ label, files, onChange }: PhotoPickerSectionProps)
             accept="image/jpeg,image/png,image/webp"
             className="hidden"
             onChange={(e) => {
-              if (e.target.files) onChange([...files, ...Array.from(e.target.files)])
+              if (e.target.files) onChange([...files, ...filterValidFiles(Array.from(e.target.files))])
               e.target.value = ''
             }}
           />
@@ -120,7 +134,11 @@ export function StoreMediaPicker({
               accept="image/jpeg,image/png,image/webp"
               className="hidden"
               onChange={(e) => {
-                onLogoChange(e.target.files?.[0] ?? null)
+                const file = e.target.files?.[0]
+                if (file) {
+                  if (isFileSizeValid(file)) onLogoChange(file)
+                  else toast.error(fileTooLargeMessage(file))
+                }
                 e.target.value = ''
               }}
             />
@@ -157,7 +175,9 @@ export function StoreMediaPicker({
               accept="image/jpeg,image/png,image/webp,application/pdf,.xlsx"
               className="hidden"
               onChange={(e) => {
-                if (e.target.files) onDocumentFilesChange([...documentFiles, ...Array.from(e.target.files)])
+                if (e.target.files) {
+                  onDocumentFilesChange([...documentFiles, ...filterValidFiles(Array.from(e.target.files))])
+                }
                 e.target.value = ''
               }}
             />

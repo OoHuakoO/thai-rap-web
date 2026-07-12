@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { PaginationBar } from '@/components/shared/pagination-bar';
 import { ROUTES } from '@/constants/routes';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useAuthStore } from '@/stores/useAuthStore';
 import { StoreList } from './store-list';
 import { StoreDetail } from './store-detail';
 import { StoreStatsBar } from './store-stats-bar';
@@ -26,6 +27,7 @@ const STATUS_OPTIONS = Object.entries(STORE_STATUS_LABELS) as [StoreStatus, stri
 const DEFAULT_LIMIT = 10;
 
 export function StoreExplorer() {
+  const can = useAuthStore((s) => s.can);
   const [search, setSearch] = useState('');
   const [province, setProvince] = useState<string>('ALL');
   const [storeType, setStoreType] = useState<string>('ALL');
@@ -136,12 +138,14 @@ export function StoreExplorer() {
           </Select>
         </div>
 
-        <Button className="ml-auto gap-1.5" asChild>
-          <Link href={ROUTES.STORE_NEW}>
-            <Plus className="h-4 w-4" />
-            เพิ่มร้านอาหาร
-          </Link>
-        </Button>
+        {can('store:write') && (
+          <Button className="ml-auto gap-1.5" asChild>
+            <Link href={ROUTES.STORE_NEW}>
+              <Plus className="h-4 w-4" />
+              เพิ่มร้านอาหาร
+            </Link>
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_380px]">

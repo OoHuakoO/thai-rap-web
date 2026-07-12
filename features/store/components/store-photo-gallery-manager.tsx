@@ -1,24 +1,27 @@
-'use client'
+'use client';
 
-import { useRef } from 'react'
-import { toast } from 'sonner'
-import { Plus, X } from 'lucide-react'
-import { Label } from '@/components/ui/label'
-import { extractErrorMessage } from '@/utils/extract-error-message'
-import { buildFileUrl } from '@/utils/build-file-url'
+import { useRef } from 'react';
+import { toast } from 'sonner';
+import { Plus, X } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { useConfirm } from '@/components/shared/confirm-dialog';
+import { extractErrorMessage } from '@/utils/extract-error-message';
+import { buildFileUrl } from '@/utils/build-file-url';
+import { isFileSizeValid, fileTooLargeMessage } from '@/utils/validate-file-size';
+import { STORE_DIALOG_TEXT } from '../constants/store-dialog.constants';
 import {
   useUploadStorefrontPhoto,
   useDeleteStorefrontPhoto,
   useUploadStorePhoto,
   useDeleteStorePhoto,
-} from '../hooks/use-stores'
+} from '../hooks/use-stores';
 
 interface StorePhotoGalleryManagerProps {
-  storeId: string
-  label: string
-  photos: string[]
-  variant: 'storefront' | 'menu'
-  emptyMessage: string
+  storeId: string;
+  label: string;
+  photos: string[];
+  variant: 'storefront' | 'menu';
+  emptyMessage: string;
 }
 
 export function StorePhotoGalleryManager({
@@ -28,23 +31,39 @@ export function StorePhotoGalleryManager({
   variant,
   emptyMessage,
 }: StorePhotoGalleryManagerProps) {
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const uploadStorefront = useUploadStorefrontPhoto(storeId)
-  const deleteStorefront = useDeleteStorefrontPhoto(storeId)
-  const uploadMenu = useUploadStorePhoto(storeId)
-  const deleteMenu = useDeleteStorePhoto(storeId)
+  const uploadStorefront = useUploadStorefrontPhoto(storeId);
+  const deleteStorefront = useDeleteStorefrontPhoto(storeId);
+  const uploadMenu = useUploadStorePhoto(storeId);
+  const deleteMenu = useDeleteStorePhoto(storeId);
 
   const { mutate: upload, isPending: isUploading } =
-    variant === 'storefront' ? uploadStorefront : uploadMenu
-  const { mutate: remove } = variant === 'storefront' ? deleteStorefront : deleteMenu
+    variant === 'storefront' ? uploadStorefront : uploadMenu;
+  const { mutate: remove } = variant === 'storefront' ? deleteStorefront : deleteMenu;
+  const confirm = useConfirm();
 
   const handleSelected = (files: FileList | null) => {
-    if (!files || files.length === 0) return
+    if (!files || files.length === 0) return;
     for (const file of Array.from(files)) {
-      upload(file, { onError: (err) => toast.error(extractErrorMessage(err)) })
+      if (!isFileSizeValid(file)) {
+        toast.error(fileTooLargeMessage(file));
+        continue;
+      }
+      upload(file, { onError: (err) => toast.error(extractErrorMessage(err)) });
     }
-  }
+  };
+
+  const handleRemove = async (url: string) => {
+    const confirmed = await confirm({
+      title: STORE_DIALOG_TEXT.deletePhotoTitle(label),
+      description: STORE_DIALOG_TEXT.deletePhotoDescription(label),
+      confirmLabel: STORE_DIALOG_TEXT.deleteConfirmLabel,
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
+    remove(url, { onError: (err) => toast.error(extractErrorMessage(err)) });
+  };
 
   return (
     <div>
@@ -66,8 +85,8 @@ export function StorePhotoGalleryManager({
           accept="image/jpeg,image/png,image/webp"
           className="hidden"
           onChange={(e) => {
-            handleSelected(e.target.files)
-            e.target.value = ''
+            handleSelected(e.target.files);
+            e.target.value = '';
           }}
         />
       </div>
@@ -79,7 +98,7 @@ export function StorePhotoGalleryManager({
               <img src={buildFileUrl(url)} alt={label} className="h-full w-full object-cover" />
               <button
                 type="button"
-                onClick={() => remove(url, { onError: (err) => toast.error(extractErrorMessage(err)) })}
+                onClick={() => handleRemove(url)}
                 aria-label={`ลบ${label}`}
                 className="absolute -right-1 -top-1 hidden h-4 w-4 items-center justify-center rounded-full bg-destructive text-white group-hover:flex"
               >
@@ -92,5 +111,5 @@ export function StorePhotoGalleryManager({
         <p className="text-[10.5px] text-muted-foreground">{emptyMessage}</p>
       )}
     </div>
-  )
+  );
 }

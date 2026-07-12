@@ -8,8 +8,9 @@ import { StatusBadge, type StatusVariant } from '@/components/shared/status-badg
 import { ROUTES } from '@/constants/routes'
 import { extractErrorMessage } from '@/utils/extract-error-message'
 import { buildFileUrl } from '@/utils/build-file-url'
-import { useAssessmentSummaries } from '@/features/assessment/hooks/use-assessment'
+import { useAssessmentSummaries } from '@/features/assessment'
 import { useStore } from '../hooks/use-stores'
+import { STORE_DETAIL_TEXT, ASSESSMENT_ROUND_LABELS } from '../constants/store-detail.constants'
 import { STORE_STATUS_LABELS } from '../types/store.types'
 import type { StoreStatus } from '../types/store.types'
 
@@ -27,14 +28,6 @@ const STATUS_VARIANT: Record<StoreStatus, StatusVariant> = {
   IDP_CREATED: 'pending',
   COMPLETED: 'active',
 }
-
-const ASSESSMENT_ROUNDS = [
-  { round: 'T0', label: 'T0 — ก่อนเข้าค่าย' },
-  { round: 'T1', label: 'T1 — หลังค่าย' },
-  { round: 'T2', label: 'T2 — Field Audit' },
-  { round: 'T3', label: 'T3 — ติดตาม 1 เดือน' },
-  { round: 'T4', label: 'T4 — ติดตาม 3 เดือน' },
-] as const
 
 const DECIDED_STATUSES: StoreStatus[] = ['SELECTED', 'CONDITIONAL_SELECTED', 'WAITING_LIST', 'NOT_SELECTED']
 
@@ -73,7 +66,7 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
   }
 
   if (!store) {
-    return <p className="py-8 text-center text-muted-foreground">ไม่พบร้านนี้</p>
+    return <p className="py-8 text-center text-muted-foreground">{STORE_DETAIL_TEXT.notFound}</p>
   }
 
   const t0SubmittedAt = summaries?.find((s) => s.round === 'T0')?.submittedAt ?? null
@@ -81,10 +74,10 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
   const decided = DECIDED_STATUSES.includes(store.status)
 
   const timeline = [
-    { label: 'ลงทะเบียนร้านอาหาร', date: store.createdAt, done: true },
-    { label: 'ประเมิน T0', date: t0SubmittedAt, done: !!t0SubmittedAt },
-    { label: 'ประเมิน T1', date: t1SubmittedAt, done: !!t1SubmittedAt },
-    { label: 'รอประกาศผลการคัดเลือก', date: null, done: decided },
+    { label: STORE_DETAIL_TEXT.timelineRegistered, date: store.createdAt, done: true },
+    { label: STORE_DETAIL_TEXT.timelineT0, date: t0SubmittedAt, done: !!t0SubmittedAt },
+    { label: STORE_DETAIL_TEXT.timelineT1, date: t1SubmittedAt, done: !!t1SubmittedAt },
+    { label: STORE_DETAIL_TEXT.timelinePendingResult, date: null, done: decided },
   ]
 
   return (
@@ -108,7 +101,7 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
         </div>
         <div className="absolute right-2 top-2 flex items-center gap-1.5">
           <StatusBadge status={STATUS_VARIANT[store.status]} label={STORE_STATUS_LABELS[store.status]} />
-          <Button variant="secondary" size="icon" className="h-6 w-6" title="แก้ไขร้าน" asChild>
+          <Button variant="secondary" size="icon" className="h-6 w-6" title={STORE_DETAIL_TEXT.editStoreTitle} asChild>
             <Link href={ROUTES.STORE_EDIT(store.id)}>
               <Pencil className="h-3 w-3" />
             </Link>
@@ -119,24 +112,26 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
       <div className="grid grid-cols-1 gap-4 px-3 pb-3 sm:grid-cols-2">
         <div className="space-y-3">
           <div>
-            <p className="mb-1.5 text-xs font-bold text-charcoal">ข้อมูลติดต่อ</p>
+            <p className="mb-1.5 text-xs font-bold text-charcoal">{STORE_DETAIL_TEXT.contactInfoTitle}</p>
             <div className="grid grid-cols-[auto_1fr] gap-x-2.5 gap-y-1 text-[10.5px]">
-              <span className="text-muted-foreground">เจ้าของร้าน</span>
+              <span className="text-muted-foreground">{STORE_DETAIL_TEXT.ownerNameLabel}</span>
               <span className="font-medium text-charcoal">{store.ownerName}</span>
-              <span className="text-muted-foreground">เบอร์โทร</span>
+              <span className="text-muted-foreground">{STORE_DETAIL_TEXT.phoneLabel}</span>
               <span className="font-medium text-charcoal">{store.phone}</span>
               {store.email && (
                 <>
-                  <span className="text-muted-foreground">อีเมล</span>
+                  <span className="text-muted-foreground">{STORE_DETAIL_TEXT.emailLabel}</span>
                   <span className="font-medium text-charcoal">{store.email}</span>
                 </>
               )}
-              <span className="text-muted-foreground">ที่อยู่</span>
+              <span className="text-muted-foreground">{STORE_DETAIL_TEXT.addressLabel}</span>
               <span className="font-medium leading-relaxed text-charcoal">{store.address}</span>
               {store.avgRevenue !== null && (
                 <>
-                  <span className="text-muted-foreground">ยอดขาย/เดือน</span>
-                  <span className="font-medium text-orange">{store.avgRevenue.toLocaleString()} บาท</span>
+                  <span className="text-muted-foreground">{STORE_DETAIL_TEXT.avgRevenueLabel}</span>
+                  <span className="font-medium text-orange">
+                    {store.avgRevenue.toLocaleString()} {STORE_DETAIL_TEXT.currencyUnit}
+                  </span>
                 </>
               )}
             </div>
@@ -148,7 +143,7 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1877f2] text-[10px] text-white"
-                    title="Facebook"
+                    title={STORE_DETAIL_TEXT.facebookTitle}
                   >
                     f
                   </a>
@@ -159,7 +154,7 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex h-6 w-6 items-center justify-center rounded-full bg-[#06c755] text-[10px] font-bold text-white"
-                    title="LINE"
+                    title={STORE_DETAIL_TEXT.lineTitle}
                   >
                     L
                   </a>
@@ -170,7 +165,7 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#8134af] text-[10px] text-white"
-                    title="Instagram"
+                    title={STORE_DETAIL_TEXT.instagramTitle}
                   >
                     IG
                   </a>
@@ -181,7 +176,7 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
 
           {store.mainProblems.length > 0 && (
             <div>
-              <p className="mb-1.5 text-xs font-bold text-charcoal">ปัญหาสำคัญ</p>
+              <p className="mb-1.5 text-xs font-bold text-charcoal">{STORE_DETAIL_TEXT.mainProblemsTitle}</p>
               <div className="flex flex-wrap gap-1">
                 {store.mainProblems.map((tag) => (
                   <span
@@ -197,7 +192,7 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
 
           {store.goals.length > 0 && (
             <div>
-              <p className="mb-1.5 text-xs font-bold text-charcoal">เป้าหมายการพัฒนา</p>
+              <p className="mb-1.5 text-xs font-bold text-charcoal">{STORE_DETAIL_TEXT.goalsTitle}</p>
               <div className="flex flex-wrap gap-1">
                 {store.goals.map((tag) => (
                   <span
@@ -213,12 +208,16 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
 
           {store.storefrontPhotos.length > 0 && (
             <div>
-              <p className="mb-1.5 text-xs font-bold text-charcoal">รูปหน้าร้าน</p>
+              <p className="mb-1.5 text-xs font-bold text-charcoal">{STORE_DETAIL_TEXT.storefrontPhotosTitle}</p>
               <div className="flex flex-wrap gap-2">
                 {store.storefrontPhotos.map((url) => (
                   <div key={url} className="h-14 w-14 overflow-hidden rounded-md">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={buildFileUrl(url)} alt="รูปหน้าร้าน" className="h-full w-full object-cover" />
+                    <img
+                      src={buildFileUrl(url)}
+                      alt={STORE_DETAIL_TEXT.storefrontPhotoAlt}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                 ))}
               </div>
@@ -228,7 +227,7 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
 
         <div className="space-y-3">
           <div>
-            <p className="mb-1.5 text-xs font-bold text-charcoal">เอกสารที่อัปโหลด</p>
+            <p className="mb-1.5 text-xs font-bold text-charcoal">{STORE_DETAIL_TEXT.documentsTitle}</p>
             {(store.documents?.length ?? 0) > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {store.documents.map((doc) => {
@@ -253,28 +252,32 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
                 })}
               </div>
             ) : (
-              <p className="text-[10.5px] text-muted-foreground">ยังไม่มีเอกสารอัปโหลด</p>
+              <p className="text-[10.5px] text-muted-foreground">{STORE_DETAIL_TEXT.documentsEmpty}</p>
             )}
           </div>
 
           <div>
-            <p className="mb-1.5 text-xs font-bold text-charcoal">ภาพเมนูอาหาร</p>
+            <p className="mb-1.5 text-xs font-bold text-charcoal">{STORE_DETAIL_TEXT.menuPhotosTitle}</p>
             {store.photos.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {store.photos.map((url) => (
                   <div key={url} className="h-14 w-14 overflow-hidden rounded-md">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={buildFileUrl(url)} alt="ภาพเมนูอาหาร" className="h-full w-full object-cover" />
+                    <img
+                      src={buildFileUrl(url)}
+                      alt={STORE_DETAIL_TEXT.menuPhotoAlt}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-[10.5px] text-muted-foreground">ยังไม่มีภาพเมนูอาหาร</p>
+              <p className="text-[10.5px] text-muted-foreground">{STORE_DETAIL_TEXT.menuPhotosEmpty}</p>
             )}
           </div>
 
           <div>
-            <p className="mb-1.5 text-xs font-bold text-charcoal">สถานะเข้าร่วมโครงการ</p>
+            <p className="mb-1.5 text-xs font-bold text-charcoal">{STORE_DETAIL_TEXT.progressStatusTitle}</p>
             <div className="space-y-2">
               {timeline.map((t, i) => (
                 <div key={t.label} className="flex items-start gap-2">
@@ -298,9 +301,9 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
       </div>
 
       <div className="border-t px-3 pb-3 pt-3">
-        <p className="mb-2 text-xs font-bold text-charcoal">ประเมินร้าน</p>
+        <p className="mb-2 text-xs font-bold text-charcoal">{STORE_DETAIL_TEXT.assessmentSectionTitle}</p>
         <div className="flex flex-wrap gap-2">
-          {ASSESSMENT_ROUNDS.map(({ round, label }) => (
+          {ASSESSMENT_ROUND_LABELS.map(({ round, label }) => (
             <Button key={round} variant="outline" size="sm" asChild>
               <Link href={ROUTES.ASSESSMENT_DETAIL(store.id, round)}>{label}</Link>
             </Button>

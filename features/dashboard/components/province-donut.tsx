@@ -5,6 +5,7 @@ import { DonutChart } from '@/components/shared/donut-chart'
 import { CardSkeleton } from '@/components/shared/loading'
 import { AlertCard } from '@/components/shared/alert-card'
 import { useProvinceDistribution } from '../hooks/use-dashboard'
+import { PROVINCE_DONUT_TEXT } from '../constants/dashboard-cards.constants'
 import { extractErrorMessage } from '@/utils/extract-error-message'
 import { colors } from '@/styles/tokens'
 
@@ -43,13 +44,13 @@ export function ProvinceDonut() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-semibold">การกระจายตัวรายจังหวัด</CardTitle>
+        <CardTitle className="text-sm font-semibold">{PROVINCE_DONUT_TEXT.title}</CardTitle>
       </CardHeader>
       <CardContent>
         <DonutChart
           data={chartData}
           centerValue={total}
-          centerLabel="ร้านทั้งหมด"
+          centerLabel={PROVINCE_DONUT_TEXT.centerLabel}
           height={240}
         />
       </CardContent>

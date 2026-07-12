@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -13,11 +14,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { toast } from 'sonner';
 import { TagInput } from '@/components/shared/tag-input';
+import { useAlert } from '@/components/shared/confirm-dialog';
+import { ROUTES } from '@/constants/routes';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { useProvinces } from '@/features/province';
 import { EDIT_STORE_FORM_TEXT, STORE_FORM_TEXT } from '../constants/store-form.constants';
+import { STORE_DIALOG_TEXT } from '../constants/store-dialog.constants';
 import { storeFormSchema } from '../schemas/store.schema';
 import type { StoreFormValues } from '../schemas/store.schema';
 import { useUpdateStore } from '../hooks/use-stores';
@@ -29,8 +32,10 @@ interface EditStoreFormProps {
 }
 
 export function EditStoreForm({ store, onSuccess }: EditStoreFormProps) {
+  const router = useRouter();
   const { mutate: updateStore, isPending, isError, error } = useUpdateStore(store.id);
   const { data: provinces } = useProvinces();
+  const alert = useAlert();
 
   const {
     register,
@@ -71,9 +76,13 @@ export function EditStoreForm({ store, onSuccess }: EditStoreFormProps) {
         socialLinks,
       },
       {
-        onSuccess: () => {
-          toast.success(EDIT_STORE_FORM_TEXT.updateSuccess);
+        onSuccess: async () => {
+          await alert({
+            title: STORE_DIALOG_TEXT.successTitle,
+            description: EDIT_STORE_FORM_TEXT.updateSuccess,
+          });
           onSuccess?.();
+          router.push(ROUTES.STORES);
         },
       }
     );

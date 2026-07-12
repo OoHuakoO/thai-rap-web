@@ -13,12 +13,16 @@ export const ASSESSMENT_FORM_TEXT = {
   saveNext: 'บันทึกและถัดไป →',
   draftSaved: 'บันทึกร่างเรียบร้อย',
   fileDeleted: 'ลบไฟล์แล้ว',
+  submitSuccessTitle: 'สำเร็จ',
   submitSuccess: 'ส่งผลการประเมินสำเร็จ',
   submitAllDone: 'บันทึกแล้ว — ครบทุกมิติ พร้อม Submit',
   fileAttached: (fileName: string) => `แนบไฟล์ ${fileName} แล้ว`,
   savedNextDim: (dim: number) => `บันทึกแล้ว — ไปมิติที่ ${dim}`,
-  submitConfirm: (round: string) =>
-    `ยืนยัน Submit รอบ ${round}?\n\nหลัง Submit แล้วจะไม่สามารถแก้ไขคะแนนได้`,
+  submitConfirmTitle: (round: string) => `ยืนยัน Submit รอบ ${round}`,
+  submitConfirmDescription: 'หลัง Submit แล้วจะไม่สามารถแก้ไขคะแนนได้',
+  submitConfirmLabel: 'Submit',
+  deleteEvidenceTitle: 'ลบไฟล์',
+  deleteEvidenceDescription: 'ต้องการลบไฟล์หลักฐานนี้ใช่หรือไม่?',
 } as const;
 
 export const SCORE_SUMMARY_TEXT = {

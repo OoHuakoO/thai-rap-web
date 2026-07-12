@@ -5,6 +5,7 @@ import { BarChart } from '@/components/shared/bar-chart'
 import { CardSkeleton } from '@/components/shared/loading'
 import { AlertCard } from '@/components/shared/alert-card'
 import { useProvinceComparison } from '../hooks/use-dashboard'
+import { PROVINCE_BAR_CHART_TEXT } from '../constants/dashboard-cards.constants'
 import { extractErrorMessage } from '@/utils/extract-error-message'
 
 export function ProvinceBarChart() {
@@ -33,14 +34,14 @@ export function ProvinceBarChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-semibold">เปรียบเทียบคะแนน T0 vs T1 รายจังหวัด</CardTitle>
+        <CardTitle className="text-sm font-semibold">{PROVINCE_BAR_CHART_TEXT.title}</CardTitle>
       </CardHeader>
       <CardContent>
         <BarChart
           data={chartData}
           series={[
-            { key: 't0', label: 'T0 ประเมินเบื้องต้น' },
-            { key: 't1', label: 'T1 ประเมินเชิงลึก' },
+            { key: 't0', label: PROVINCE_BAR_CHART_TEXT.t0SeriesLabel },
+            { key: 't1', label: PROVINCE_BAR_CHART_TEXT.t1SeriesLabel },
           ]}
           height={240}
         />

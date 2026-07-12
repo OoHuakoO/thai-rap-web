@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AlertCard } from '@/components/shared/alert-card'
 import { CardSkeleton } from '@/components/shared/loading'
 import { useActivity } from '../hooks/use-dashboard'
+import { ACTIVITY_FEED_TEXT } from '../constants/dashboard-cards.constants'
 import { extractErrorMessage } from '@/utils/extract-error-message'
 
 function formatTimestamp(iso: string): string {
@@ -34,7 +35,7 @@ export function ActivityFeed() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-semibold">กิจกรรมและการแจ้งเตือน</CardTitle>
+        <CardTitle className="text-sm font-semibold">{ACTIVITY_FEED_TEXT.title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {items.map((item) => (

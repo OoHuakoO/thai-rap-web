@@ -7,6 +7,7 @@ import { QUERY_STALE_TIME_MS } from '@/constants';
 import { MockProvider } from './mock-provider';
 import { AuthBootstrap } from './auth-bootstrap';
 import { Toaster } from '@/components/ui/sonner';
+import { ConfirmDialogProvider } from '@/components/shared/confirm-dialog';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -26,7 +27,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <MockProvider>
       <QueryClientProvider client={queryClient}>
         <AuthBootstrap />
-        {children}
+        <ConfirmDialogProvider>{children}</ConfirmDialogProvider>
         <Toaster position="top-right" richColors />
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>

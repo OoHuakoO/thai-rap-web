@@ -6,6 +6,7 @@ import { ProgressBar } from '@/components/shared/progress-bar'
 import { CardSkeleton } from '@/components/shared/loading'
 import { AlertCard } from '@/components/shared/alert-card'
 import { useIncubationSteps } from '../hooks/use-dashboard'
+import { INCUBATION_STEPPER_TEXT } from '../constants/dashboard-cards.constants'
 import { extractErrorMessage } from '@/utils/extract-error-message'
 
 export function IncubationStepper() {
@@ -27,14 +28,14 @@ export function IncubationStepper() {
 
   const timelineSteps = steps.map((s) => ({
     label: s.label,
-    sublabel: `${s.count} ร้าน`,
+    sublabel: `${s.count} ${INCUBATION_STEPPER_TEXT.storeCountUnit}`,
     status: s.status,
   }))
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-semibold">ขั้นตอนการบ่มเพาะ</CardTitle>
+        <CardTitle className="text-sm font-semibold">{INCUBATION_STEPPER_TEXT.title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <TimelineSteps steps={timelineSteps} />

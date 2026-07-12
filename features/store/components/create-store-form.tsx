@@ -17,10 +17,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { TagInput } from '@/components/shared/tag-input';
+import { useAlert } from '@/components/shared/confirm-dialog';
 import { ROUTES } from '@/constants/routes';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { useProvinces } from '@/features/province';
 import { CREATE_STORE_FORM_TEXT, STORE_FORM_TEXT } from '../constants/store-form.constants';
+import { STORE_DIALOG_TEXT } from '../constants/store-dialog.constants';
 import { storeFormSchema } from '../schemas/store.schema';
 import type { StoreFormValues } from '../schemas/store.schema';
 import { useCreateStore } from '../hooks/use-stores';
@@ -65,6 +67,7 @@ export function CreateStoreForm() {
   const router = useRouter();
   const { mutate: createStore, isPending, isError, error } = useCreateStore();
   const { data: provinces } = useProvinces();
+  const alert = useAlert();
 
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [storefrontFiles, setStorefrontFiles] = useState<File[]>([]);
@@ -106,8 +109,11 @@ export function CreateStoreForm() {
             documentFiles,
           });
           setIsUploadingMedia(false);
-          toast.success(CREATE_STORE_FORM_TEXT.createSuccess);
-          router.push(ROUTES.STORE_DETAIL(created.id));
+          await alert({
+            title: STORE_DIALOG_TEXT.successTitle,
+            description: CREATE_STORE_FORM_TEXT.createSuccess,
+          });
+          router.push(ROUTES.STORES);
         },
       }
     );

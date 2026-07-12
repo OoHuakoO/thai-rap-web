@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { Loading } from '@/components/shared/loading';
 import { ProgressBar } from '@/components/shared/progress-bar';
+import { useAlert, useConfirm } from '@/components/shared/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { useStore } from '@/features/store';
@@ -40,6 +41,8 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
   const { data: dimensions } = useDimensions();
   const [selectedDim, setSelectedDim] = useState(1);
   const [highlightedId, setHighlightedId] = useState<number | null>(null);
+  const confirm = useConfirm();
+  const alert = useAlert();
 
   const updateScore = useUpdateScore(storeId, round, assessment?.id ?? '');
   const submitAssessment = useSubmitAssessment(storeId, round, assessment?.id ?? '');
@@ -87,7 +90,14 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
     );
   };
 
-  const handleDeleteEvidence = (evidenceId: string) => {
+  const handleDeleteEvidence = async (evidenceId: string) => {
+    const confirmed = await confirm({
+      title: ASSESSMENT_FORM_TEXT.deleteEvidenceTitle,
+      description: ASSESSMENT_FORM_TEXT.deleteEvidenceDescription,
+      confirmLabel: ASSESSMENT_FORM_TEXT.deleteEvidenceTitle,
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
     deleteEvidence.mutate(evidenceId, {
       onSuccess: () => toast.success(ASSESSMENT_FORM_TEXT.fileDeleted),
       onError: (err) => toast.error(extractErrorMessage(err)),
@@ -119,7 +129,7 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const firstUnscored = [...assessment.questions]
       .sort((a, b) => a.questionNo - b.questionNo)
       .find((q) => q.rawScore === null);
@@ -137,12 +147,19 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
       return;
     }
 
-    if (!window.confirm(ASSESSMENT_FORM_TEXT.submitConfirm(round))) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: ASSESSMENT_FORM_TEXT.submitConfirmTitle(round),
+      description: ASSESSMENT_FORM_TEXT.submitConfirmDescription,
+      confirmLabel: ASSESSMENT_FORM_TEXT.submitConfirmLabel,
+    });
+    if (!confirmed) return;
 
     submitAssessment.mutate(undefined, {
-      onSuccess: () => toast.success(ASSESSMENT_FORM_TEXT.submitSuccess),
+      onSuccess: () =>
+        alert({
+          title: ASSESSMENT_FORM_TEXT.submitSuccessTitle,
+          description: ASSESSMENT_FORM_TEXT.submitSuccess,
+        }),
       onError: (err) => toast.error(extractErrorMessage(err)),
     });
   };
