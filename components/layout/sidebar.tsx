@@ -36,26 +36,19 @@ export function Sidebar({ className }: SidebarProps) {
       {/* Logo */}
       <div
         className={cn(
-          'mb-3 flex items-center gap-2.5 border-b border-white/10 pb-3',
-          collapsed ? 'justify-center px-0' : 'px-2'
+          'mb-3 flex flex-col items-center gap-1.5 border-b border-white/10 pb-3',
+          collapsed ? 'px-0' : 'px-2'
         )}
       >
         <Image
           src="/thai-rap-mark.png"
           alt="THAI-RAP"
-          width={41}
-          height={30}
+          width={collapsed ? 34 : 88}
+          height={collapsed ? 25 : 64}
           className="shrink-0"
         />
         {!collapsed && (
-          <div className="min-w-0">
-            <p className="text-base font-extrabold tracking-wider text-white">THAI-RAP</p>
-            <p className="text-[9px] leading-tight text-white/60">
-              Restaurant Assessment
-              <br />
-              &amp; Performance
-            </p>
-          </div>
+          <p className="text-xl font-extrabold tracking-wider text-white">THAI-RAP</p>
         )}
       </div>
 

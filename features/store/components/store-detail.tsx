@@ -174,7 +174,7 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
             )}
           </div>
 
-          {store.mainProblems.length > 0 && (
+          {(store.mainProblems?.length ?? 0) > 0 && (
             <div>
               <p className="mb-1.5 text-xs font-bold text-charcoal">{STORE_DETAIL_TEXT.mainProblemsTitle}</p>
               <div className="flex flex-wrap gap-1">
@@ -190,7 +190,7 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
             </div>
           )}
 
-          {store.goals.length > 0 && (
+          {(store.goals?.length ?? 0) > 0 && (
             <div>
               <p className="mb-1.5 text-xs font-bold text-charcoal">{STORE_DETAIL_TEXT.goalsTitle}</p>
               <div className="flex flex-wrap gap-1">
@@ -206,7 +206,7 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
             </div>
           )}
 
-          {store.storefrontPhotos.length > 0 && (
+          {(store.storefrontPhotos?.length ?? 0) > 0 && (
             <div>
               <p className="mb-1.5 text-xs font-bold text-charcoal">{STORE_DETAIL_TEXT.storefrontPhotosTitle}</p>
               <div className="flex flex-wrap gap-2">
@@ -258,7 +258,7 @@ export function StoreDetail({ storeId }: StoreDetailProps) {
 
           <div>
             <p className="mb-1.5 text-xs font-bold text-charcoal">{STORE_DETAIL_TEXT.menuPhotosTitle}</p>
-            {store.photos.length > 0 ? (
+            {(store.photos?.length ?? 0) > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {store.photos.map((url) => (
                   <div key={url} className="h-14 w-14 overflow-hidden rounded-md">

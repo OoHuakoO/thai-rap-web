@@ -5,10 +5,9 @@ import { useAuthStore } from '@/stores/useAuthStore'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { cn } from '@/utils/cn'
-import { Bell, Building2, ChevronDown, LogOut } from 'lucide-react'
+import { Bell, ChevronDown, LogOut } from 'lucide-react'
 import { ROLE_LABELS } from '@/types/auth.types'
 import { useLogout } from '@/features/auth'
-import { ASSESSMENT_ROUND_STORE_COUNT, INCUBATION_TARGET_COUNT } from '@/constants'
 
 // Placeholder until the notifications API exists
 const NOTIFICATION_COUNT = 0
@@ -24,24 +23,19 @@ export function TopHeader({ className }: TopHeaderProps) {
   return (
     <header className={cn('border-b bg-white', className)}>
       {/* Row 1: partner logos + quota + notifications + user */}
-      <div className="flex items-center justify-between gap-3 border-b border-muted px-4 py-1.5">
-        <Image
-          src="/thai-rap-logo.png"
-          alt="THAI-RAP — Restaurant Assessment & Performance"
-          width={128}
-          height={36}
-          priority
-        />
+      <div className="flex items-center justify-between gap-3 border-b border-muted px-4 py-2">
+        <div className="flex flex-1 justify-center">
+          <Image
+            src="/partner-logos.png"
+            alt="พันธมิตรโครงการ THAI-RAP"
+            width={1823}
+            height={182}
+            className="h-16 w-auto"
+            priority
+          />
+        </div>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden items-center gap-1.5 rounded-full border border-orange bg-cream px-2.5 py-1 text-[10px] font-semibold text-orange lg:flex">
-            <Building2 className="h-3 w-3" />
-            <span>
-              รอบประเมิน: <b>{ASSESSMENT_ROUND_STORE_COUNT} ร้าน</b> → Incubation:{' '}
-              <b>{INCUBATION_TARGET_COUNT} ร้าน</b>
-            </span>
-          </div>
-
+        <div className="flex shrink-0 items-center gap-3">
           <Button variant="ghost" size="icon" aria-label="Notifications" className="relative h-8 w-8">
             <Bell className="h-4 w-4" />
             {NOTIFICATION_COUNT > 0 && (
@@ -82,19 +76,28 @@ export function TopHeader({ className }: TopHeaderProps) {
       </div>
 
       {/* Row 2: project banner */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-cream-soft to-cream-light px-4 py-2.5 text-center">
+      <div className="relative overflow-hidden bg-gradient-to-br from-cream-soft to-cream-light px-4 py-4 text-center">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute right-10 top-1/2 h-[60px] w-[120px] -translate-y-1/2 bg-[radial-gradient(circle,rgba(241,113,40,0.18)_1.5px,transparent_1.5px)] [background-size:10px_10px]"
         />
-        <p className="text-[13.5px] font-bold leading-normal text-orange-dark">
+        <p className="text-xl font-extrabold leading-normal text-purple-banner sm:text-2xl">
           หน่วยบริหารเครือข่าย การพัฒนาผู้ประกอบการธุรกิจอาหาร ในภูมิภาค ภาคตะวันออก
         </p>
-        <p className="mt-0.5 text-xs font-semibold text-charcoal">
+        <p className="mt-1 text-base font-semibold text-charcoal">
           ภายใต้โครงการการสร้างผู้ประกอบการร้านอาหารไทยมืออาชีพ
         </p>
-        <p className="mt-0.5 text-[10.5px] text-muted-foreground">
-          ประจำปีงบประมาณ พ.ศ. 2569 &nbsp;|&nbsp; มหาวิทยาลัยราชภัฏรำไพพรรณี จังหวัดจันทบุรี
+        <div className="mx-auto mt-3 flex max-w-md items-center gap-2">
+          <span className="h-px flex-1 bg-gradient-to-r from-transparent to-orange" />
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-orange" />
+          <span className="whitespace-nowrap text-sm font-semibold text-orange-dark">
+            ประจำปีงบประมาณ พ.ศ. 2569
+          </span>
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-orange" />
+          <span className="h-px flex-1 bg-gradient-to-l from-transparent to-orange" />
+        </div>
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          มหาวิทยาลัยราชภัฏรำไพพรรณี จังหวัดจันทบุรี
         </p>
       </div>
     </header>

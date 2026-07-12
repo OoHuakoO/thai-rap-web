@@ -17,10 +17,17 @@ export const api = axios.create({
 const REFRESH_BUFFER_MS = 10_000
 
 api.interceptors.request.use(async (config) => {
-  const { accessToken, expiresAt } = useAuthStore.getState()
+  const { accessToken, expiresAt, isAuthenticated } = useAuthStore.getState()
   let token = accessToken
 
-  if (token && expiresAt && expiresAt - Date.now() < REFRESH_BUFFER_MS) {
+  // After a reload, isAuthenticated rehydrates from localStorage but
+  // accessToken is memory-only and starts null — without this branch every
+  // request fired before AuthBootstrap's refresh resolves goes out with no
+  // Authorization header and 401s.
+  const tokenMissingButShouldExist = isAuthenticated && !token
+  const tokenExpiringSoon = token && expiresAt && expiresAt - Date.now() < REFRESH_BUFFER_MS
+
+  if (tokenMissingButShouldExist || tokenExpiringSoon) {
     token = await refreshAccessToken()
   }
 

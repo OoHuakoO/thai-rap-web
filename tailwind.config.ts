@@ -37,6 +37,7 @@ const config: Config = {
   			'cream-light': 'var(--color-cream-light)',
   			charcoal: 'var(--color-charcoal)',
   			purple: 'var(--color-purple)',
+  			'purple-banner': 'var(--color-purple-banner)',
   			'dark-nav': 'var(--color-dark-nav)',
   			'text-main': 'var(--color-text-main)',
   			'score-green': 'var(--color-score-green)',
