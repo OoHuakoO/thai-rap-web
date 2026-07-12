@@ -8,11 +8,6 @@ export const metadata: Metadata = {
 export default function StoresPage() {
   return (
     <section className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-semibold">ข้อมูลร้านอาหาร</h1>
-        <p className="text-sm text-muted-foreground">Restaurant Profiles</p>
-      </div>
-
       <StoreExplorer />
     </section>
   )

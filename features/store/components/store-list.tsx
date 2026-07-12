@@ -11,6 +11,7 @@ import { ROUTES } from '@/constants/routes';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { buildFileUrl } from '@/utils/build-file-url';
+import { cn } from '@/utils/cn';
 import { STORE_DIALOG_TEXT } from '../constants/store-dialog.constants';
 import { useStores, useDeleteStore } from '../hooks/use-stores';
 import { STORE_STATUS_LABELS } from '../types/store.types';
@@ -18,10 +19,10 @@ import type { Store, StoreStatus, StoreQueryParams } from '../types/store.types'
 import type { TableColumn } from '@/types';
 
 const STATUS_VARIANT: Record<StoreStatus, StatusVariant> = {
-  REGISTERED: 'new',
-  T0_COMPLETED: 'pending',
+  REGISTERED: 'inactive',
+  T0_COMPLETED: 'new',
   CAMP_COMPLETED: 'pending',
-  T1_COMPLETED: 'pending',
+  T1_COMPLETED: 'purple',
   PITCHING_COMPLETED: 'pending',
   SELECTED: 'pass',
   CONDITIONAL_SELECTED: 'warning',
@@ -64,7 +65,7 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
   const columns: TableColumn<Store>[] = [
     {
       key: 'name',
-      header: 'ร้าน',
+      header: 'ชื่อร้าน',
       cell: (row) => (
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-orange to-orange-light text-base text-white">
@@ -81,9 +82,6 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-charcoal">{row.name}</p>
-            <p className="truncate text-xs text-muted-foreground">
-              {row.ownerName} · {row.storeType}
-            </p>
           </div>
         </div>
       ),
@@ -130,10 +128,18 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
     },
     {
       key: 'actions',
-      header: 'จัดการ',
+      header: 'การจัดการ',
       cell: (row) => (
         <div className="flex items-center gap-1">
-          <Button variant="outline" size="icon" className="h-7 w-7" asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            className={cn(
+              'h-7 w-7',
+              selectedId === row.id && 'border-orange text-orange hover:bg-orange/10'
+            )}
+            asChild
+          >
             <Link href={ROUTES.STORE_DETAIL(row.id)} title="ดูรายละเอียดเต็ม">
               <Eye className="h-3.5 w-3.5" />
             </Link>

@@ -4,21 +4,22 @@
 
 @layer base {
   :root {
-    /* Brand tokens */
-    --color-orange: #F17128;
-    --color-orange-light: #F58544;
-    --color-orange-dark: #C75B1A;
-    --color-cream: #FFF0E5;
-    --color-cream-soft: #FDF5EC;
-    --color-cream-light: #FFF8F2;
-    --color-charcoal: #58595B;
-    --color-white: #FFFFFF;
-    --color-purple: #7C3AED;
-    --color-purple-banner: #7A51A0;
-    --color-dark-nav: #1F2937;
-    --color-text-main: #111827;
-    --color-score-green: #10B981;
-    --color-score-red: #EF4444;
+    /* Brand tokens — space-separated RGB channels so Tailwind opacity
+       modifiers (e.g. bg-orange/10) can inject an alpha value */
+    --color-orange: 241 113 40;
+    --color-orange-light: 245 133 68;
+    --color-orange-dark: 199 91 26;
+    --color-cream: 255 240 229;
+    --color-cream-soft: 253 245 236;
+    --color-cream-light: 255 248 242;
+    --color-charcoal: 88 89 91;
+    --color-white: 255 255 255;
+    --color-purple: 124 58 237;
+    --color-purple-banner: 122 81 160;
+    --color-dark-nav: 31 41 55;
+    --color-text-main: 17 24 39;
+    --color-score-green: 16 185 129;
+    --color-score-red: 239 68 68;
     --background: 0 0% 100%;
     --foreground: 220 1.7% 35.1%;
     --card: 0 0% 100%;

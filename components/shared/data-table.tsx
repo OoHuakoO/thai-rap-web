@@ -65,7 +65,8 @@ export function DataTable<T extends object>({
                 className={cn(
                   'border-b transition-colors last:border-0 hover:bg-muted/30',
                   onRowClick && 'cursor-pointer',
-                  isRowSelected?.(row) && 'bg-orange/10 hover:bg-orange/10'
+                  isRowSelected?.(row) &&
+                    'border-b-orange/20 border-l-4 border-l-orange bg-orange/[0.08] hover:bg-orange/[0.08]'
                 )}
               >
                 {columns.map((col) => (

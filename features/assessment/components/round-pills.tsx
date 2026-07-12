@@ -58,7 +58,7 @@ export function RoundPills({ storeId, activeRound }: RoundPillsProps) {
                 isLocked && 'cursor-not-allowed border-border text-muted-foreground/50',
                 !isLocked &&
                   isActive &&
-                  'border-[var(--color-dark-nav)] bg-[var(--color-dark-nav)] text-white',
+                  'border-dark-nav bg-dark-nav text-white',
                 !isLocked && !isActive && isSubmitted && 'border-score-green text-score-green',
                 !isLocked &&
                   !isActive &&

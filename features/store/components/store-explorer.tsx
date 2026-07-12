@@ -67,27 +67,29 @@ export function StoreExplorer() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-3 rounded-xl border bg-card p-3 shadow-sm">
-        <div className="min-w-[220px] flex-1">
-          <label className="mb-1 block text-[10px] text-muted-foreground">ค้นหา</label>
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              placeholder="ค้นหาชื่อร้าน, เจ้าของ, เบอร์โทร..."
-              className="pl-8"
-            />
-          </div>
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-3 shadow-sm">
+        <div className="flex items-center gap-2 border-r pr-4">
+          <h1 className="text-lg font-semibold whitespace-nowrap">ข้อมูลร้านอาหาร</h1>
+          <p className="text-sm whitespace-nowrap text-muted-foreground">Restaurant Profiles</p>
         </div>
 
-        <div className="w-40">
-          <label className="mb-1 block text-[10px] text-muted-foreground">จังหวัด</label>
+        <div className="relative w-72">
+          <Input
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            placeholder="ค้นหาชื่อร้าน, เจ้าของ, เบอร์โทร..."
+            className="pr-8"
+          />
+          <Search className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+        </div>
+
+        <div className="flex h-10 w-48 items-center gap-1.5 rounded-md border border-input bg-background px-2.5">
+          <span className="whitespace-nowrap text-xs text-muted-foreground">จังหวัด</span>
           <Select value={province} onValueChange={handleProvinceChange}>
-            <SelectTrigger>
+            <SelectTrigger className="h-auto w-full border-0 bg-transparent p-0 shadow-none focus:ring-0 focus:ring-offset-0">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -101,10 +103,10 @@ export function StoreExplorer() {
           </Select>
         </div>
 
-        <div className="w-40">
-          <label className="mb-1 block text-[10px] text-muted-foreground">ประเภทร้าน</label>
+        <div className="flex h-10 w-52 items-center gap-1.5 rounded-md border border-input bg-background px-2.5">
+          <span className="whitespace-nowrap text-xs text-muted-foreground">ประเภทร้าน</span>
           <Select value={storeType} onValueChange={handleStoreTypeChange}>
-            <SelectTrigger>
+            <SelectTrigger className="h-auto w-full border-0 bg-transparent p-0 shadow-none focus:ring-0 focus:ring-offset-0">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -118,13 +120,13 @@ export function StoreExplorer() {
           </Select>
         </div>
 
-        <div className="w-48">
-          <label className="mb-1 block text-[10px] text-muted-foreground">สถานะ</label>
+        <div className="flex h-10 w-56 items-center gap-1.5 rounded-md border border-input bg-background px-2.5">
+          <span className="whitespace-nowrap text-xs text-muted-foreground">สถานะ</span>
           <Select
             value={status}
             onValueChange={(v) => handleStatusChange(v as StoreStatus | 'ALL')}
           >
-            <SelectTrigger>
+            <SelectTrigger className="h-auto w-full border-0 bg-transparent p-0 shadow-none focus:ring-0 focus:ring-offset-0">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -139,7 +141,7 @@ export function StoreExplorer() {
         </div>
 
         {can('store:write') && (
-          <Button className="ml-auto gap-1.5" asChild>
+          <Button className="ml-auto h-10 flex-shrink-0 gap-1.5" asChild>
             <Link href={ROUTES.STORE_NEW}>
               <Plus className="h-4 w-4" />
               เพิ่มร้านอาหาร
@@ -149,8 +151,10 @@ export function StoreExplorer() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_380px]">
-        <div className="space-y-0 overflow-hidden rounded-xl border bg-card shadow-sm">
-          <StoreList query={query} selectedId={selectedId} onSelect={setSelectedId} />
+        <div className="flex h-[720px] flex-col overflow-hidden rounded-xl border bg-card shadow-sm">
+          <div className="flex-1 overflow-y-auto">
+            <StoreList query={query} selectedId={selectedId} onSelect={setSelectedId} />
+          </div>
           {data && data.meta.total > 0 && (
             <PaginationBar
               page={data.meta.page}
@@ -167,7 +171,7 @@ export function StoreExplorer() {
           )}
         </div>
 
-        <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+        <div className="h-[720px] overflow-y-auto rounded-xl border bg-card shadow-sm">
           {selectedId ? (
             <StoreDetail storeId={selectedId} />
           ) : (

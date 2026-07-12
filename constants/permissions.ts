@@ -35,9 +35,9 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     'reports:read',     'reports:export',
   ],
 
-  // ผู้ประกอบการ — own store + own assessment read-only, analytics own
+  // ผู้ประกอบการ — manage own store (create/edit/delete own), own assessment read-only, analytics own
   ENTREPRENEUR: [
-    'store:read',
+    'store:read',        'store:write',       'store:delete',
     'assessment:read',
     'analytics:read',
   ],
@@ -66,11 +66,14 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
 export interface RoutePermissionConfig {
   path: string
   requiredPermission: Permission
+  // Rare: role-specific gate on top of the permission check — use only when
+  // access is genuinely restricted to specific roles, not just a permission tier.
+  allowedRoles?: Role[]
 }
 
 export const ROUTE_PERMISSIONS: RoutePermissionConfig[] = [
   { path: ROUTES.HOME,        requiredPermission: 'dashboard:read'  },
-  { path: ROUTES.STORES,      requiredPermission: 'store:read'      },
+  { path: ROUTES.STORES,      requiredPermission: 'store:read', allowedRoles: ['ADMIN', 'ENTREPRENEUR'] },
   { path: ROUTES.ASSESSMENT,  requiredPermission: 'assessment:read' },
   { path: ROUTES.ANALYTICS,   requiredPermission: 'analytics:read'  },
   { path: ROUTES.PITCHING,    requiredPermission: 'pitching:read'   },
@@ -91,5 +94,6 @@ export function canAccessRoute(role: Role, path: string): boolean {
     return path === r.path || path.startsWith(`${r.path}/`)
   })
   if (!config) return false
+  if (config.allowedRoles && !config.allowedRoles.includes(role)) return false
   return hasPermission(role, config.requiredPermission)
 }

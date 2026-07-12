@@ -8,6 +8,7 @@ import { cn } from '@/utils/cn'
 import { Bell, ChevronDown, LogOut } from 'lucide-react'
 import { ROLE_LABELS } from '@/types/auth.types'
 import { useLogout } from '@/features/auth'
+import { getCurrentFiscalYearBE } from '@/utils/get-fiscal-year'
 
 // Placeholder until the notifications API exists
 const NOTIFICATION_COUNT = 0
@@ -91,7 +92,7 @@ export function TopHeader({ className }: TopHeaderProps) {
           <span className="h-px flex-1 bg-gradient-to-r from-transparent to-orange" />
           <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-orange" />
           <span className="whitespace-nowrap text-sm font-semibold text-orange-dark">
-            ประจำปีงบประมาณ พ.ศ. 2569
+            ประจำปีงบประมาณ พ.ศ. {getCurrentFiscalYearBE()}
           </span>
           <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-orange" />
           <span className="h-px flex-1 bg-gradient-to-l from-transparent to-orange" />

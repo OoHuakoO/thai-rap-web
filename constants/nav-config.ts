@@ -34,7 +34,7 @@ export const NAV_ITEMS: NavItem[] = [
     labelTh: 'ข้อมูลร้านอาหาร',
     href: ROUTES.STORES,
     icon: UtensilsCrossed,
-    allowedRoles: ['ADMIN', 'ASSESSOR', 'MENTOR', 'ME_TEAM', 'ENTREPRENEUR'],
+    allowedRoles: ['ADMIN', 'ENTREPRENEUR'],
   },
   {
     label: 'Restaurant Assessment',

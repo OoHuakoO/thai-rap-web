@@ -35,8 +35,8 @@ const STATUS_VARIANT: Record<StoreStatus, StatusVariant> = {
 };
 
 const radarChartConfig = {
-  thisStore: { label: SCORE_SUMMARY_TEXT.radarThisStore, color: 'var(--color-orange)' },
-  average: { label: SCORE_SUMMARY_TEXT.radarAverage, color: 'var(--color-dark-nav)' },
+  thisStore: { label: SCORE_SUMMARY_TEXT.radarThisStore, color: 'rgb(var(--color-orange))' },
+  average: { label: SCORE_SUMMARY_TEXT.radarAverage, color: 'rgb(var(--color-dark-nav))' },
 } satisfies ChartConfig;
 
 interface ScoreSummaryProps {
@@ -128,7 +128,7 @@ export function ScoreSummary({
             <p className="text-[9px] leading-tight text-muted-foreground">
               {SCORE_SUMMARY_TEXT.weightedScore}
             </p>
-            <p className="text-lg font-extrabold text-[var(--color-dark-nav)]">
+            <p className="text-lg font-extrabold text-dark-nav">
               {score.toFixed(2)}
               <span className="text-[10px] font-normal text-muted-foreground">/100</span>
             </p>
@@ -139,7 +139,7 @@ export function ScoreSummary({
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-lg bg-muted/40 p-2 text-center">
               <p className="text-[9px] text-muted-foreground">{SCORE_SUMMARY_TEXT.provinceRank}</p>
-              <p className="text-sm font-extrabold text-[var(--color-dark-nav)]">
+              <p className="text-sm font-extrabold text-dark-nav">
                 {rank.provinceRank ?? '—'}
                 <span className="text-[10px] font-normal text-muted-foreground">
                   {' '}
@@ -149,7 +149,7 @@ export function ScoreSummary({
             </div>
             <div className="rounded-lg bg-muted/40 p-2 text-center">
               <p className="text-[9px] text-muted-foreground">{SCORE_SUMMARY_TEXT.overallRank}</p>
-              <p className="text-sm font-extrabold text-[var(--color-dark-nav)]">
+              <p className="text-sm font-extrabold text-dark-nav">
                 {rank.overallRank ?? '—'}
                 <span className="text-[10px] font-normal text-muted-foreground">
                   {' '}
