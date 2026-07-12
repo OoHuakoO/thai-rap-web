@@ -1,4 +1,4 @@
-import type { PaginatedResponse } from '@/types/api.types'
+import type { PaginatedResponse } from '@/types/api.types';
 
 export type StoreStatus =
   | 'REGISTERED'
@@ -12,7 +12,7 @@ export type StoreStatus =
   | 'NOT_SELECTED'
   | 'FIELD_AUDITED'
   | 'IDP_CREATED'
-  | 'COMPLETED'
+  | 'COMPLETED';
 
 export const STORE_STATUS_LABELS: Record<StoreStatus, string> = {
   REGISTERED: 'ลงทะเบียนแล้ว',
@@ -27,86 +27,76 @@ export const STORE_STATUS_LABELS: Record<StoreStatus, string> = {
   FIELD_AUDITED: 'ลงพื้นที่ตรวจแล้ว',
   IDP_CREATED: 'มีแผนพัฒนาแล้ว',
   COMPLETED: 'ติดตามผลครบแล้ว',
-}
+};
 
 export interface StoreDocument {
-  name: string
-  fileType: 'pdf' | 'xlsx' | 'docx'
+  name: string;
+  fileType: 'pdf' | 'xlsx' | 'docx';
 }
 
-export const PROVINCE_OPTIONS = [
-  'จันทบุรี',
-  'ชลบุรี',
-  'ระยอง',
-  'ตราด',
-  'ฉะเชิงเทรา',
-  'ปราจีนบุรี',
-  'สระแก้ว',
-] as const
-
-export const STORE_TYPE_OPTIONS = ['อาหารไทย', 'อาหารทะเล', 'คาเฟ่', 'คาเฟ่/เบเกอรี่'] as const
+export const STORE_TYPE_OPTIONS = ['อาหารไทย', 'อาหารทะเล', 'คาเฟ่', 'คาเฟ่/เบเกอรี่'] as const;
 
 export interface Store {
-  id: string
-  name: string
-  province: string
-  storeType: string
-  ownerName: string
-  phone: string
-  email: string | null
-  address: string
-  socialLinks: Record<string, string>
-  avgRevenue: number | null
-  mainProblems: string | null
-  goals: string | null
-  photos: string[]
-  documents: StoreDocument[]
-  status: StoreStatus
-  latestScore: number | null
-  latestAssessorName: string | null
-  latestAssessedAt: string | null
-  createdAt: string
-  updatedAt: string
+  id: string;
+  name: string;
+  province: string;
+  storeType: string;
+  ownerName: string;
+  phone: string;
+  email: string | null;
+  address: string;
+  socialLinks: Record<string, string>;
+  avgRevenue: number | null;
+  mainProblems: string | null;
+  goals: string | null;
+  photos: string[];
+  documents: StoreDocument[];
+  status: StoreStatus;
+  latestScore: number | null;
+  latestAssessorName: string | null;
+  latestAssessedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateStoreDto {
-  name: string
-  province: string
-  storeType: string
-  ownerName: string
-  phone: string
-  email?: string
-  address: string
-  socialLinks?: Record<string, string>
-  avgRevenue?: number
-  mainProblems?: string
-  goals?: string
+  name: string;
+  province: string;
+  storeType: string;
+  ownerName: string;
+  phone: string;
+  email?: string;
+  address: string;
+  socialLinks?: Record<string, string>;
+  avgRevenue?: number;
+  mainProblems?: string;
+  goals?: string;
 }
 
-export type UpdateStoreDto = Partial<CreateStoreDto>
+export type UpdateStoreDto = Partial<CreateStoreDto>;
 
 export interface StoreQueryParams {
-  page?: number
-  limit?: number
-  search?: string
-  province?: string
-  storeType?: string
-  status?: StoreStatus
+  page?: number;
+  limit?: number;
+  search?: string;
+  province?: string;
+  storeType?: string;
+  status?: StoreStatus;
 }
 
-export type PaginatedStores = PaginatedResponse<Store>
+export type PaginatedStores = PaginatedResponse<Store>;
 
 export interface ProvinceDistribution {
-  province: string
-  count: number
-  pct: number
+  province: string;
+  count: number;
+  pct: number;
 }
 
 export interface StoreStats {
-  total: number
-  targetTotal: number
-  t0CompletedCount: number
-  t1CompletedCount: number
-  passedCount: number
-  byProvince: ProvinceDistribution[]
+  total: number;
+  targetTotal: number;
+  t0CompletedCount: number;
+  t1CompletedCount: number;
+  passedCount: number;
+  byProvince: ProvinceDistribution[];
 }

@@ -1,14 +1,22 @@
-'use client'
+'use client';
 
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { extractErrorMessage } from '@/utils/extract-error-message'
-import { useCreateStore } from '../hooks/use-stores'
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { extractErrorMessage } from '@/utils/extract-error-message';
+import { useProvinces } from '@/features/province';
+import { useCreateStore } from '../hooks/use-stores';
 
 const createStoreSchema = z.object({
   name: z.string().min(1, 'กรุณากรอกชื่อร้าน'),
@@ -24,25 +32,27 @@ const createStoreSchema = z.object({
     .refine((v) => !v || /^\d+$/.test(v), 'กรอกตัวเลขเท่านั้น'),
   mainProblems: z.string().optional(),
   goals: z.string().optional(),
-})
+});
 
-type CreateStoreFormValues = z.infer<typeof createStoreSchema>
+type CreateStoreFormValues = z.infer<typeof createStoreSchema>;
 
 interface CreateStoreFormProps {
-  onSuccess?: () => void
+  onSuccess?: () => void;
 }
 
 export function CreateStoreForm({ onSuccess }: CreateStoreFormProps) {
-  const { mutate: createStore, isPending, isError, error } = useCreateStore()
+  const { mutate: createStore, isPending, isError, error } = useCreateStore();
+  const { data: provinces } = useProvinces();
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm<CreateStoreFormValues>({
     resolver: zodResolver(createStoreSchema),
-  })
+  });
 
   const onSubmit = (data: CreateStoreFormValues) => {
     createStore(
@@ -53,12 +63,12 @@ export function CreateStoreForm({ onSuccess }: CreateStoreFormProps) {
       },
       {
         onSuccess: () => {
-          reset()
-          onSuccess?.()
+          reset();
+          onSuccess?.();
         },
       }
-    )
-  }
+    );
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -77,10 +87,25 @@ export function CreateStoreForm({ onSuccess }: CreateStoreFormProps) {
 
         <div className="space-y-1.5">
           <Label htmlFor="province">จังหวัด</Label>
-          <Input id="province" {...register('province')} placeholder="ชลบุรี" />
-          {errors.province && (
-            <p className="text-xs text-destructive">{errors.province.message}</p>
-          )}
+          <Controller
+            name="province"
+            control={control}
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id="province">
+                  <SelectValue placeholder="เลือกจังหวัด" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(provinces ?? []).map((p) => (
+                    <SelectItem key={p.id} value={p.nameTh}>
+                      {p.nameTh}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+          {errors.province && <p className="text-xs text-destructive">{errors.province.message}</p>}
         </div>
 
         <div className="space-y-1.5">
@@ -113,7 +138,12 @@ export function CreateStoreForm({ onSuccess }: CreateStoreFormProps) {
 
         <div className="space-y-1.5">
           <Label htmlFor="avgRevenue">ยอดขายเฉลี่ย/เดือน บาท (ไม่บังคับ)</Label>
-          <Input id="avgRevenue" inputMode="numeric" {...register('avgRevenue')} placeholder="15000" />
+          <Input
+            id="avgRevenue"
+            inputMode="numeric"
+            {...register('avgRevenue')}
+            placeholder="15000"
+          />
           {errors.avgRevenue && (
             <p className="text-xs text-destructive">{errors.avgRevenue.message}</p>
           )}
@@ -122,7 +152,11 @@ export function CreateStoreForm({ onSuccess }: CreateStoreFormProps) {
 
       <div className="space-y-1.5">
         <Label htmlFor="address">ที่อยู่</Label>
-        <Textarea id="address" {...register('address')} placeholder="123 หมู่ 4 ต.บางพระ อ.ศรีราชา" />
+        <Textarea
+          id="address"
+          {...register('address')}
+          placeholder="123 หมู่ 4 ต.บางพระ อ.ศรีราชา"
+        />
         {errors.address && <p className="text-xs text-destructive">{errors.address.message}</p>}
       </div>
 
@@ -140,5 +174,5 @@ export function CreateStoreForm({ onSuccess }: CreateStoreFormProps) {
         {isPending ? 'กำลังบันทึก...' : 'เพิ่มร้าน'}
       </Button>
     </form>
-  )
+  );
 }

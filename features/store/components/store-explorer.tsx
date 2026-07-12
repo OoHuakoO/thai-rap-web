@@ -1,46 +1,41 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Search, Plus } from 'lucide-react'
-import { Input } from '@/components/ui/input'
+import { useState } from 'react';
+import { Search, Plus } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { PaginationBar } from '@/components/shared/pagination-bar'
-import { useDebounce } from '@/hooks/use-debounce'
-import { StoreList } from './store-list'
-import { StoreDetail } from './store-detail'
-import { CreateStoreForm } from './create-store-form'
-import { StoreStatsBar } from './store-stats-bar'
-import { useStores } from '../hooks/use-stores'
-import { STORE_STATUS_LABELS, PROVINCE_OPTIONS, STORE_TYPE_OPTIONS } from '../types/store.types'
-import type { StoreStatus, StoreQueryParams } from '../types/store.types'
+} from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { PaginationBar } from '@/components/shared/pagination-bar';
+import { useDebounce } from '@/hooks/use-debounce';
+import { StoreList } from './store-list';
+import { StoreDetail } from './store-detail';
+import { CreateStoreForm } from './create-store-form';
+import { StoreStatsBar } from './store-stats-bar';
+import { useStores, useStoreStats } from '../hooks/use-stores';
+import { STORE_STATUS_LABELS, STORE_TYPE_OPTIONS } from '../types/store.types';
+import type { StoreStatus, StoreQueryParams } from '../types/store.types';
 
-const STATUS_OPTIONS = Object.entries(STORE_STATUS_LABELS) as [StoreStatus, string][]
-const DEFAULT_LIMIT = 10
+const STATUS_OPTIONS = Object.entries(STORE_STATUS_LABELS) as [StoreStatus, string][];
+const DEFAULT_LIMIT = 10;
 
 export function StoreExplorer() {
-  const [search, setSearch] = useState('')
-  const [province, setProvince] = useState<string>('ALL')
-  const [storeType, setStoreType] = useState<string>('ALL')
-  const [status, setStatus] = useState<StoreStatus | 'ALL'>('ALL')
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [createOpen, setCreateOpen] = useState(false)
-  const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(DEFAULT_LIMIT)
+  const [search, setSearch] = useState('');
+  const [province, setProvince] = useState<string>('ALL');
+  const [storeType, setStoreType] = useState<string>('ALL');
+  const [status, setStatus] = useState<StoreStatus | 'ALL'>('ALL');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(DEFAULT_LIMIT);
 
-  const debouncedSearch = useDebounce(search, 300)
+  const debouncedSearch = useDebounce(search, 300);
 
   const query: StoreQueryParams = {
     page,
@@ -49,24 +44,25 @@ export function StoreExplorer() {
     ...(province !== 'ALL' && { province }),
     ...(storeType !== 'ALL' && { storeType }),
     ...(status !== 'ALL' && { status }),
-  }
+  };
 
-  const { data } = useStores(query)
+  const { data } = useStores(query);
+  const { data: stats } = useStoreStats();
 
   const handleProvinceChange = (value: string) => {
-    setProvince(value)
-    setPage(1)
-  }
+    setProvince(value);
+    setPage(1);
+  };
 
   const handleStoreTypeChange = (value: string) => {
-    setStoreType(value)
-    setPage(1)
-  }
+    setStoreType(value);
+    setPage(1);
+  };
 
   const handleStatusChange = (value: StoreStatus | 'ALL') => {
-    setStatus(value)
-    setPage(1)
-  }
+    setStatus(value);
+    setPage(1);
+  };
 
   return (
     <div className="space-y-4">
@@ -78,8 +74,8 @@ export function StoreExplorer() {
             <Input
               value={search}
               onChange={(e) => {
-                setSearch(e.target.value)
-                setPage(1)
+                setSearch(e.target.value);
+                setPage(1);
               }}
               placeholder="ค้นหาชื่อร้าน, เจ้าของ, เบอร์โทร..."
               className="pl-8"
@@ -95,9 +91,9 @@ export function StoreExplorer() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">ทั้งหมด</SelectItem>
-              {PROVINCE_OPTIONS.map((p) => (
-                <SelectItem key={p} value={p}>
-                  {p}
+              {(stats?.byProvince ?? []).map((p) => (
+                <SelectItem key={p.province} value={p.province}>
+                  {p.province}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -158,8 +154,8 @@ export function StoreExplorer() {
               totalPages={data.meta.totalPages}
               onPageChange={setPage}
               onLimitChange={(l) => {
-                setLimit(l)
-                setPage(1)
+                setLimit(l);
+                setPage(1);
               }}
               itemLabel="ร้าน"
             />
@@ -189,5 +185,5 @@ export function StoreExplorer() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

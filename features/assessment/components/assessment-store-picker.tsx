@@ -1,39 +1,40 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { ChevronDown } from 'lucide-react'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Input } from '@/components/ui/input'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ChevronDown } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { cn } from '@/utils/cn'
-import { ROUTES } from '@/constants/routes'
-import { useStores, PROVINCE_OPTIONS } from '@/features/store'
-import type { Round } from '../types/assessment.types'
+} from '@/components/ui/select';
+import { cn } from '@/utils/cn';
+import { ROUTES } from '@/constants/routes';
+import { useStores, useStoreStats } from '@/features/store';
+import type { Round } from '../types/assessment.types';
 
 interface AssessmentStorePickerProps {
-  storeId: string
-  storeName?: string
-  round: Round
+  storeId: string;
+  storeName?: string;
+  round: Round;
 }
 
 export function AssessmentStorePicker({ storeId, storeName, round }: AssessmentStorePickerProps) {
-  const router = useRouter()
-  const [open, setOpen] = useState(false)
-  const [search, setSearch] = useState('')
-  const [province, setProvince] = useState<string>('ALL')
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [province, setProvince] = useState<string>('ALL');
 
   const { data } = useStores({
     limit: 100,
     ...(search && { search }),
     ...(province !== 'ALL' && { province }),
-  })
+  });
+  const { data: stats } = useStoreStats();
 
   return (
     <div className="flex items-end gap-2">
@@ -67,8 +68,8 @@ export function AssessmentStorePicker({ storeId, storeName, round }: AssessmentS
                   key={s.id}
                   type="button"
                   onClick={() => {
-                    setOpen(false)
-                    router.push(ROUTES.ASSESSMENT_DETAIL(s.id, round))
+                    setOpen(false);
+                    router.push(ROUTES.ASSESSMENT_DETAIL(s.id, round));
                   }}
                   className={cn(
                     'block w-full truncate rounded-md px-2 py-1.5 text-left text-xs hover:bg-cream',
@@ -95,14 +96,14 @@ export function AssessmentStorePicker({ storeId, storeName, round }: AssessmentS
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">ทั้งหมด</SelectItem>
-            {PROVINCE_OPTIONS.map((p) => (
-              <SelectItem key={p} value={p}>
-                {p}
+            {(stats?.byProvince ?? []).map((p) => (
+              <SelectItem key={p.province} value={p.province}>
+                {p.province}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
     </div>
-  )
+  );
 }
