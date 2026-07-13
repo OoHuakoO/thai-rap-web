@@ -150,7 +150,10 @@ export function StoreExplorer() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_380px]">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(460px,1fr)]">
+        {/* Fixed to the height of a fully-populated store-detail card (verified ~715px)
+            so this stays constant across pages and whether or not a row is selected —
+            it must never grow/shrink based on content. */}
         <div className="flex h-[720px] flex-col overflow-hidden rounded-xl border bg-card shadow-sm">
           <div className="flex-1 overflow-y-auto">
             <StoreList query={query} selectedId={selectedId} onSelect={setSelectedId} />

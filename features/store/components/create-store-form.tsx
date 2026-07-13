@@ -96,7 +96,8 @@ export function CreateStoreForm() {
       {
         ...rest,
         email: data.email || undefined,
-        avgRevenue: data.avgRevenue ? Number(data.avgRevenue) : undefined,
+        avgRevenueMin: data.avgRevenueMin ? Number(data.avgRevenueMin) : undefined,
+        avgRevenueMax: data.avgRevenueMax ? Number(data.avgRevenueMax) : undefined,
         socialLinks: Object.keys(socialLinks).length > 0 ? socialLinks : undefined,
       },
       {
@@ -209,15 +210,28 @@ export function CreateStoreForm() {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="avgRevenue">{STORE_FORM_TEXT.avgRevenueLabel}</Label>
-          <Input
-            id="avgRevenue"
-            inputMode="numeric"
-            {...register('avgRevenue')}
-            placeholder={CREATE_STORE_FORM_TEXT.avgRevenuePlaceholder}
-          />
-          {errors.avgRevenue && (
-            <p className="text-xs text-destructive">{errors.avgRevenue.message}</p>
+          <Label htmlFor="avgRevenueMin">{STORE_FORM_TEXT.avgRevenueLabel}</Label>
+          <div className="flex items-center gap-2">
+            <Input
+              id="avgRevenueMin"
+              inputMode="numeric"
+              {...register('avgRevenueMin')}
+              placeholder={CREATE_STORE_FORM_TEXT.avgRevenueMinPlaceholder}
+            />
+            <span className="text-muted-foreground">
+              {STORE_FORM_TEXT.avgRevenueRangeSeparator}
+            </span>
+            <Input
+              id="avgRevenueMax"
+              inputMode="numeric"
+              {...register('avgRevenueMax')}
+              placeholder={CREATE_STORE_FORM_TEXT.avgRevenueMaxPlaceholder}
+            />
+          </div>
+          {(errors.avgRevenueMin || errors.avgRevenueMax) && (
+            <p className="text-xs text-destructive">
+              {errors.avgRevenueMin?.message ?? errors.avgRevenueMax?.message}
+            </p>
           )}
         </div>
       </div>

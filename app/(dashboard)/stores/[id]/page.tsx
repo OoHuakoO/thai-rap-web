@@ -1,4 +1,7 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
+import { ChevronLeft } from 'lucide-react'
+import { ROUTES } from '@/constants/routes'
 import { StoreDetail } from '@/features/store'
 
 export const metadata: Metadata = {
@@ -14,7 +17,14 @@ export default async function StoreDetailPage({ params }: StoreDetailPageProps) 
 
   return (
     <section className="space-y-4">
-      <StoreDetail storeId={id} />
+      <Link
+        href={ROUTES.STORES}
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-orange"
+      >
+        <ChevronLeft className="h-4 w-4" />
+        กลับไปรายการร้านอาหาร
+      </Link>
+      <StoreDetail storeId={id} variant="full" />
     </section>
   )
 }

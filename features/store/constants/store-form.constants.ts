@@ -7,6 +7,7 @@ export const STORE_VALIDATION_MESSAGES = {
   addressRequired: 'กรุณากรอกที่อยู่',
   emailInvalid: 'อีเมลไม่ถูกต้อง',
   avgRevenueNumeric: 'กรอกตัวเลขเท่านั้น',
+  avgRevenueRange: 'ยอดขายสูงสุดต้องมากกว่าหรือเท่ากับยอดขายต่ำสุด',
 } as const;
 
 // Shared field labels and placeholders used by both create and edit store forms.
@@ -19,6 +20,7 @@ export const STORE_FORM_TEXT = {
   phoneLabel: 'เบอร์โทร',
   emailLabel: 'อีเมล (ไม่บังคับ)',
   avgRevenueLabel: 'ยอดขายเฉลี่ย/เดือน บาท (ไม่บังคับ)',
+  avgRevenueRangeSeparator: '–',
   addressLabel: 'ที่อยู่',
   mainProblemsLabel: 'ปัญหาหลักของร้าน (ไม่บังคับ)',
   goalsLabel: 'เป้าหมายการพัฒนา (ไม่บังคับ)',
@@ -35,7 +37,8 @@ export const CREATE_STORE_FORM_TEXT = {
   ownerNamePlaceholder: 'สมศรี ใจดี',
   phonePlaceholder: '0812345678',
   emailPlaceholder: 'somsri@example.com',
-  avgRevenuePlaceholder: '15000',
+  avgRevenueMinPlaceholder: '15000',
+  avgRevenueMaxPlaceholder: '25000',
   addressPlaceholder: '123 หมู่ 4 ต.บางพระ อ.ศรีราชา',
   submit: 'เพิ่มร้าน',
   saving: 'กำลังบันทึก...',

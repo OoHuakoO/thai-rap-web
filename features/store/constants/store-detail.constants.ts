@@ -8,19 +8,29 @@ export const STORE_DETAIL_TEXT = {
   ownerNameLabel: 'เจ้าของร้าน',
   phoneLabel: 'เบอร์โทร',
   emailLabel: 'อีเมล',
+  emailEmpty: 'ยังไม่ระบุ',
   addressLabel: 'ที่อยู่',
-  avgRevenueLabel: 'ยอดขาย/เดือน',
+  avgRevenueLabel: 'ยอดขายเฉลี่ย/เดือน',
+  avgRevenueRangeSeparator: '–',
+  avgRevenueEmpty: 'ยังไม่ระบุ',
   currencyUnit: 'บาท',
 
+  onlineChannelsLabel: 'ช่องทางออนไลน์',
+  onlineChannelsEmpty: 'ยังไม่มีช่องทางออนไลน์',
+  viewMoreLabel: 'ดูเพิ่มเติม',
+  viewAllLabel: 'ดูทั้งหมด',
   facebookTitle: 'Facebook',
   lineTitle: 'LINE',
   instagramTitle: 'Instagram',
 
   mainProblemsTitle: 'ปัญหาสำคัญ',
+  mainProblemsEmpty: 'ยังไม่มีข้อมูลปัญหาสำคัญ',
   goalsTitle: 'เป้าหมายการพัฒนา',
+  goalsEmpty: 'ยังไม่มีข้อมูลเป้าหมายการพัฒนา',
 
   storefrontPhotosTitle: 'รูปหน้าร้าน',
   storefrontPhotoAlt: 'รูปหน้าร้าน',
+  storefrontGalleryEmpty: 'ยังไม่มีรูปเพิ่มเติม',
 
   documentsTitle: 'เอกสารที่อัปโหลด',
   documentsEmpty: 'ยังไม่มีเอกสารอัปโหลด',
@@ -29,7 +39,7 @@ export const STORE_DETAIL_TEXT = {
   menuPhotoAlt: 'ภาพเมนูอาหาร',
   menuPhotosEmpty: 'ยังไม่มีภาพเมนูอาหาร',
 
-  progressStatusTitle: 'สถานะเข้าร่วมโครงการ',
+  progressStatusTitle: 'สถานะการเข้าร่วมโครงการ',
   assessmentSectionTitle: 'ประเมินร้าน',
 
   timelineRegistered: 'ลงทะเบียนร้านอาหาร',

@@ -1,10 +1,10 @@
-import type { Store, CreateStoreDto } from '@/features/store/types/store.types'
+import type { Store, CreateStoreDto } from '@/features/store/types/store.types';
 
-let idCounter = 100
+let idCounter = 100;
 
 export function createStore(overrides: Partial<Store> = {}): Store {
-  const id = String(++idCounter)
-  const now = new Date().toISOString()
+  const id = String(++idCounter);
+  const now = new Date().toISOString();
   return {
     id,
     name: `Store ${id}`,
@@ -15,7 +15,8 @@ export function createStore(overrides: Partial<Store> = {}): Store {
     email: null,
     address: '-',
     socialLinks: {},
-    avgRevenue: null,
+    avgRevenueMin: null,
+    avgRevenueMax: null,
     mainProblems: [],
     goals: [],
     photos: [],
@@ -29,7 +30,7 @@ export function createStore(overrides: Partial<Store> = {}): Store {
     createdAt: now,
     updatedAt: now,
     ...overrides,
-  }
+  };
 }
 
 export function createStoreFromDto(dto: CreateStoreDto): Store {
@@ -42,8 +43,9 @@ export function createStoreFromDto(dto: CreateStoreDto): Store {
     email: dto.email ?? null,
     address: dto.address,
     socialLinks: dto.socialLinks ?? {},
-    avgRevenue: dto.avgRevenue ?? null,
+    avgRevenueMin: dto.avgRevenueMin ?? null,
+    avgRevenueMax: dto.avgRevenueMax ?? null,
     mainProblems: dto.mainProblems ?? [],
     goals: dto.goals ?? [],
-  })
+  });
 }

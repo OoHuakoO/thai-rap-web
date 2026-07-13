@@ -52,7 +52,8 @@ export function EditStoreForm({ store, onSuccess }: EditStoreFormProps) {
       phone: store.phone,
       address: store.address,
       email: store.email ?? '',
-      avgRevenue: store.avgRevenue !== null ? String(store.avgRevenue) : '',
+      avgRevenueMin: store.avgRevenueMin !== null ? String(store.avgRevenueMin) : '',
+      avgRevenueMax: store.avgRevenueMax !== null ? String(store.avgRevenueMax) : '',
       mainProblems: store.mainProblems,
       goals: store.goals,
       facebook: store.socialLinks.facebook ?? '',
@@ -72,7 +73,8 @@ export function EditStoreForm({ store, onSuccess }: EditStoreFormProps) {
       {
         ...rest,
         email: data.email || undefined,
-        avgRevenue: data.avgRevenue ? Number(data.avgRevenue) : undefined,
+        avgRevenueMin: data.avgRevenueMin ? Number(data.avgRevenueMin) : undefined,
+        avgRevenueMax: data.avgRevenueMax ? Number(data.avgRevenueMax) : undefined,
         socialLinks,
       },
       {
@@ -155,10 +157,18 @@ export function EditStoreForm({ store, onSuccess }: EditStoreFormProps) {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="edit-avgRevenue">{STORE_FORM_TEXT.avgRevenueLabel}</Label>
-          <Input id="edit-avgRevenue" inputMode="numeric" {...register('avgRevenue')} />
-          {errors.avgRevenue && (
-            <p className="text-xs text-destructive">{errors.avgRevenue.message}</p>
+          <Label htmlFor="edit-avgRevenueMin">{STORE_FORM_TEXT.avgRevenueLabel}</Label>
+          <div className="flex items-center gap-2">
+            <Input id="edit-avgRevenueMin" inputMode="numeric" {...register('avgRevenueMin')} />
+            <span className="text-muted-foreground">
+              {STORE_FORM_TEXT.avgRevenueRangeSeparator}
+            </span>
+            <Input id="edit-avgRevenueMax" inputMode="numeric" {...register('avgRevenueMax')} />
+          </div>
+          {(errors.avgRevenueMin || errors.avgRevenueMax) && (
+            <p className="text-xs text-destructive">
+              {errors.avgRevenueMin?.message ?? errors.avgRevenueMax?.message}
+            </p>
           )}
         </div>
       </div>

@@ -50,7 +50,8 @@ export interface Store {
   email: string | null;
   address: string;
   socialLinks: Record<string, string>;
-  avgRevenue: number | null;
+  avgRevenueMin: number | null;
+  avgRevenueMax: number | null;
   mainProblems: string[];
   goals: string[];
   photos: string[];
@@ -74,7 +75,8 @@ export interface CreateStoreDto {
   email?: string;
   address: string;
   socialLinks?: Record<string, string>;
-  avgRevenue?: number;
+  avgRevenueMin?: number;
+  avgRevenueMax?: number;
   mainProblems?: string[];
   goals?: string[];
 }

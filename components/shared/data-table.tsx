@@ -66,13 +66,17 @@ export function DataTable<T extends object>({
                   'border-b transition-colors last:border-0 hover:bg-muted/30',
                   onRowClick && 'cursor-pointer',
                   isRowSelected?.(row) &&
-                    'border-b-orange/20 border-l-4 border-l-orange bg-orange/[0.08] hover:bg-orange/[0.08]'
+                    'border-b-orange/20 bg-orange/[0.08] hover:bg-orange/[0.08]'
                 )}
               >
-                {columns.map((col) => (
+                {columns.map((col, index) => (
                   <td
                     key={String(col.key)}
-                    className={cn('px-4 py-3', col.className)}
+                    className={cn(
+                      'px-4 py-3',
+                      index === 0 && isRowSelected?.(row) && 'border-l-4 border-l-orange',
+                      col.className
+                    )}
                   >
                     {col.cell
                       ? col.cell(row)
