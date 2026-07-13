@@ -25,7 +25,7 @@ const variantClassName: Record<StatusVariant, string> = {
   active:   'border-score-green/20 bg-score-green/10 text-score-green hover:bg-score-green/20',
   inactive: 'border-border bg-muted text-muted-foreground hover:bg-muted/80',
   warning:  'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100',
-  purple:   'border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100',
+  purple:   'border-purple-banner/20 bg-purple-banner/10 text-purple-banner hover:bg-purple-banner/20',
 }
 
 const defaultLabel: Record<StatusVariant, string> = {

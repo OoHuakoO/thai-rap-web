@@ -18,7 +18,7 @@ Use **Tailwind classes** for static styles in JSX.
 | Token | Hex | Tailwind class | Use |
 |---|---|---|---|
 | `colors.orange` | `#F97316` | `bg-orange` / `text-orange` | Primary CTA, active nav |
-| `colors.purple` | `#7C3AED` | `bg-purple` / `text-purple` | Secondary badges |
+| `colors.purpleBanner` | `#7A51A0` | `bg-purple-banner` / `text-purple-banner` | Secondary badges, project banner heading |
 | `colors.darkNav` | `#1F2937` | `bg-dark-nav` | Sidebar background |
 | `colors.textMain` | `#111827` | `text-text-main` | Body text |
 | `colors.scoreGreen` | `#10B981` | `text-score-green` | Positive score |

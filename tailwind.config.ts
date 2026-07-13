@@ -37,7 +37,6 @@ const config: Config = {
   			'cream-light': 'rgb(var(--color-cream-light) / <alpha-value>)',
   			charcoal: 'rgb(var(--color-charcoal) / <alpha-value>)',
   			white: 'rgb(var(--color-white) / <alpha-value>)',
-  			purple: 'rgb(var(--color-purple) / <alpha-value>)',
   			'purple-banner': 'rgb(var(--color-purple-banner) / <alpha-value>)',
   			'dark-nav': 'rgb(var(--color-dark-nav) / <alpha-value>)',
   			'text-main': 'rgb(var(--color-text-main) / <alpha-value>)',

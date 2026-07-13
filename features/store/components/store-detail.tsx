@@ -49,7 +49,7 @@ function getDocMeta(fileType: string): { label: string; className: string } {
     return { label: 'XLS', className: 'bg-score-green' };
   }
   if (fileType.includes('word')) return { label: 'DOC', className: 'bg-blue-600' };
-  if (fileType.startsWith('image/')) return { label: 'IMG', className: 'bg-violet-500' };
+  if (fileType.startsWith('image/')) return { label: 'IMG', className: 'bg-purple-banner' };
   return { label: 'FILE', className: 'bg-slate-500' };
 }
 
@@ -383,7 +383,7 @@ export function StoreDetail({ storeId, variant = 'compact' }: StoreDetailProps) 
                       <span
                         className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white ${
                           isCurrent
-                            ? 'bg-violet-600'
+                            ? 'bg-purple-banner'
                             : t.done
                               ? 'bg-score-green'
                               : 'border-2 border-border bg-muted'
@@ -403,7 +403,7 @@ export function StoreDetail({ storeId, variant = 'compact' }: StoreDetailProps) 
                       <p
                         className={`text-sm font-medium ${
                           isCurrent
-                            ? 'text-violet-700'
+                            ? 'text-purple-banner'
                             : t.done
                               ? 'text-charcoal'
                               : 'text-muted-foreground'
@@ -435,8 +435,8 @@ export function StoreDetail({ storeId, variant = 'compact' }: StoreDetailProps) 
               : STORE_DETAIL_TEXT.mainProblemsEmpty}
           </p>
         </Card>
-        <Card className="space-y-1 border-violet-200 bg-violet-50 p-2.5 shadow-none">
-          <p className="text-sm font-bold text-violet-700">{STORE_DETAIL_TEXT.goalsTitle}</p>
+        <Card className="space-y-1 border-purple-banner/20 bg-purple-banner/5 p-2.5 shadow-none">
+          <p className="text-sm font-bold text-purple-banner">{STORE_DETAIL_TEXT.goalsTitle}</p>
           <p className="text-[13px] leading-relaxed text-charcoal">
             {(store.goals?.length ?? 0) > 0 ? store.goals.join(', ') : STORE_DETAIL_TEXT.goalsEmpty}
           </p>

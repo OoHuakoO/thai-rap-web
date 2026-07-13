@@ -1,5 +1,6 @@
 'use client'
 
+import { Store, ClipboardList, ClipboardCheck, Trophy } from 'lucide-react'
 import { Loading } from '@/components/shared/loading'
 import { useStoreStats } from '../hooks/use-stores'
 
@@ -17,71 +18,84 @@ export function StoreStatsBar() {
   const passedPct = stats.total === 0 ? 0 : Math.round((stats.passedCount / stats.total) * 1000) / 10
 
   return (
-    <div className="flex flex-wrap items-center gap-4 rounded-xl border bg-card p-3 shadow-sm">
-      <div className="grid flex-1 grid-cols-2 gap-2.5 sm:grid-cols-4">
-        <div className="flex items-center gap-2 rounded-lg bg-muted/40 p-2">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-orange/10 text-base">
-            🏪
+    <div className="flex flex-wrap items-stretch gap-3">
+      <div className="grid flex-1 grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="flex h-full items-center gap-3 rounded-xl border bg-card p-3 shadow-sm">
+          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-orange">
+            <Store className="h-9 w-9 text-white" />
           </div>
-          <div className="min-w-0">
-            <p className="text-lg font-extrabold leading-tight text-charcoal">{stats.total}</p>
-            <p className="truncate text-[9.5px] text-muted-foreground">จำนวนร้านทั้งหมด</p>
-            <p className="text-[9px] font-bold text-orange">
-              เป้าหมาย {stats.targetTotal} ร้าน ({targetPct}%)
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-charcoal">จำนวนร้านทั้งหมด</p>
+            <p className="mt-1 leading-tight text-charcoal">
+              <span className="text-2xl font-extrabold">{stats.total}</span>{' '}
+              <span className="text-xs text-muted-foreground">ร้าน</span>
             </p>
+            <p className="mt-1.5 text-xs text-muted-foreground">เป้าหมาย {stats.targetTotal} ร้าน</p>
+            <div className="mt-1 flex items-center gap-1.5">
+              <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                <span
+                  className="block h-full rounded-full bg-orange"
+                  style={{ width: `${targetPct}%` }}
+                />
+              </span>
+              <span className="text-xs text-muted-foreground">{targetPct}%</span>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 rounded-lg bg-muted/40 p-2">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-amber-100 text-base">
-            📋
+        <div className="flex h-full items-center gap-3 rounded-xl border bg-card p-3 shadow-sm">
+          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-orange">
+            <ClipboardList className="h-9 w-9 text-white" />
           </div>
           <div className="min-w-0">
-            <p className="text-lg font-extrabold leading-tight text-charcoal">{stats.t0CompletedCount}</p>
-            <p className="truncate text-[9.5px] text-muted-foreground">ร้านที่ประเมินแล้ว T0</p>
-            <p className="text-[9px] font-bold text-amber-600">{t0Pct}%</p>
+            <p className="truncate text-sm font-semibold text-charcoal">ร้านที่ประเมินแล้ว T0</p>
+            <p className="mt-1 leading-tight text-charcoal">
+              <span className="text-2xl font-extrabold">{stats.t0CompletedCount}</span>{' '}
+              <span className="text-xs text-muted-foreground">ร้าน</span>
+            </p>
+            <p className="mt-1.5 text-2xl font-bold text-orange">{t0Pct}%</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 rounded-lg bg-muted/40 p-2">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-score-green/10 text-base">
-            ✅
+        <div className="flex h-full items-center gap-3 rounded-xl border bg-card p-3 shadow-sm">
+          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-purple-banner">
+            <ClipboardCheck className="h-9 w-9 text-white" />
           </div>
           <div className="min-w-0">
-            <p className="text-lg font-extrabold leading-tight text-charcoal">{stats.t1CompletedCount}</p>
-            <p className="truncate text-[9.5px] text-muted-foreground">ร้านที่ประเมินแล้ว T1</p>
-            <p className="text-[9px] font-bold text-score-green">{t1Pct}%</p>
+            <p className="truncate text-sm font-semibold text-charcoal">ร้านที่ประเมินแล้ว T1</p>
+            <p className="mt-1 leading-tight text-charcoal">
+              <span className="text-2xl font-extrabold">{stats.t1CompletedCount}</span>{' '}
+              <span className="text-xs text-muted-foreground">ร้าน</span>
+            </p>
+            <p className="mt-1.5 text-2xl font-bold text-purple-banner">{t1Pct}%</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 rounded-lg bg-muted/40 p-2">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-blue-100 text-base">
-            🏆
+        <div className="flex h-full items-center gap-3 rounded-xl border bg-card p-3 shadow-sm">
+          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-score-green">
+            <Trophy className="h-9 w-9 text-white" />
           </div>
           <div className="min-w-0">
-            <p className="text-lg font-extrabold leading-tight text-charcoal">{stats.passedCount}</p>
-            <p className="truncate text-[9.5px] text-muted-foreground">ร้านที่ผ่านเข้ารอบ</p>
-            <p className="text-[9px] font-bold text-blue-600">{passedPct}%</p>
+            <p className="truncate text-sm font-semibold text-charcoal">ร้านที่ผ่านเข้ารอบ</p>
+            <p className="mt-1 leading-tight text-charcoal">
+              <span className="text-2xl font-extrabold">{stats.passedCount}</span>{' '}
+              <span className="text-xs text-muted-foreground">ร้าน</span>
+            </p>
+            <p className="mt-1.5 text-2xl font-bold text-score-green">{passedPct}%</p>
           </div>
         </div>
       </div>
 
-      <div className="flex-shrink-0">
-        <p className="mb-1.5 text-[10px] font-bold text-charcoal">การกระจายตัวของร้านอาหารรายจังหวัด</p>
-        <div className="flex flex-col gap-1">
-          {stats.byProvince.slice(0, 5).map((p, i) => (
-            <div key={p.province} className="flex items-center gap-1.5 text-[9.5px]">
+      <div className="flex-shrink-0 rounded-xl border bg-card p-3 shadow-sm">
+        <p className="mb-2 text-xs font-bold text-charcoal">การกระจายตัวของร้านอาหารรายจังหวัด</p>
+        <div className="flex flex-col gap-1.5">
+          {stats.byProvince.map((p, i) => (
+            <div key={p.province} className="flex items-center gap-2 text-xs">
               <span
-                className="h-2 w-2 flex-shrink-0 rounded-sm"
+                className="h-2.5 w-2.5 flex-shrink-0 rounded-sm"
                 style={{ background: PROVINCE_COLORS[i % PROVINCE_COLORS.length] }}
               />
               <span className="min-w-[64px] text-charcoal">{p.province}</span>
-              <span className="h-[7px] w-20 overflow-hidden rounded-full bg-muted">
-                <span
-                  className="block h-full rounded-full"
-                  style={{ width: `${p.pct}%`, background: PROVINCE_COLORS[i % PROVINCE_COLORS.length] }}
-                />
-              </span>
               <span className="text-muted-foreground">
                 {p.count} ร้าน ({p.pct}%)
               </span>
