@@ -38,8 +38,6 @@ export interface StoreDocument {
   uploadedAt: string;
 }
 
-export const STORE_TYPE_OPTIONS = ['อาหารไทย', 'อาหารทะเล', 'คาเฟ่', 'คาเฟ่/เบเกอรี่'] as const;
-
 export interface Store {
   id: string;
   name: string;
@@ -54,9 +52,9 @@ export interface Store {
   avgRevenueMax: number | null;
   mainProblems: string[];
   goals: string[];
-  photos: string[];
-  logoUrl: string | null;
-  storefrontPhotos: string[];
+  menuPhotos: string[];
+  coverUrl: string | null;
+  storePhotos: string[];
   documents: StoreDocument[];
   status: StoreStatus;
   latestScore: number | null;
@@ -107,4 +105,5 @@ export interface StoreStats {
   t1CompletedCount: number;
   passedCount: number;
   byProvince: ProvinceDistribution[];
+  storeTypes: string[];
 }

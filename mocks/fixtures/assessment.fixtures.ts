@@ -5,18 +5,66 @@ import type {
   AssessmentSummary,
   EvidenceFile,
   Round,
-} from '@/features/assessment/types/assessment.types'
+} from '@/features/assessment/types/assessment.types';
 
 export const dimensionSeed: Dimension[] = [
-  { id: 1, name: 'คุณภาพอาหารและนวัตกรรมเมนู', nameEn: 'Food Quality & Menu Innovation', weight: 12, questionCount: 7 },
-  { id: 2, name: 'ความปลอดภัยอาหารและมาตรฐาน', nameEn: 'Food Safety & Standards', weight: 15, questionCount: 7 },
-  { id: 3, name: 'แบรนด์และโมเดลธุรกิจ', nameEn: 'Brand & Business Model', weight: 10, questionCount: 6 },
-  { id: 4, name: 'การตลาดและฐานลูกค้า', nameEn: 'Marketing & Customer Base', weight: 13, questionCount: 7 },
-  { id: 5, name: 'การเงิน ต้นทุน และกำไร', nameEn: 'Finance, Cost & Profit', weight: 20, questionCount: 7 },
-  { id: 6, name: 'ระบบปฏิบัติการร้านและการบริการ', nameEn: 'Operations & Service', weight: 18, questionCount: 7 },
-  { id: 7, name: 'เครือข่าย วัตถุดิบ และห่วงโซ่อุปทาน', nameEn: 'Network, Ingredients & Supply Chain', weight: 5, questionCount: 5 },
-  { id: 8, name: 'ความพร้อมเติบโตและเข้าร่วมโครงการ', nameEn: 'Growth Readiness & Program Participation', weight: 7, questionCount: 4 },
-]
+  {
+    id: 1,
+    name: 'คุณภาพอาหารและนวัตกรรมเมนู',
+    nameEn: 'Food Quality & Menu Innovation',
+    weight: 12,
+    questionCount: 7,
+  },
+  {
+    id: 2,
+    name: 'ความปลอดภัยอาหารและมาตรฐาน',
+    nameEn: 'Food Safety & Standards',
+    weight: 15,
+    questionCount: 7,
+  },
+  {
+    id: 3,
+    name: 'แบรนด์และโมเดลธุรกิจ',
+    nameEn: 'Brand & Business Model',
+    weight: 10,
+    questionCount: 6,
+  },
+  {
+    id: 4,
+    name: 'การตลาดและฐานลูกค้า',
+    nameEn: 'Marketing & Customer Base',
+    weight: 13,
+    questionCount: 7,
+  },
+  {
+    id: 5,
+    name: 'การเงิน ต้นทุน และกำไร',
+    nameEn: 'Finance, Cost & Profit',
+    weight: 20,
+    questionCount: 7,
+  },
+  {
+    id: 6,
+    name: 'ระบบปฏิบัติการร้านและการบริการ',
+    nameEn: 'Operations & Service',
+    weight: 18,
+    questionCount: 7,
+  },
+  {
+    id: 7,
+    name: 'เครือข่าย วัตถุดิบ และห่วงโซ่อุปทาน',
+    nameEn: 'Network, Ingredients & Supply Chain',
+    weight: 5,
+    questionCount: 5,
+  },
+  {
+    id: 8,
+    name: 'ความพร้อมเติบโตและเข้าร่วมโครงการ',
+    nameEn: 'Growth Readiness & Program Participation',
+    weight: 7,
+    questionCount: 4,
+  },
+];
 
 const QUESTION_TEXTS: [number, number, string][] = [
   [1, 1, 'ร้านมีเมนูหลักที่ขายดีและลูกค้าจดจำได้ชัดเจน'],
@@ -68,8 +116,12 @@ const QUESTION_TEXTS: [number, number, string][] = [
   [47, 8, 'เจ้าของร้านมีความตั้งใจและเปิดรับการเปลี่ยนแปลง'],
   [48, 8, 'ร้านพร้อมให้ทีมโครงการลงพื้นที่ ตรวจประเมิน และให้คำปรึกษาแบบ 1-on-1'],
   [49, 8, 'ร้านสามารถจัดเตรียมข้อมูลสำคัญ เช่น รูปเมนู รูปร้าน ยอดขาย ต้นทุน และปัญหาหลัก'],
-  [50, 8, 'ร้านมีเป้าหมายการพัฒนาภายใน 3–6 เดือน เช่น เพิ่มยอดขาย ลดต้นทุน ปรับเมนู ทำแบรนด์ หรือขยายช่องทางขาย'],
-]
+  [
+    50,
+    8,
+    'ร้านมีเป้าหมายการพัฒนาภายใน 3–6 เดือน เช่น เพิ่มยอดขาย ลดต้นทุน ปรับเมนู ทำแบรนด์ หรือขยายช่องทางขาย',
+  ],
+];
 
 export const questionSeed: Question[] = QUESTION_TEXTS.map(([id, dimensionId, questionText]) => ({
   id,
@@ -77,10 +129,10 @@ export const questionSeed: Question[] = QUESTION_TEXTS.map(([id, dimensionId, qu
   questionNo: id,
   questionText,
   maxScore: 4,
-}))
+}));
 
-let assessments: Assessment[] = []
-let idCounter = 0
+let assessments: Assessment[] = [];
+let idCounter = 0;
 
 function summarize(a: Assessment): AssessmentSummary {
   return {
@@ -93,13 +145,13 @@ function summarize(a: Assessment): AssessmentSummary {
     createdAt: a.createdAt,
     updatedAt: a.updatedAt,
     submittedAt: a.submittedAt,
-  }
+  };
 }
 
 export const assessmentDb = {
   reset: () => {
-    assessments = []
-    idCounter = 0
+    assessments = [];
+    idCounter = 0;
   },
 
   findByStoreAndRound: (storeId: string, round: Round): Assessment | null =>
@@ -113,8 +165,8 @@ export const assessmentDb = {
   findById: (id: string): Assessment | null => assessments.find((a) => a.id === id) ?? null,
 
   create: (storeId: string, round: Round, assessorId: string): Assessment => {
-    idCounter += 1
-    const now = new Date().toISOString()
+    idCounter += 1;
+    const now = new Date().toISOString();
     const assessment: Assessment = {
       id: `mock-assessment-${idCounter}`,
       storeId,
@@ -139,9 +191,9 @@ export const assessmentDb = {
         evidence: [],
       })),
       redFlags: [],
-    }
-    assessments = [...assessments, assessment]
-    return assessment
+    };
+    assessments = [...assessments, assessment];
+    return assessment;
   },
 
   updateScore: (
@@ -149,8 +201,8 @@ export const assessmentDb = {
     questionId: number,
     data: { rawScore: number; note?: string; suggestion?: string }
   ): Assessment | null => {
-    const assessment = assessments.find((a) => a.id === assessmentId)
-    if (!assessment) return null
+    const assessment = assessments.find((a) => a.id === assessmentId);
+    if (!assessment) return null;
     assessment.questions = assessment.questions.map((q) =>
       q.questionId === questionId
         ? {
@@ -160,9 +212,9 @@ export const assessmentDb = {
             suggestion: data.suggestion ?? q.suggestion,
           }
         : q
-    )
-    assessment.updatedAt = new Date().toISOString()
-    return assessment
+    );
+    assessment.updatedAt = new Date().toISOString();
+    return assessment;
   },
 
   addEvidence: (
@@ -170,88 +222,88 @@ export const assessmentDb = {
     questionId: number,
     file: { filename: string; fileType: string; fileSize: number }
   ): EvidenceFile | null => {
-    const assessment = assessments.find((a) => a.id === assessmentId)
-    if (!assessment) return null
-    const question = assessment.questions.find((q) => q.questionId === questionId)
-    if (!question || question.rawScore === null) return null
-    idCounter += 1
+    const assessment = assessments.find((a) => a.id === assessmentId);
+    if (!assessment) return null;
+    const question = assessment.questions.find((q) => q.questionId === questionId);
+    if (!question || question.rawScore === null) return null;
+    idCounter += 1;
     const evidence: EvidenceFile = {
       id: `mock-evidence-${idCounter}`,
       ...file,
       url: `/uploads/evidence/${assessmentId}/mock-evidence-${idCounter}`,
       uploadedAt: new Date().toISOString(),
-    }
-    question.evidence = [...question.evidence, evidence]
-    assessment.updatedAt = new Date().toISOString()
-    return evidence
+    };
+    question.evidence = [...question.evidence, evidence];
+    assessment.updatedAt = new Date().toISOString();
+    return evidence;
   },
 
   removeEvidence: (assessmentId: string, evidenceId: string): boolean => {
-    const assessment = assessments.find((a) => a.id === assessmentId)
-    if (!assessment) return false
-    let removed = false
+    const assessment = assessments.find((a) => a.id === assessmentId);
+    if (!assessment) return false;
+    let removed = false;
     assessment.questions = assessment.questions.map((q) => {
       if (q.evidence.some((e) => e.id === evidenceId)) {
-        removed = true
-        return { ...q, evidence: q.evidence.filter((e) => e.id !== evidenceId) }
+        removed = true;
+        return { ...q, evidence: q.evidence.filter((e) => e.id !== evidenceId) };
       }
-      return q
-    })
-    if (removed) assessment.updatedAt = new Date().toISOString()
-    return removed
+      return q;
+    });
+    if (removed) assessment.updatedAt = new Date().toISOString();
+    return removed;
   },
 
   updateNotes: (assessmentId: string, notes: string): Assessment | null => {
-    const assessment = assessments.find((a) => a.id === assessmentId)
-    if (!assessment) return null
-    assessment.notes = notes
-    assessment.updatedAt = new Date().toISOString()
-    return assessment
+    const assessment = assessments.find((a) => a.id === assessmentId);
+    if (!assessment) return null;
+    assessment.notes = notes;
+    assessment.updatedAt = new Date().toISOString();
+    return assessment;
   },
 
   submit: (assessmentId: string): Assessment | null => {
-    const assessment = assessments.find((a) => a.id === assessmentId)
-    if (!assessment) return null
+    const assessment = assessments.find((a) => a.id === assessmentId);
+    if (!assessment) return null;
 
-    const dimensionScores = new Map<number, number>()
+    const dimensionScores = new Map<number, number>();
     for (const dim of dimensionSeed) {
-      const dimQuestions = assessment.questions.filter((q) => q.dimensionId === dim.id)
-      const sum = dimQuestions.reduce((acc, q) => acc + (q.rawScore ?? 0), 0)
-      dimensionScores.set(dim.id, (sum / (dim.questionCount * 4)) * 100)
+      const dimQuestions = assessment.questions.filter((q) => q.dimensionId === dim.id);
+      const sum = dimQuestions.reduce((acc, q) => acc + (q.rawScore ?? 0), 0);
+      dimensionScores.set(dim.id, (sum / (dim.questionCount * 4)) * 100);
     }
     const totalScore = dimensionSeed.reduce(
       (sum, dim) => sum + ((dimensionScores.get(dim.id) ?? 0) * dim.weight) / 100,
       0
-    )
+    );
 
-    assessment.status = 'SUBMITTED'
-    assessment.totalScore = totalScore
-    assessment.submittedAt = new Date().toISOString()
-    assessment.updatedAt = assessment.submittedAt
-    return assessment
+    assessment.status = 'SUBMITTED';
+    assessment.totalScore = totalScore;
+    assessment.submittedAt = new Date().toISOString();
+    assessment.updatedAt = assessment.submittedAt;
+    return assessment;
   },
 
   remove: (assessmentId: string): boolean => {
-    const prev = assessments.length
-    assessments = assessments.filter((a) => a.id !== assessmentId)
-    return assessments.length < prev
+    const prev = assessments.length;
+    assessments = assessments.filter((a) => a.id !== assessmentId);
+    return assessments.length < prev;
   },
-}
+};
 
 export function getDimensionAverages(round: Round): Map<number, number> {
-  const submitted = assessments.filter((a) => a.round === round && a.status === 'SUBMITTED')
-  const averages = new Map<number, number>()
+  const submitted = assessments.filter((a) => a.round === round && a.status === 'SUBMITTED');
+  const averages = new Map<number, number>();
   for (const dim of dimensionSeed) {
     if (submitted.length === 0) {
-      averages.set(dim.id, 0)
-      continue
+      averages.set(dim.id, 0);
+      continue;
     }
     const pctSum = submitted.reduce((sum, a) => {
-      const dimQuestions = a.questions.filter((q) => q.dimensionId === dim.id)
-      const raw = dimQuestions.reduce((acc, q) => acc + (q.rawScore ?? 0), 0)
-      return sum + (raw / (dim.questionCount * 4)) * 100
-    }, 0)
-    averages.set(dim.id, Math.round((pctSum / submitted.length) * 10) / 10)
+      const dimQuestions = a.questions.filter((q) => q.dimensionId === dim.id);
+      const raw = dimQuestions.reduce((acc, q) => acc + (q.rawScore ?? 0), 0);
+      return sum + (raw / (dim.questionCount * 4)) * 100;
+    }, 0);
+    averages.set(dim.id, Math.round((pctSum / submitted.length) * 10) / 10);
   }
-  return averages
+  return averages;
 }

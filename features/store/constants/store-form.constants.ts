@@ -12,6 +12,9 @@ export const STORE_VALIDATION_MESSAGES = {
 
 // Shared field labels and placeholders used by both create and edit store forms.
 export const STORE_FORM_TEXT = {
+  optionalLabel: (label: string) => `${label} (ไม่บังคับ)`,
+  coverLabel: 'หน้าปกร้าน (ไม่บังคับ)',
+  documentsLabel: 'เอกสารแนบ (ไม่บังคับ)',
   nameLabel: 'ชื่อร้าน',
   provinceLabel: 'จังหวัด',
   provincePlaceholder: 'เลือกจังหวัด',
@@ -44,9 +47,9 @@ export const CREATE_STORE_FORM_TEXT = {
   saving: 'กำลังบันทึก...',
   uploading: 'กำลังอัปโหลดไฟล์...',
   createSuccess: 'เพิ่มร้านอาหารสำเร็จ',
-  logoUploadError: (message: string) => `อัปโหลดโลโก้ไม่สำเร็จ: ${message}`,
-  storefrontUploadError: (fileName: string, message: string) =>
-    `อัปโหลดรูปหน้าร้าน "${fileName}" ไม่สำเร็จ: ${message}`,
+  coverUploadError: (message: string) => `อัปโหลดหน้าปกไม่สำเร็จ: ${message}`,
+  storePhotoUploadError: (fileName: string, message: string) =>
+    `อัปโหลดรูปร้านค้า "${fileName}" ไม่สำเร็จ: ${message}`,
   menuUploadError: (fileName: string, message: string) =>
     `อัปโหลดภาพเมนู "${fileName}" ไม่สำเร็จ: ${message}`,
   documentUploadError: (fileName: string, message: string) =>

@@ -19,6 +19,7 @@ export const STORE_DETAIL_TEXT = {
   onlineChannelsEmpty: 'ยังไม่มีช่องทางออนไลน์',
   viewMoreLabel: 'ดูเพิ่มเติม',
   viewAllLabel: 'ดูทั้งหมด',
+  viewPhotoLabel: (label: string) => `ดู${label}`,
   facebookTitle: 'Facebook',
   lineTitle: 'LINE',
   instagramTitle: 'Instagram',
@@ -28,9 +29,9 @@ export const STORE_DETAIL_TEXT = {
   goalsTitle: 'เป้าหมายการพัฒนา',
   goalsEmpty: 'ยังไม่มีข้อมูลเป้าหมายการพัฒนา',
 
-  storefrontPhotosTitle: 'รูปหน้าร้าน',
-  storefrontPhotoAlt: 'รูปหน้าร้าน',
-  storefrontGalleryEmpty: 'ยังไม่มีรูปเพิ่มเติม',
+  storePhotosTitle: 'รูปร้านค้า',
+  storePhotoAlt: 'รูปร้านค้า',
+  storePhotoGalleryEmpty: 'ยังไม่มีรูปเพิ่มเติม',
 
   documentsTitle: 'เอกสารที่อัปโหลด',
   documentsEmpty: 'ยังไม่มีเอกสารอัปโหลด',

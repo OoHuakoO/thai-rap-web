@@ -9,6 +9,7 @@ import { extractErrorMessage } from '@/utils/extract-error-message';
 import { buildFileUrl } from '@/utils/build-file-url';
 import { isFileSizeValid, fileTooLargeMessage } from '@/utils/validate-file-size';
 import { STORE_DIALOG_TEXT } from '../constants/store-dialog.constants';
+import { STORE_FORM_TEXT } from '../constants/store-form.constants';
 import { useUploadStoreDocument, useDeleteStoreDocument } from '../hooks/use-stores';
 import type { StoreDocument } from '../types/store.types';
 
@@ -63,7 +64,7 @@ export function StoreDocumentManager({ storeId, documents }: StoreDocumentManage
   return (
     <div>
       <div className="mb-1.5 flex items-center justify-between">
-        <Label>เอกสารที่อัปโหลด</Label>
+        <Label>{STORE_FORM_TEXT.documentsLabel}</Label>
         <button
           type="button"
           disabled={isUploading}
@@ -77,7 +78,7 @@ export function StoreDocumentManager({ storeId, documents }: StoreDocumentManage
           ref={inputRef}
           type="file"
           multiple
-          accept="image/jpeg,image/png,image/webp,application/pdf,.xlsx"
+          accept="application/pdf,.xlsx,.docx,.csv"
           className="hidden"
           onChange={(e) => {
             handleSelected(e.target.files);

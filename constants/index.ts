@@ -11,3 +11,6 @@ export const QUERY_STALE_TIME_MS = 60_000;
 // Program quota shown in the shared header (design: thai_rap.html header quota pill)
 export const ASSESSMENT_ROUND_STORE_COUNT = 50;
 export const INCUBATION_TARGET_COUNT = 20;
+
+// Matches MAX_FILE_SIZE in thai-rap-api store.controller.ts
+export const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;

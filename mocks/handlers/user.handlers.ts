@@ -61,9 +61,7 @@ export const userHandlers = [
     if (role) users = users.filter((u) => u.role === role);
     if (search) {
       users = users.filter(
-        (u) =>
-          u.name.toLowerCase().includes(search) ||
-          u.email.toLowerCase().includes(search)
+        (u) => u.name.toLowerCase().includes(search) || u.email.toLowerCase().includes(search)
       );
     }
 

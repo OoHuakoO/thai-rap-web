@@ -1,4 +1,4 @@
-import type { User, UpdateUserDto } from '@/features/user/types/user.types'
+import type { User, UpdateUserDto } from '@/features/user/types/user.types';
 
 const seed: User[] = [
   {
@@ -49,13 +49,13 @@ const seed: User[] = [
     createdAt: '2024-03-20T09:00:00Z',
     updatedAt: '2024-05-15T14:00:00Z',
   },
-]
+];
 
-let store: User[] = [...seed]
+let store: User[] = [...seed];
 
 export const userDb = {
   reset: () => {
-    store = [...seed]
+    store = [...seed];
   },
 
   getAll: () => store,
@@ -63,21 +63,21 @@ export const userDb = {
   findById: (id: string): User | null => store.find((u) => u.id === id) ?? null,
 
   create: (user: User): User => {
-    store = [...store, user]
-    return user
+    store = [...store, user];
+    return user;
   },
 
   update: (id: string, data: UpdateUserDto): User | null => {
-    const idx = store.findIndex((u) => u.id === id)
-    if (idx === -1) return null
-    const updated: User = { ...store[idx], ...data, updatedAt: new Date().toISOString() }
-    store = [...store.slice(0, idx), updated, ...store.slice(idx + 1)]
-    return updated
+    const idx = store.findIndex((u) => u.id === id);
+    if (idx === -1) return null;
+    const updated: User = { ...store[idx], ...data, updatedAt: new Date().toISOString() };
+    store = [...store.slice(0, idx), updated, ...store.slice(idx + 1)];
+    return updated;
   },
 
   remove: (id: string): boolean => {
-    const prev = store.length
-    store = store.filter((u) => u.id !== id)
-    return store.length < prev
+    const prev = store.length;
+    store = store.filter((u) => u.id !== id);
+    return store.length < prev;
   },
-}
+};

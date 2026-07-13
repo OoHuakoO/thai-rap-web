@@ -24,7 +24,7 @@ export function DataTable<T extends object>({
   isRowSelected,
 }: DataTableProps<T>) {
   return (
-    <div className={cn('w-full overflow-x-auto rounded-md border', className)}>
+    <div className={cn('flex h-full w-full flex-col overflow-x-auto rounded-md border', className)}>
       <table className="w-full text-sm" aria-label="Data table">
         <thead>
           <tr className="border-b bg-muted/50">
@@ -41,24 +41,9 @@ export function DataTable<T extends object>({
             ))}
           </tr>
         </thead>
-        <tbody>
-          {isLoading ? (
-            <tr>
-              <td colSpan={columns.length}>
-                <Loading className="py-8" />
-              </td>
-            </tr>
-          ) : data.length === 0 ? (
-            <tr>
-              <td
-                colSpan={columns.length}
-                className="px-4 py-8 text-center text-muted-foreground"
-              >
-                {emptyMessage}
-              </td>
-            </tr>
-          ) : (
-            data.map((row) => (
+        {!isLoading && data.length > 0 && (
+          <tbody>
+            {data.map((row) => (
               <tr
                 key={String(row[keyField])}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
@@ -84,10 +69,20 @@ export function DataTable<T extends object>({
                   </td>
                 ))}
               </tr>
-            ))
-          )}
-        </tbody>
+            ))}
+          </tbody>
+        )}
       </table>
+      {isLoading && (
+        <div className="flex flex-1 items-center justify-center">
+          <Loading className="py-8" />
+        </div>
+      )}
+      {!isLoading && data.length === 0 && (
+        <div className="flex flex-1 items-center justify-center px-4 py-8 text-center text-muted-foreground">
+          {emptyMessage}
+        </div>
+      )}
     </div>
   );
 }

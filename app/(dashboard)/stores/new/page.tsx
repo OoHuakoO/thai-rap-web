@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
-import { ChevronLeft } from 'lucide-react'
+import { UtensilsCrossed } from 'lucide-react'
+import { BackLink } from '@/components/shared/back-link'
 import { ROUTES } from '@/constants/routes'
 import { CreateStoreForm } from '@/features/store'
 
@@ -10,21 +10,20 @@ export const metadata: Metadata = {
 
 export default function NewStorePage() {
   return (
-    <section className="mx-auto max-w-2xl space-y-4">
-      <div>
-        <Link
-          href={ROUTES.STORES}
-          className="mb-2 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-orange"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          กลับไปรายการร้านอาหาร
-        </Link>
-        <h1 className="text-2xl font-semibold">เพิ่มร้านอาหาร</h1>
+    <section className="space-y-4">
+      <BackLink href={ROUTES.STORES}>กลับไปรายการร้านอาหาร</BackLink>
+
+      <div className="flex items-center gap-4 rounded-xl border bg-gradient-to-br from-orange to-orange-light p-5 text-white shadow-sm">
+        <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-white/20">
+          <UtensilsCrossed className="h-7 w-7" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-extrabold">เพิ่มร้านอาหาร</h1>
+          <p className="text-sm text-white/80">กรอกข้อมูลร้านอาหารเพื่อเพิ่มเข้าสู่ระบบ</p>
+        </div>
       </div>
 
-      <div className="rounded-xl border bg-card p-4 shadow-sm">
-        <CreateStoreForm />
-      </div>
+      <CreateStoreForm />
     </section>
   )
 }

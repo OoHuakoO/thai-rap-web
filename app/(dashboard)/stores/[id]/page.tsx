@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
-import { ChevronLeft } from 'lucide-react'
+import { BackLink } from '@/components/shared/back-link'
 import { ROUTES } from '@/constants/routes'
 import { StoreDetail } from '@/features/store'
 
@@ -17,13 +16,7 @@ export default async function StoreDetailPage({ params }: StoreDetailPageProps) 
 
   return (
     <section className="space-y-4">
-      <Link
-        href={ROUTES.STORES}
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-orange"
-      >
-        <ChevronLeft className="h-4 w-4" />
-        กลับไปรายการร้านอาหาร
-      </Link>
+      <BackLink href={ROUTES.STORES}>กลับไปรายการร้านอาหาร</BackLink>
       <StoreDetail storeId={id} variant="full" />
     </section>
   )

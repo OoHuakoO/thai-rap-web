@@ -20,9 +20,9 @@ const seed: Store[] = [
     avgRevenueMax: 150000,
     mainProblems: ['การบริหารต้นทุนวัตถุดิบสูง', 'การตลาดออนไลน์ยังน้อย'],
     goals: ['เพิ่มยอดขาย 20% ภายใน 6 เดือน', 'พัฒนามาตรฐานบริการ'],
-    photos: [],
-    logoUrl: null,
-    storefrontPhotos: [],
+    menuPhotos: [],
+    coverUrl: null,
+    storePhotos: [],
     documents: [
       {
         id: 'doc-1',
@@ -62,9 +62,9 @@ const seed: Store[] = [
     avgRevenueMax: 240000,
     mainProblems: ['ระบบสต็อกวัตถุดิบ', 'การวางแผนการตลาด'],
     goals: ['ขยายช่องทาง Delivery', 'ทำ Brand Identity'],
-    photos: [],
-    logoUrl: null,
-    storefrontPhotos: [],
+    menuPhotos: [],
+    coverUrl: null,
+    storePhotos: [],
     documents: [],
     status: 'T0_COMPLETED',
     latestScore: 91.12,
@@ -87,9 +87,9 @@ const seed: Store[] = [
     avgRevenueMax: 105000,
     mainProblems: ['ต้นทุนแรงงานสูง', 'Seasonal demand'],
     goals: ['พัฒนา Signature Menu', 'เพิ่มช่องทาง Online'],
-    photos: [],
-    logoUrl: null,
-    storefrontPhotos: [],
+    menuPhotos: [],
+    coverUrl: null,
+    storePhotos: [],
     documents: [],
     status: 'SELECTED',
     latestScore: 90.31,
@@ -112,9 +112,9 @@ const seed: Store[] = [
     avgRevenueMax: 180000,
     mainProblems: ['ต้นทุนวัตถุดิบผันผวน', 'แรงงานขาดแคลน'],
     goals: ['ทำระบบจัดการ SOP', 'เพิ่ม Catering Service'],
-    photos: [],
-    logoUrl: null,
-    storefrontPhotos: [],
+    menuPhotos: [],
+    coverUrl: null,
+    storePhotos: [],
     documents: [],
     status: 'T1_COMPLETED',
     latestScore: 89.78,
@@ -137,9 +137,9 @@ const seed: Store[] = [
     avgRevenueMax: 85000,
     mainProblems: ['ระบบบัญชียังไม่เป็นระบบ'],
     goals: ['เพิ่มยอดขาย', 'ทำระบบบัญชีพื้นฐาน'],
-    photos: [],
-    logoUrl: null,
-    storefrontPhotos: [],
+    menuPhotos: [],
+    coverUrl: null,
+    storePhotos: [],
     documents: [],
     status: 'REGISTERED',
     latestScore: null,
@@ -162,9 +162,9 @@ const seed: Store[] = [
     avgRevenueMax: 75000,
     mainProblems: ['การตลาดออนไลน์', 'Brand Identity'],
     goals: ['สร้าง Social Media', 'พัฒนาเมนู Signature'],
-    photos: [],
-    logoUrl: null,
-    storefrontPhotos: [],
+    menuPhotos: [],
+    coverUrl: null,
+    storePhotos: [],
     documents: [],
     status: 'T0_COMPLETED',
     latestScore: 88.21,
@@ -187,9 +187,9 @@ const seed: Store[] = [
     avgRevenueMax: 62500,
     mainProblems: ['ต้นทุนสูง', 'ยอดขายไม่สม่ำเสมอ'],
     goals: ['ลดต้นทุน 15%', 'เพิ่มช่องทางขาย'],
-    photos: [],
-    logoUrl: null,
-    storefrontPhotos: [],
+    menuPhotos: [],
+    coverUrl: null,
+    storePhotos: [],
     documents: [],
     status: 'REGISTERED',
     latestScore: null,
@@ -212,9 +212,9 @@ const seed: Store[] = [
     avgRevenueMax: 120000,
     mainProblems: ['การบริหารต้นทุน', 'ระบบ POS'],
     goals: ['ติดตั้งระบบ POS', 'ขยายเมนู'],
-    photos: [],
-    logoUrl: null,
-    storefrontPhotos: [],
+    menuPhotos: [],
+    coverUrl: null,
+    storePhotos: [],
     documents: [],
     status: 'T1_COMPLETED',
     latestScore: 86.74,
@@ -284,47 +284,50 @@ export const storeDb = {
     return updated;
   },
 
-  addPhoto: (id: string, url: string): Store | null => {
+  addMenuPhoto: (id: string, url: string): Store | null => {
     const idx = store.findIndex((s) => s.id === id);
     if (idx === -1) return null;
-    const updated: Store = { ...store[idx], photos: [...store[idx].photos, url] };
+    const updated: Store = { ...store[idx], menuPhotos: [...store[idx].menuPhotos, url] };
     store = [...store.slice(0, idx), updated, ...store.slice(idx + 1)];
     return updated;
   },
 
-  removePhoto: (id: string, url: string): Store | null => {
-    const idx = store.findIndex((s) => s.id === id);
-    if (idx === -1) return null;
-    const updated: Store = { ...store[idx], photos: store[idx].photos.filter((p) => p !== url) };
-    store = [...store.slice(0, idx), updated, ...store.slice(idx + 1)];
-    return updated;
-  },
-
-  setLogo: (id: string, logoUrl: string | null): Store | null => {
-    const idx = store.findIndex((s) => s.id === id);
-    if (idx === -1) return null;
-    const updated: Store = { ...store[idx], logoUrl };
-    store = [...store.slice(0, idx), updated, ...store.slice(idx + 1)];
-    return updated;
-  },
-
-  addStorefrontPhoto: (id: string, url: string): Store | null => {
+  removeMenuPhoto: (id: string, url: string): Store | null => {
     const idx = store.findIndex((s) => s.id === id);
     if (idx === -1) return null;
     const updated: Store = {
       ...store[idx],
-      storefrontPhotos: [...store[idx].storefrontPhotos, url],
+      menuPhotos: store[idx].menuPhotos.filter((p) => p !== url),
     };
     store = [...store.slice(0, idx), updated, ...store.slice(idx + 1)];
     return updated;
   },
 
-  removeStorefrontPhoto: (id: string, url: string): Store | null => {
+  setCover: (id: string, coverUrl: string | null): Store | null => {
+    const idx = store.findIndex((s) => s.id === id);
+    if (idx === -1) return null;
+    const updated: Store = { ...store[idx], coverUrl };
+    store = [...store.slice(0, idx), updated, ...store.slice(idx + 1)];
+    return updated;
+  },
+
+  addStorePhoto: (id: string, url: string): Store | null => {
     const idx = store.findIndex((s) => s.id === id);
     if (idx === -1) return null;
     const updated: Store = {
       ...store[idx],
-      storefrontPhotos: store[idx].storefrontPhotos.filter((p) => p !== url),
+      storePhotos: [...store[idx].storePhotos, url],
+    };
+    store = [...store.slice(0, idx), updated, ...store.slice(idx + 1)];
+    return updated;
+  },
+
+  removeStorePhoto: (id: string, url: string): Store | null => {
+    const idx = store.findIndex((s) => s.id === id);
+    if (idx === -1) return null;
+    const updated: Store = {
+      ...store[idx],
+      storePhotos: store[idx].storePhotos.filter((p) => p !== url),
     };
     store = [...store.slice(0, idx), updated, ...store.slice(idx + 1)];
     return updated;

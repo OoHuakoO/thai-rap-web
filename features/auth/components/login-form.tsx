@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { FieldError } from '@/components/shared/field-error';
 import { ROUTES } from '@/constants/routes';
 import { LOGIN_FORM_TEXT } from '../constants/auth-form.constants';
 import { loginSchema } from '../schemas/login.schema';
@@ -49,7 +50,7 @@ export function LoginForm() {
               autoComplete="email"
               {...register('email')}
             />
-            {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+            <FieldError message={errors.email?.message} />
           </div>
 
           <div className="space-y-1.5">
@@ -61,9 +62,7 @@ export function LoginForm() {
               autoComplete="current-password"
               {...register('password')}
             />
-            {errors.password && (
-              <p className="text-xs text-destructive">{errors.password.message}</p>
-            )}
+            <FieldError message={errors.password?.message} />
           </div>
 
           <Button type="submit" className="w-full" disabled={isPending}>

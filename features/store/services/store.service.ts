@@ -1,4 +1,4 @@
-import api from '@/services/api'
+import api from '@/services/api';
 import type {
   Store,
   CreateStoreDto,
@@ -8,7 +8,7 @@ import type {
   StoreStatus,
   StoreStats,
   StoreDocument,
-} from '../types/store.types'
+} from '../types/store.types';
 
 export const storeService = {
   getAll: (params?: StoreQueryParams) =>
@@ -29,57 +29,57 @@ export const storeService = {
   remove: (id: string) => api.delete(`/stores/${id}`),
 
   uploadDocument: (storeId: string, file: File) => {
-    const form = new FormData()
-    form.append('file', file)
+    const form = new FormData();
+    form.append('file', file);
     return api
       .post<StoreDocument>(`/stores/${storeId}/documents`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
-      .then((res) => res.data)
+      .then((res) => res.data);
   },
 
   deleteDocument: (storeId: string, documentId: string) =>
     api.delete(`/stores/${storeId}/documents/${documentId}`),
 
-  uploadPhoto: (storeId: string, file: File) => {
-    const form = new FormData()
-    form.append('file', file)
+  uploadMenuPhoto: (storeId: string, file: File) => {
+    const form = new FormData();
+    form.append('file', file);
     return api
-      .post<string[]>(`/stores/${storeId}/photos`, form, {
+      .post<string[]>(`/stores/${storeId}/menu-photos`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
-      .then((res) => res.data)
+      .then((res) => res.data);
   },
 
-  deletePhoto: (storeId: string, url: string) =>
+  deleteMenuPhoto: (storeId: string, url: string) =>
     api
-      .delete<string[]>(`/stores/${storeId}/photos`, { data: { url } })
+      .delete<string[]>(`/stores/${storeId}/menu-photos`, { data: { url } })
       .then((res) => res.data),
 
-  uploadLogo: (storeId: string, file: File) => {
-    const form = new FormData()
-    form.append('file', file)
+  uploadCover: (storeId: string, file: File) => {
+    const form = new FormData();
+    form.append('file', file);
     return api
-      .post<string>(`/stores/${storeId}/logo`, form, {
+      .post<string>(`/stores/${storeId}/cover`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
-      .then((res) => res.data)
+      .then((res) => res.data);
   },
 
-  deleteLogo: (storeId: string) => api.delete(`/stores/${storeId}/logo`),
+  deleteCover: (storeId: string) => api.delete(`/stores/${storeId}/cover`),
 
-  uploadStorefrontPhoto: (storeId: string, file: File) => {
-    const form = new FormData()
-    form.append('file', file)
+  uploadStorePhoto: (storeId: string, file: File) => {
+    const form = new FormData();
+    form.append('file', file);
     return api
-      .post<string[]>(`/stores/${storeId}/storefront-photos`, form, {
+      .post<string[]>(`/stores/${storeId}/store-photos`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
-      .then((res) => res.data)
+      .then((res) => res.data);
   },
 
-  deleteStorefrontPhoto: (storeId: string, url: string) =>
+  deleteStorePhoto: (storeId: string, url: string) =>
     api
-      .delete<string[]>(`/stores/${storeId}/storefront-photos`, { data: { url } })
+      .delete<string[]>(`/stores/${storeId}/store-photos`, { data: { url } })
       .then((res) => res.data),
-}
+};

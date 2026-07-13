@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { FieldError } from '@/components/shared/field-error';
 import { ROUTES } from '@/constants/routes';
 import { ROLE_LABELS } from '@/types/auth.types';
 import type { Role } from '@/types/auth.types';
@@ -65,7 +66,7 @@ export function RegisterForm() {
               autoComplete="name"
               {...register('name')}
             />
-            {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
+            <FieldError message={errors.name?.message} />
           </div>
 
           <div className="space-y-1.5">
@@ -77,7 +78,7 @@ export function RegisterForm() {
               autoComplete="email"
               {...register('email')}
             />
-            {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+            <FieldError message={errors.email?.message} />
           </div>
 
           <div className="space-y-1.5">
@@ -103,7 +104,7 @@ export function RegisterForm() {
                 ))}
               </SelectContent>
             </Select>
-            {errors.role && <p className="text-xs text-destructive">{errors.role.message}</p>}
+            <FieldError message={errors.role?.message} />
           </div>
 
           <div className="space-y-1.5">
@@ -115,9 +116,7 @@ export function RegisterForm() {
               autoComplete="new-password"
               {...register('password')}
             />
-            {errors.password && (
-              <p className="text-xs text-destructive">{errors.password.message}</p>
-            )}
+            <FieldError message={errors.password?.message} />
           </div>
 
           <div className="space-y-1.5">
@@ -129,9 +128,7 @@ export function RegisterForm() {
               autoComplete="new-password"
               {...register('confirmPassword')}
             />
-            {errors.confirmPassword && (
-              <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>
-            )}
+            <FieldError message={errors.confirmPassword?.message} />
           </div>
 
           <Button type="submit" className="w-full" disabled={isPending}>

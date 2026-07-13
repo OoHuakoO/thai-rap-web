@@ -2,25 +2,27 @@
 
 import { useRef } from 'react';
 import { toast } from 'sonner';
-import { Plus, X } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { PhotoPreviewGrid } from '@/components/shared/photo-preview-grid';
 import { useConfirm } from '@/components/shared/confirm-dialog';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { buildFileUrl } from '@/utils/build-file-url';
 import { isFileSizeValid, fileTooLargeMessage } from '@/utils/validate-file-size';
 import { STORE_DIALOG_TEXT } from '../constants/store-dialog.constants';
+import { STORE_FORM_TEXT } from '../constants/store-form.constants';
 import {
-  useUploadStorefrontPhoto,
-  useDeleteStorefrontPhoto,
   useUploadStorePhoto,
   useDeleteStorePhoto,
+  useUploadMenuPhoto,
+  useDeleteMenuPhoto,
 } from '../hooks/use-stores';
 
 interface StorePhotoGalleryManagerProps {
   storeId: string;
   label: string;
   photos: string[];
-  variant: 'storefront' | 'menu';
+  variant: 'store' | 'menu';
   emptyMessage: string;
 }
 
@@ -33,14 +35,14 @@ export function StorePhotoGalleryManager({
 }: StorePhotoGalleryManagerProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const uploadStorefront = useUploadStorefrontPhoto(storeId);
-  const deleteStorefront = useDeleteStorefrontPhoto(storeId);
-  const uploadMenu = useUploadStorePhoto(storeId);
-  const deleteMenu = useDeleteStorePhoto(storeId);
+  const uploadStorePhoto = useUploadStorePhoto(storeId);
+  const deleteStorePhoto = useDeleteStorePhoto(storeId);
+  const uploadMenu = useUploadMenuPhoto(storeId);
+  const deleteMenu = useDeleteMenuPhoto(storeId);
 
   const { mutate: upload, isPending: isUploading } =
-    variant === 'storefront' ? uploadStorefront : uploadMenu;
-  const { mutate: remove } = variant === 'storefront' ? deleteStorefront : deleteMenu;
+    variant === 'store' ? uploadStorePhoto : uploadMenu;
+  const { mutate: remove } = variant === 'store' ? deleteStorePhoto : deleteMenu;
   const confirm = useConfirm();
 
   const handleSelected = (files: FileList | null) => {
@@ -68,7 +70,7 @@ export function StorePhotoGalleryManager({
   return (
     <div>
       <div className="mb-1.5 flex items-center justify-between">
-        <Label>{label}</Label>
+        <Label>{STORE_FORM_TEXT.optionalLabel(label)}</Label>
         <button
           type="button"
           disabled={isUploading}
@@ -90,26 +92,14 @@ export function StorePhotoGalleryManager({
           }}
         />
       </div>
-      {photos.length > 0 ? (
-        <div className="flex flex-wrap gap-2">
-          {photos.map((url) => (
-            <div key={url} className="group relative h-16 w-16 overflow-hidden rounded-md border">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={buildFileUrl(url)} alt={label} className="h-full w-full object-cover" />
-              <button
-                type="button"
-                onClick={() => handleRemove(url)}
-                aria-label={`ลบ${label}`}
-                className="absolute -right-1 -top-1 hidden h-4 w-4 items-center justify-center rounded-full bg-destructive text-white group-hover:flex"
-              >
-                <X className="h-2.5 w-2.5" />
-              </button>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-[10.5px] text-muted-foreground">{emptyMessage}</p>
-      )}
+
+      <PhotoPreviewGrid
+        photos={photos.map(buildFileUrl)}
+        alt={label}
+        emptyMessage={emptyMessage}
+        onRemove={(i) => handleRemove(photos[i])}
+        removeAriaLabel={() => `ลบ${label}`}
+      />
     </div>
   );
 }

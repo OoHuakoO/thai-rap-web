@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { Eye, Pencil, Trash2, Store as StoreIcon } from 'lucide-react';
 import { DataTable } from '@/components/shared/data-table';
 import { StatusBadge, type StatusVariant } from '@/components/shared/status-badge';
 import { useConfirm } from '@/components/shared/confirm-dialog';
@@ -66,18 +66,19 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
     {
       key: 'name',
       header: 'ชื่อร้าน',
+      className: 'text-center',
       cell: (row) => (
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-orange to-orange-light text-base text-white">
-            {row.logoUrl ? (
+        <div className="flex items-center justify-center gap-2.5">
+          <div className="flex h-9 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted">
+            {row.coverUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={buildFileUrl(row.logoUrl)}
+                src={buildFileUrl(row.coverUrl)}
                 alt={row.name}
                 className="h-full w-full object-cover"
               />
             ) : (
-              '🍜'
+              <StoreIcon className="h-4 w-4 text-muted-foreground/60" />
             )}
           </div>
           <div className="min-w-0">
@@ -86,11 +87,12 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
         </div>
       ),
     },
-    { key: 'province', header: 'จังหวัด' },
-    { key: 'storeType', header: 'ประเภท' },
+    { key: 'province', header: 'จังหวัด', className: 'text-center' },
+    { key: 'storeType', header: 'ประเภท', className: 'text-center' },
     {
       key: 'status',
       header: 'สถานะ',
+      className: 'text-center',
       cell: (row) => (
         <StatusBadge status={STATUS_VARIANT[row.status]} label={STORE_STATUS_LABELS[row.status]} />
       ),
@@ -98,6 +100,7 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
     {
       key: 'latestScore',
       header: 'คะแนนล่าสุด',
+      className: 'text-center',
       cell: (row) =>
         typeof row.latestScore === 'number' ? (
           <span className="text-sm font-bold text-orange">{row.latestScore.toFixed(2)}</span>
@@ -108,6 +111,7 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
     {
       key: 'latestAssessorName',
       header: 'ผู้ประเมิน',
+      className: 'text-center',
       cell: (row) =>
         row.latestAssessorName ? (
           <div>
@@ -129,8 +133,9 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
     {
       key: 'actions',
       header: 'การจัดการ',
+      className: 'text-center',
       cell: (row) => (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center justify-center gap-1">
           <Button
             variant="outline"
             size="icon"

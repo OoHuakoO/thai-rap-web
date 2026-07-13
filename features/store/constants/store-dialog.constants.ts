@@ -8,8 +8,8 @@ export const STORE_DIALOG_TEXT = {
   deleteStoreDescription: (name: string) =>
     `ต้องการลบร้าน "${name}" ใช่หรือไม่? การลบไม่สามารถกู้คืนได้`,
 
-  deleteLogoTitle: 'ลบโลโก้',
-  deleteLogoDescription: 'ต้องการลบโลโก้ร้านใช่หรือไม่?',
+  deleteCoverTitle: 'ลบหน้าปก',
+  deleteCoverDescription: 'ต้องการลบหน้าปกร้านใช่หรือไม่?',
 
   deleteDocumentTitle: 'ลบเอกสาร',
   deleteDocumentDescription: (fileName: string) => `ต้องการลบเอกสาร "${fileName}" ใช่หรือไม่?`,

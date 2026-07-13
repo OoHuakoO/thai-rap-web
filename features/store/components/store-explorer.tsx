@@ -20,7 +20,7 @@ import { StoreList } from './store-list';
 import { StoreDetail } from './store-detail';
 import { StoreStatsBar } from './store-stats-bar';
 import { useStores, useStoreStats } from '../hooks/use-stores';
-import { STORE_STATUS_LABELS, STORE_TYPE_OPTIONS } from '../types/store.types';
+import { STORE_STATUS_LABELS } from '../types/store.types';
 import type { StoreStatus, StoreQueryParams } from '../types/store.types';
 
 const STATUS_OPTIONS = Object.entries(STORE_STATUS_LABELS) as [StoreStatus, string][];
@@ -69,11 +69,11 @@ export function StoreExplorer() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-3 shadow-sm">
         <div className="flex items-center gap-2 border-r pr-4">
-          <h1 className="text-lg font-semibold whitespace-nowrap">ข้อมูลร้านอาหาร</h1>
-          <p className="text-sm whitespace-nowrap text-muted-foreground">Restaurant Profiles</p>
+          <h1 className="whitespace-nowrap text-lg font-semibold">ข้อมูลร้านอาหาร</h1>
+          <p className="whitespace-nowrap text-sm text-muted-foreground">Restaurant Profiles</p>
         </div>
 
-        <div className="relative w-72">
+        <div className="relative w-56">
           <Input
             value={search}
             onChange={(e) => {
@@ -111,7 +111,7 @@ export function StoreExplorer() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">ทั้งหมด</SelectItem>
-              {STORE_TYPE_OPTIONS.map((t) => (
+              {(stats?.storeTypes ?? []).map((t) => (
                 <SelectItem key={t} value={t}>
                   {t}
                 </SelectItem>
