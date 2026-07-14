@@ -83,6 +83,9 @@ export const storeHandlers = [
 
   http.get(`${BASE_URL}/stats`, ({ request }) => {
     const scenario = getScenario(request);
+    // API forbids ENTREPRENEUR from this endpoint (403 PERM_001) — simulate via
+    // X-Mock-Scenario: forbidden, same as every other write/read gate below.
+    if (scenario === 'forbidden') return forbidden();
     if (scenario === 'server-error') return serverError();
 
     const stores = storeDb.getAll();

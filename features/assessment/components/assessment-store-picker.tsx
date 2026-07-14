@@ -14,7 +14,8 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/utils/cn';
 import { ROUTES } from '@/constants/routes';
-import { useStores, useStoreStats } from '@/features/store';
+import { useStores } from '@/features/store';
+import { useProvinces } from '@/features/province';
 import { STORE_PICKER_TEXT } from '../constants/assessment-text.constants';
 import type { Round } from '../types/assessment.types';
 
@@ -35,7 +36,7 @@ export function AssessmentStorePicker({ storeId, storeName, round }: AssessmentS
     ...(search && { search }),
     ...(province !== 'ALL' && { province }),
   });
-  const { data: stats } = useStoreStats();
+  const { data: provinces } = useProvinces();
 
   return (
     <div className="flex items-end gap-2">
@@ -99,9 +100,9 @@ export function AssessmentStorePicker({ storeId, storeName, round }: AssessmentS
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">{STORE_PICKER_TEXT.allProvinces}</SelectItem>
-            {(stats?.byProvince ?? []).map((p) => (
-              <SelectItem key={p.province} value={p.province}>
-                {p.province}
+            {(provinces ?? []).map((p) => (
+              <SelectItem key={p.id} value={p.nameTh}>
+                {p.nameTh}
               </SelectItem>
             ))}
           </SelectContent>

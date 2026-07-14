@@ -31,7 +31,7 @@ export function StoreStatsBar() {
   return (
     <div className="flex flex-col items-stretch gap-3 xl:flex-row">
       <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="flex h-full items-center gap-3 rounded-xl border bg-card p-3 shadow-sm">
+        <div className="flex h-full items-start gap-3 rounded-xl border bg-card p-3 shadow-sm">
           <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-orange sm:h-16 sm:w-16">
             <Store className="h-7 w-7 text-white sm:h-9 sm:w-9" />
           </div>
@@ -56,7 +56,7 @@ export function StoreStatsBar() {
           </div>
         </div>
 
-        <div className="flex h-full items-center gap-3 rounded-xl border bg-card p-3 shadow-sm">
+        <div className="flex h-full items-start gap-3 rounded-xl border bg-card p-3 shadow-sm">
           <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-orange sm:h-16 sm:w-16">
             <ClipboardList className="h-7 w-7 text-white sm:h-9 sm:w-9" />
           </div>
@@ -70,7 +70,7 @@ export function StoreStatsBar() {
           </div>
         </div>
 
-        <div className="flex h-full items-center gap-3 rounded-xl border bg-card p-3 shadow-sm">
+        <div className="flex h-full items-start gap-3 rounded-xl border bg-card p-3 shadow-sm">
           <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-purple-banner sm:h-16 sm:w-16">
             <ClipboardCheck className="h-7 w-7 text-white sm:h-9 sm:w-9" />
           </div>
@@ -84,7 +84,7 @@ export function StoreStatsBar() {
           </div>
         </div>
 
-        <div className="flex h-full items-center gap-3 rounded-xl border bg-card p-3 shadow-sm">
+        <div className="flex h-full items-start gap-3 rounded-xl border bg-card p-3 shadow-sm">
           <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-score-green sm:h-16 sm:w-16">
             <Trophy className="h-7 w-7 text-white sm:h-9 sm:w-9" />
           </div>
