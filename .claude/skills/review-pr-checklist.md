@@ -6,6 +6,38 @@ Do not skip any checklist item.
 
 If an item is not applicable, explicitly mark it as N/A.
 
+Each section maps to a rule file in `.claude/rules/` — cite it when flagging
+a violation rather than asserting a generic best practice.
+
+---
+
+# UI Copy & Hardcoded Values ([text-constants.md](../rules/text-constants.md), [no-hardcode.md](../rules/no-hardcode.md))
+
+* [ ] No raw Thai/English string literal inside JSX.
+* [ ] Dynamic copy is a function in the constants file, not a template string in the component.
+* [ ] Zod validation messages come from `<SCOPE>_VALIDATION_MESSAGES`, not inlined.
+* [ ] Routes use `ROUTES.*`, not raw path strings.
+* [ ] Query keys use the feature's `<name>Keys` object, not raw arrays.
+* [ ] Colors in JS/dynamic styles use `colors` from `@/styles/tokens`, not hex literals.
+
+---
+
+# File Uploads ([file-upload-patterns.md](../rules/file-upload-patterns.md)) — N/A if PR has none
+
+* [ ] Service method named for what it uploads, not a generic `upload()`.
+* [ ] Picker vs Manager shape matches where the upload happens.
+* [ ] Delete goes through `useConfirm`, not a bare click.
+* [ ] `e.target.value = ''` reset after reading the file.
+* [ ] File size validated client-side before upload.
+
+---
+
+# MSW Handlers ([msw-patterns.md](../rules/msw-patterns.md)) — N/A if PR has none
+
+* [ ] One handler file per domain, using factories/fixtures.
+* [ ] All 4 error scenarios (`X-Mock-Scenario`) supported.
+* [ ] Registered in `mocks/handlers/index.ts`.
+
 ---
 
 # Feature Completeness

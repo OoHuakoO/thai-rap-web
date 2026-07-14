@@ -8,7 +8,7 @@ import { StatusBadge, type StatusVariant } from '@/components/shared/status-badg
 import { useConfirm } from '@/components/shared/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
-import { useAuthStore } from '@/stores/useAuthStore';
+import { useAuthStore } from '@/stores/auth-store';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { buildFileUrl } from '@/utils/build-file-url';
 import { cn } from '@/utils/cn';

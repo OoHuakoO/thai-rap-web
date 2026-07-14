@@ -18,11 +18,17 @@ Each feature is a self-contained module:
 ```
 features/<feature-name>/
 ├── components/          UI components for this feature
-├── hooks/               TanStack Query hooks
-├── services/            API calls (uses shared @/services/api)
-├── types/               TypeScript types and Zod schemas
-└── index.ts             Public barrel export
+├── constants/           *.constants.ts — labels, options, form text (see text-constants.md)
+├── hooks/                TanStack Query hooks
+├── schemas/              *.schema.ts — Zod schemas + inferred form types
+├── services/             API calls (uses shared @/services/api)
+├── types/                TypeScript types, domain models, DTOs
+└── index.ts              Public barrel export
 ```
+
+Not every feature needs every folder — see
+[feature-structure.md](../rules/feature-structure.md). Only create the
+layers this feature actually needs.
 
 Shared infrastructure:
 
@@ -207,17 +213,30 @@ Rules:
 
 ## Step 5: Create the Form Schema
 
-If the feature includes a form, define the Zod schema close to the form component.
+If the feature includes a form, create `features/<name>/schemas/<name>.schema.ts`
+per [feature-structure.md](../rules/feature-structure.md) — schemas get their
+own folder, they don't live in `types/` or inline in the component.
 
-If shared across multiple forms, place it in `features/<name>/types/<name>.types.ts`.
+Validation messages come from `<SCOPE>_VALIDATION_MESSAGES` in the feature's
+`constants/<name>-form.constants.ts`, never inline strings — per
+[text-constants.md](../rules/text-constants.md).
 
 ```ts
-// inside create-product-form.tsx or product.types.ts
+// features/product/constants/product-form.constants.ts
+export const PRODUCT_VALIDATION_MESSAGES = {
+  nameRequired: 'กรุณากรอกชื่อสินค้า',
+  pricePositive: 'ราคาต้องมากกว่า 0',
+} as const
+```
+
+```ts
+// features/product/schemas/product.schema.ts
 import { z } from 'zod'
+import { PRODUCT_VALIDATION_MESSAGES } from '../constants/product-form.constants'
 
 export const createProductSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  price: z.number({ invalid_type_error: 'Price must be a number' }).positive('Price must be positive'),
+  name: z.string().min(1, PRODUCT_VALIDATION_MESSAGES.nameRequired),
+  price: z.number().positive(PRODUCT_VALIDATION_MESSAGES.pricePositive),
   status: z.enum(['active', 'inactive']),
 })
 
@@ -230,6 +249,24 @@ export type CreateProductFormValues = z.infer<typeof createProductSchema>
 
 Create each component as a `'use client'` file in `features/<name>/components/`.
 
+All user-facing copy comes from the feature's `constants/<name>-text.constants.ts`
+per [text-constants.md](../rules/text-constants.md) — never a raw string in
+JSX. Error messages from failed queries/mutations always go through
+`extractErrorMessage()` (`@/utils/extract-error-message`), never
+`error.message` or `error instanceof Error` directly — per
+[error-handling-patterns.md](../rules/error-handling-patterns.md).
+
+```ts
+// features/product/constants/product.constants.ts
+export const PRODUCT_TEXT = {
+  namePlaceholder: 'ชื่อสินค้า',
+  nameLabel: 'ชื่อสินค้า',
+  emptyList: 'ไม่พบสินค้า',
+  createButton: 'เพิ่มสินค้า',
+  creating: 'กำลังเพิ่ม...',
+} as const
+```
+
 ### List Component Pattern
 
 ```tsx
@@ -238,7 +275,9 @@ Create each component as a `'use client'` file in `features/<name>/components/`.
 
 import { Loading } from '@/components/shared/loading'
 import { Card, CardContent } from '@/components/ui/card'
+import { extractErrorMessage } from '@/utils/extract-error-message'
 import { useProducts } from '../hooks/use-products'
+import { PRODUCT_TEXT } from '../constants/product.constants'
 
 export function ProductList() {
   const { data: products, isLoading, isError, error } = useProducts()
@@ -248,13 +287,13 @@ export function ProductList() {
   if (isError) {
     return (
       <p className="py-8 text-center text-destructive">
-        {error instanceof Error ? error.message : 'Failed to load products'}
+        {extractErrorMessage(error)}
       </p>
     )
   }
 
   if (!products?.length) {
-    return <p className="py-8 text-center text-muted-foreground">No products found.</p>
+    return <p className="py-8 text-center text-muted-foreground">{PRODUCT_TEXT.emptyList}</p>
   }
 
   return (
@@ -282,11 +321,14 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { extractErrorMessage } from '@/utils/extract-error-message'
 import { useCreateProduct } from '../hooks/use-products'
-import { createProductSchema, type CreateProductFormValues } from '../types/product.types'
+import { createProductSchema, type CreateProductFormValues } from '../schemas/product.schema'
+import { PRODUCT_TEXT } from '../constants/product.constants'
 
 export function CreateProductForm() {
-  const { mutate: createProduct, isPending } = useCreateProduct()
+  const { mutate: createProduct, isPending, isError, error } = useCreateProduct()
 
   const {
     register,
@@ -303,13 +345,18 @@ export function CreateProductForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="space-y-1">
-        <label className="text-sm font-medium">Name</label>
-        <Input {...register('name')} placeholder="Product name" />
-        {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+      {isError && (
+        <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+          {extractErrorMessage(error)}
+        </p>
+      )}
+      <div className="space-y-1.5">
+        <Label htmlFor="name">{PRODUCT_TEXT.nameLabel}</Label>
+        <Input id="name" {...register('name')} placeholder={PRODUCT_TEXT.namePlaceholder} />
+        {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
       </div>
       <Button type="submit" disabled={isPending} className="w-full">
-        {isPending ? 'Creating...' : 'Create Product'}
+        {isPending ? PRODUCT_TEXT.creating : PRODUCT_TEXT.createButton}
       </Button>
     </form>
   )
@@ -319,9 +366,11 @@ export function CreateProductForm() {
 Component rules:
 - All feature components are `'use client'`
 - Always handle: loading, error, empty states
+- No raw Thai/English string literals in JSX — read from `<SCOPE>_TEXT` constants
+- Query/mutation errors always render via `extractErrorMessage(error)`, never `error.message` directly
 - Use `@/components/ui/*` for primitives
 - Use `@/components/shared/loading` for loading states
-- Import hooks and types relatively
+- Import hooks, schemas, constants, and types relatively
 
 ---
 
@@ -374,10 +423,12 @@ export default function ProductsPage() {
 - [ ] Query keys exported and centralized
 - [ ] Hooks created for all needed operations
 - [ ] Mutation hooks invalidate relevant queries
-- [ ] Zod schema defined (if form exists)
+- [ ] Zod schema defined in `schemas/<name>.schema.ts` (if form exists), validation messages from `<SCOPE>_VALIDATION_MESSAGES`
 - [ ] List component handles loading / error / empty states
 - [ ] Form component handles `isPending` and resets on success
-- [ ] Barrel export created
+- [ ] No raw Thai/English string literals in JSX — all copy from `<SCOPE>_TEXT` constants
+- [ ] Query/mutation errors rendered via `extractErrorMessage(error)`, not `error.message`
+- [ ] Barrel export created — services and raw constants NOT exported from it
 - [ ] Page imports from `@/features/<name>` barrel
 - [ ] No `any` types introduced
 - [ ] No direct axios calls inside components

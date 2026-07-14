@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { useAuthStore, useHasHydrated } from '@/stores/useAuthStore'
+import { useAuthStore, useHasHydrated } from '@/stores/auth-store'
 import { AppShell } from '@/components/layout/app-shell'
 import { Loading } from '@/components/shared/loading'
 import { ROUTES } from '@/constants/routes'

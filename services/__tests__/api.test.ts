@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
 import { API_URL } from '@/constants'
 import { ROUTES } from '@/constants/routes'
-import { useAuthStore } from '@/stores/useAuthStore'
+import { useAuthStore } from '@/stores/auth-store'
 
 vi.mock('sonner', () => ({
   toast: { error: vi.fn(), warning: vi.fn() },

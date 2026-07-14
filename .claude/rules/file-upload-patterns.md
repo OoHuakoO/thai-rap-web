@@ -14,18 +14,18 @@ a generic `upload(url, file)` helper. Always build a `FormData` with key
 
 ```ts
 // ✓ features/store/services/store.service.ts
-uploadLogo: (storeId: string, file: File) => {
+uploadDocument: (storeId: string, file: File) => {
   const form = new FormData()
   form.append('file', file)
   return api
-    .post<string>(`/stores/${storeId}/logo`, form, {
+    .post<StoreDocument>(`/stores/${storeId}/documents`, form, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
     .then((res) => res.data)
 },
 ```
 
-Delete/remove gets its own method too (`deleteLogo`, `deletePhoto`) — don't
+Delete/remove gets its own method too (`deleteDocument`, `deleteCover`) — don't
 overload one method with a boolean flag to switch between upload/delete.
 
 ---
@@ -51,18 +51,24 @@ interface XPickerProps {
 
 ### 2. Manager (uploads immediately against an existing entity)
 
-Used on edit/detail pages via `StoreLogoManager`, `StorePhotoGalleryManager`,
+Used on edit/detail pages via `StorePhotoGalleryManager`,
 `StoreDocumentManager` — the entity already has an id, so selecting a file
 calls the upload hook directly, no buffering.
 
 ```tsx
-const { mutate: uploadLogo, isPending: isUploading } = useUploadStoreLogo(storeId);
+const { mutate: uploadDocument, isPending: isUploading } = useUploadStoreDocument(storeId);
 
 <input
   type="file"
   onChange={(e) => {
     const file = e.target.files?.[0];
-    if (file) uploadLogo(file, { onError: (err) => toast.error(extractErrorMessage(err)) });
+    if (file) {
+      if (!isFileSizeValid(file)) {
+        toast.error(fileTooLargeMessage(file));
+        return;
+      }
+      uploadDocument(file, { onError: (err) => toast.error(extractErrorMessage(err)) });
+    }
     e.target.value = '';
   }}
 />
@@ -80,8 +86,8 @@ this project:
 
 | Purpose | `accept` value |
 |---|---|
-| Images only (logo, storefront photo, menu photo) | `image/jpeg,image/png,image/webp` |
-| Documents (registration docs, evidence attachments) | `image/jpeg,image/png,image/webp,application/pdf,.xlsx` |
+| Images only (storefront photo, menu photo, cover) | `image/jpeg,image/png,image/webp` |
+| Documents (registration docs, evidence attachments) | `application/pdf,.xlsx,.docx,.csv` |
 
 If a new file kind needs a genuinely different set, add it here first, don't
 just type a new string inline.
@@ -96,15 +102,15 @@ Every delete goes through the confirm dialog (`useConfirm` from
 ```tsx
 const confirm = useConfirm();
 
-const handleDeleteLogo = async () => {
+const handleDeleteDocument = async (doc: StoreDocument) => {
   const confirmed = await confirm({
-    title: STORE_DIALOG_TEXT.deleteLogoTitle,
-    description: STORE_DIALOG_TEXT.deleteLogoDescription,
+    title: STORE_DIALOG_TEXT.deleteDocumentTitle,
+    description: STORE_DIALOG_TEXT.deleteDocumentDescription(doc.filename),
     confirmLabel: STORE_DIALOG_TEXT.deleteConfirmLabel,
     variant: 'destructive',
   });
   if (!confirmed) return;
-  deleteLogo(undefined, { onError: (err) => toast.error(extractErrorMessage(err)) });
+  deleteDocument(doc.id, { onError: (err) => toast.error(extractErrorMessage(err)) });
 };
 ```
 
@@ -150,33 +156,46 @@ all — render the server URL through `buildFileUrl()` (`@/utils/build-file-url`
 
 ---
 
-## Gap: No Client-Side Size Limit Today
+## Client-Side Size Limit
 
-No component in this codebase validates file size before upload — the
-`<input accept=...>` only restricts MIME type, and an oversized file is
-discovered only when the server rejects it. This is a known gap, not an
-established pattern to copy.
-
-When you add or touch an upload component, add a size check before calling
-the upload mutation:
+Every upload component validates file size before calling the upload
+mutation, using the shared helpers from `utils/validate-file-size.ts`
+(`MAX_FILE_SIZE_BYTES` comes from `constants/`, per
+[no-hardcode.md](no-hardcode.md) — never a locally redefined limit):
 
 ```ts
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB — confirm limit with backend
+import { isFileSizeValid, fileTooLargeMessage } from '@/utils/validate-file-size'
 
-if (file.size > MAX_FILE_SIZE_BYTES) {
-  toast.error(`ไฟล์ใหญ่เกินไป (สูงสุด ${formatFileSize(MAX_FILE_SIZE_BYTES)})`);
+if (!isFileSizeValid(file)) {
+  toast.error(fileTooLargeMessage(file));
   return;
 }
 ```
 
-Reuse `formatFileSize()` from `store-media-picker.tsx` (move it to
-`utils/format-file-size.ts` if a second feature needs it — don't duplicate it).
+In the picker shape (multi-file), filter instead of early-returning so one
+oversized file doesn't block the rest of the selection:
+
+```ts
+function filterValidFiles(files: File[]): File[] {
+  const valid: File[] = [];
+  for (const file of files) {
+    if (isFileSizeValid(file)) valid.push(file);
+    else toast.error(fileTooLargeMessage(file));
+  }
+  return valid;
+}
+```
+
+`formatFileSize()` lives in `utils/format-file-size.ts` — import it, don't
+redefine a local copy in the component (this exists as local duplicates in
+`store-media-picker.tsx` and `store-document-manager.tsx` today; treat that
+as a bug to fix when you touch either file, not a pattern to copy).
 
 ---
 
 ## Checklist Before Adding an Upload
 
-- [ ] Service method is named for what it uploads (`uploadLogo`, not `upload`)
+- [ ] Service method is named for what it uploads (`uploadDocument`, not `upload`)
 - [ ] `accept` uses one of the two standard MIME sets above
 - [ ] Picker shape (pre-entity) vs manager shape (post-entity) matches where the upload happens
 - [ ] `e.target.value = ''` reset after reading the file

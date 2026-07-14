@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useAuthStore, useHasHydrated } from '@/stores/useAuthStore'
+import { useAuthStore, useHasHydrated } from '@/stores/auth-store'
 import { refreshAccessToken } from '@/services/api'
 
-// accessToken is memory-only (see useAuthStore.ts), so a reload always loses
+// accessToken is memory-only (see auth-store.ts), so a reload always loses
 // it even though `isAuthenticated` persisted. Trade it back in for a fresh
 // one using the httpOnly refresh cookie before the rest of the app renders
 // authenticated data.

@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { PaginationBar } from '@/components/shared/pagination-bar';
 import { ROUTES } from '@/constants/routes';
 import { useDebounce } from '@/hooks/use-debounce';
-import { useAuthStore } from '@/stores/useAuthStore';
+import { useAuthStore } from '@/stores/auth-store';
 import { StoreList } from './store-list';
 import { StoreDetail } from './store-detail';
 import { StoreStatsBar } from './store-stats-bar';

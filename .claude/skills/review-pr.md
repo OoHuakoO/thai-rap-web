@@ -16,6 +16,26 @@ You must evaluate:
 
 Review the PR as a whole system.
 
+The authoritative source for "project convention" throughout this review is
+`.claude/rules/*.md`, not general frontend best practice. Where a step below
+says "existing patterns" or "project architecture," it means these files —
+cite the specific rule file when flagging a violation:
+[feature-structure.md](../rules/feature-structure.md),
+[text-constants.md](../rules/text-constants.md),
+[no-hardcode.md](../rules/no-hardcode.md),
+[naming-conventions.md](../rules/naming-conventions.md),
+[nextjs-app-router.md](../rules/nextjs-app-router.md),
+[error-handling-patterns.md](../rules/error-handling-patterns.md),
+[auth-permissions.md](../rules/auth-permissions.md),
+[shadcn-component-rules.md](../rules/shadcn-component-rules.md),
+[file-upload-patterns.md](../rules/file-upload-patterns.md),
+[msw-patterns.md](../rules/msw-patterns.md),
+[error-pages.md](../rules/error-pages.md),
+[state-management.md](../rules/state-management.md),
+[linting-config.md](../rules/linting-config.md),
+[typescript-advanced.md](../rules/typescript-advanced.md),
+[testing.md](../rules/testing.md).
+
 ---
 
 # Primary Objective
@@ -117,6 +137,31 @@ Flag:
 * Duplicate hooks
 * Duplicate services
 * Duplicate types
+
+---
+
+# Step 4b: UI Copy, Hardcoding, Uploads & Mocks
+
+Check ([text-constants.md](../rules/text-constants.md), [no-hardcode.md](../rules/no-hardcode.md)):
+
+* No raw Thai/English string literal inside JSX — all copy from `<SCOPE>_TEXT` constants
+* No raw path strings — `ROUTES.*` used instead
+* No raw query key arrays — feature's `<name>Keys` object used instead
+
+If the PR touches a file upload flow, check
+([file-upload-patterns.md](../rules/file-upload-patterns.md)):
+
+* Service has a named upload method (`uploadLogo`, not generic `upload`)
+* Picker (pre-entity, buffered) vs Manager (post-entity, immediate) shape matches where the upload happens
+* Delete goes through `useConfirm`, not a bare click
+* Object URLs created in `useEffect`, revoked in cleanup
+* File size validated client-side before the request
+
+If the PR adds/touches an MSW handler, check
+([msw-patterns.md](../rules/msw-patterns.md)):
+
+* One handler file per domain, using factories/fixtures — not hardcoded objects inline
+* All 4 error scenarios (`X-Mock-Scenario`) supported
 
 ---
 

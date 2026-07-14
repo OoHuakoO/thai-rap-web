@@ -18,6 +18,28 @@ Never suggest changes based purely on personal preference.
 
 Prioritize consistency with the existing codebase.
 
+The authoritative rules live in `.claude/rules/*.md`. Every category below
+maps to one or more of them — when a finding contradicts a rule file, cite
+the file, don't just assert a preference:
+
+| Category | Rule file |
+|---|---|
+| Feature folder layout, barrel exports | [feature-structure.md](../rules/feature-structure.md) |
+| Raw strings in JSX, dynamic copy | [text-constants.md](../rules/text-constants.md) |
+| Hardcoded routes/colors/magic numbers/query keys | [no-hardcode.md](../rules/no-hardcode.md) |
+| File/component/hook/type naming | [naming-conventions.md](../rules/naming-conventions.md) |
+| Server vs Client Component split, page structure | [nextjs-app-router.md](../rules/nextjs-app-router.md) |
+| Loading/error/empty state handling | [error-handling-patterns.md](../rules/error-handling-patterns.md) |
+| Route guards, `can()`/`hasRole()` gating | [auth-permissions.md](../rules/auth-permissions.md) |
+| shadcn primitive usage vs raw HTML | [shadcn-component-rules.md](../rules/shadcn-component-rules.md) |
+| File upload/delete flows | [file-upload-patterns.md](../rules/file-upload-patterns.md) |
+| MSW mock handlers | [msw-patterns.md](../rules/msw-patterns.md) |
+| `app/errors/*` status pages | [error-pages.md](../rules/error-pages.md) |
+| Zustand store structure | [state-management.md](../rules/state-management.md) |
+| ESLint/Prettier/import order | [linting-config.md](../rules/linting-config.md) |
+| `import type`, discriminated unions, `as const`/`satisfies` | [typescript-advanced.md](../rules/typescript-advanced.md) |
+| Test coverage and structure | [testing.md](../rules/testing.md) |
+
 ---
 
 # Review Priorities
@@ -219,6 +241,38 @@ Flag:
 * clickable divs
 * missing labels
 * inaccessible forms
+
+---
+
+# UI Copy & Hardcoded Values Review
+
+Check ([text-constants.md](../rules/text-constants.md), [no-hardcode.md](../rules/no-hardcode.md)):
+
+* Raw Thai/English string literals inside JSX
+* Dynamic copy built as a template string in the component instead of a function in the constants file
+* Zod `.min()`/`.email()`/etc. messages inlined instead of from `<SCOPE>_VALIDATION_MESSAGES`
+* Raw path strings instead of `ROUTES.*`
+* Raw query key arrays instead of the feature's `<name>Keys` object
+* Hex colors in JS/dynamic styles instead of `colors` from `@/styles/tokens`
+* Repeated magic numbers without a named constant
+
+Flag:
+
+* `<p>{`ต้องการลบ "${name}"?`}</p>` — should be `<SCOPE>_DIALOG_TEXT.deleteDescription(name)`
+* `z.string().min(1, 'กรุณากรอกชื่อ')` — should reference `<SCOPE>_VALIDATION_MESSAGES`
+* `router.push('/stores')` — should be `router.push(ROUTES.STORES)`
+
+---
+
+# Feature Structure Review
+
+Check ([feature-structure.md](../rules/feature-structure.md)):
+
+* Barrel (`index.ts`) exports only components/hooks/types — never services or raw constants
+* Other features import only via `@/features/<domain>`, never a deep path into another feature's internals
+* Components call hooks, not services directly (except the documented upload-loop exception)
+* Services never import from `components/` or `hooks/`
+* Schemas never import from `services/`
 
 ---
 

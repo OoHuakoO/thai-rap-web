@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuthStore, useHasHydrated } from '@/stores/useAuthStore'
+import { useAuthStore, useHasHydrated } from '@/stores/auth-store'
 import { Loading } from '@/components/shared/loading'
 import { getDefaultRouteForRole } from '@/constants/nav-config'
 

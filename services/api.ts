@@ -3,7 +3,7 @@ import type { InternalAxiosRequestConfig } from 'axios'
 import { toast } from 'sonner'
 import { API_URL, API_TIMEOUT_MS, HTTP_STATUS } from '@/constants'
 import { ROUTES } from '@/constants/routes'
-import { useAuthStore } from '@/stores/useAuthStore'
+import { useAuthStore } from '@/stores/auth-store'
 import type { AuthTokens } from '@/features/auth/types/auth-response.types'
 import { mapToApiError } from './error-mapper'
 

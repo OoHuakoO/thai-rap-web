@@ -103,10 +103,28 @@ export default function <Name>Error({ error, reset }: ErrorProps) {
 
 ---
 
-## Step 5: Add to Navigation (if needed)
+## Step 5: Register the Route
 
 Check `constants/routes.ts` — add the new route constant.
 Check `components/layout/sidebar.tsx` — add nav item if this is a primary route.
+
+If this page lives under `app/(dashboard)/` — i.e. it requires
+authentication — three files must be updated together per
+[auth-permissions.md](../rules/auth-permissions.md)'s "Adding a new
+protected route" section. Missing one leaves either a broken nav link or an
+unguarded page:
+
+1. `constants/routes.ts` — the `ROUTES` entry (done above).
+2. `constants/permissions.ts` — add `{ path, requiredPermission }` to
+   `ROUTE_PERMISSIONS`. This is what actually blocks access — a user can
+   type the URL directly even if it's not in the nav.
+3. `constants/nav-config.ts` — add a `NAV_ITEMS` entry with `allowedRoles`
+   matching whichever roles have `requiredPermission` in `ROLE_PERMISSIONS`.
+   This only controls whether the link is shown, not access.
+
+A page under `app/(auth)/` (login, register) needs none of this — that
+layout redirects *away* if already authenticated, it doesn't gate on
+permissions.
 
 ---
 
@@ -119,4 +137,6 @@ Check `components/layout/sidebar.tsx` — add nav item if this is a primary rout
 - [ ] `error.tsx` added if route needs error boundary
 - [ ] Route constant added to `constants/routes.ts`
 - [ ] Nav item added to sidebar if applicable
+- [ ] If under `app/(dashboard)/`: `ROUTE_PERMISSIONS` entry added in `constants/permissions.ts`
+- [ ] If under `app/(dashboard)/`: `NAV_ITEMS` entry added in `constants/nav-config.ts` with correct `allowedRoles`
 - [ ] TypeScript passes with zero errors

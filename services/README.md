@@ -92,7 +92,7 @@ backend ห่อ response สำเร็จเป็น `{ success: true, data
 |---|---|---|
 | เก็บที่ไหน | memory — `useAuthStore` state (zustand) | httpOnly cookie ฝั่ง backend set ให้ |
 | JS อ่าน/เขียนได้ไหม | ได้ (`useAuthStore.getState().accessToken`) | **ไม่ได้เลย** — httpOnly กันสคริปต์ทุกชนิดแตะ |
-| persist ข้าม reload ไหม | ไม่ — `partialize` ใน `useAuthStore.ts` ตัด field นี้ออกจาก localStorage เจตนา | ได้ — คุณสมบัติของ cookie เอง (อยู่ยัน expire หรือ browser ปิด ถ้าไม่ใช่ session cookie) |
+| persist ข้าม reload ไหม | ไม่ — `partialize` ใน `auth-store.ts` ตัด field นี้ออกจาก localStorage เจตนา | ได้ — คุณสมบัติของ cookie เอง (อยู่ยัน expire หรือ browser ปิด ถ้าไม่ใช่ session cookie) |
 | ส่งไปกับ request ยังไง | header `Authorization: Bearer <token>` (request interceptor แนบให้) | อัตโนมัติผ่าน `withCredentials: true` ตอน axios ยิงไป backend origin เดียวกัน |
 | ทำไมเก็บแบบนี้ | อยู่ใน memory ล้วน → ต่อให้มี XSS อ่าน JS ได้ ก็ได้แค่ token อายุสั้น กับหายทันทีที่ reload/ปิด tab | httpOnly → XSS อ่านไม่ได้เลยแม้จะรันโค้ดในหน้าได้ นี่คือตัวที่ "มีค่า" จริง (ใช้ขอ accessToken ใหม่ได้เรื่อยๆ) เลยต้องป้องกันแน่นสุด |
 
@@ -102,7 +102,7 @@ backend ห่อ response สำเร็จเป็น `{ success: true, data
 
 1. `LoginForm`/`RegisterForm` submit → เรียก `useLogin()`/`useRegister()` (`features/auth/hooks/`) → `authService.login()`/`.register()` (`features/auth/services/auth.service.ts`) ยิง `POST /auth/login` หรือ `/auth/register` ผ่าน `api` instance
 2. Backend ตอบกลับ `{ user, tokens: { accessToken, expiresIn } }` (type `AuthResponse` — `features/auth/types/auth-response.types.ts`) **พร้อม** set httpOnly cookie `refreshToken` มาด้วยใน response header (`Set-Cookie`) — คนละช่องทางกับ JSON body เลย ฝั่ง frontend ไม่เห็น ไม่ต้องจัดการอะไร
-3. mutation `onSuccess` (`use-login.ts:15-17`, `use-register.ts:15-17`) เรียก `useAuthStore.getState().login(user, tokens)` → เซฟ `user`, `accessToken`, และคำนวณ `expiresAt = Date.now() + expiresIn * 1000` ไว้ใน memory (`useAuthStore.ts:33-39`)
+3. mutation `onSuccess` (`use-login.ts:15-17`, `use-register.ts:15-17`) เรียก `useAuthStore.getState().login(user, tokens)` → เซฟ `user`, `accessToken`, และคำนวณ `expiresAt = Date.now() + expiresIn * 1000` ไว้ใน memory (`auth-store.ts:33-39`)
 4. redirect เข้าแอป (`router.replace(...)`)
 
 ตั้งแต่ตรงนี้ accessToken อยู่ใน memory แล้ว, refreshToken อยู่ในคุกกี้ของ browser แล้ว — frontend "ไม่รู้" ค่า refreshToken เลยตลอดชีวิต session
@@ -140,7 +140,7 @@ window.location.href = `${ROUTES.LOGIN}?returnUrl=...`   // hard redirect จำ
 
 ### 5) Reload หน้าเว็บ — accessToken หายแต่ session ยังอยู่
 
-accessToken อยู่ใน memory ล้วน reload ทีเดียวหายหมด แต่ `isAuthenticated`/`user` ยัง persist ใน localStorage อยู่ (`partialize` เก็บแค่สองอันนี้ — `useAuthStore.ts:65-68`) และ refreshToken cookie ก็ยังอยู่ฝั่ง browser เหมือนเดิม `AuthBootstrap` (`app/auth-bootstrap.tsx`, mount ใน `app/providers.tsx:28` ก่อน children ทั้งหมด) จัดการช่วงรอยต่อนี้:
+accessToken อยู่ใน memory ล้วน reload ทีเดียวหายหมด แต่ `isAuthenticated`/`user` ยัง persist ใน localStorage อยู่ (`partialize` เก็บแค่สองอันนี้ — `auth-store.ts:65-68`) และ refreshToken cookie ก็ยังอยู่ฝั่ง browser เหมือนเดิม `AuthBootstrap` (`app/auth-bootstrap.tsx`, mount ใน `app/providers.tsx:28` ก่อน children ทั้งหมด) จัดการช่วงรอยต่อนี้:
 
 ```ts
 useEffect(() => {
