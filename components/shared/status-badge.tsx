@@ -17,14 +17,17 @@ interface StatusBadgeProps {
   className?: string
 }
 
+const scoreGreenClassName = 'border-score-green/20 bg-score-green/10 text-score-green hover:bg-score-green/20'
+const amberClassName = 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100'
+
 const variantClassName: Record<StatusVariant, string> = {
-  pass:     'border-score-green/20 bg-score-green/10 text-score-green hover:bg-score-green/20',
+  pass:     scoreGreenClassName,
   fail:     'border-score-red/20 bg-score-red/10 text-score-red hover:bg-score-red/20',
   new:      'border-orange/20 bg-orange/10 text-orange hover:bg-orange/20',
-  pending:  'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100',
-  active:   'border-score-green/20 bg-score-green/10 text-score-green hover:bg-score-green/20',
+  pending:  amberClassName,
+  active:   scoreGreenClassName,
   inactive: 'border-border bg-muted text-muted-foreground hover:bg-muted/80',
-  warning:  'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100',
+  warning:  amberClassName,
   purple:   'border-purple-banner/20 bg-purple-banner/10 text-purple-banner hover:bg-purple-banner/20',
 }
 

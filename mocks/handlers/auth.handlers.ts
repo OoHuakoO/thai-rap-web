@@ -35,7 +35,7 @@ function conflict(message: string): Response {
 
 function refreshTokenInvalid(): Response {
   return HttpResponse.json<ApiErrorResponse>(
-    { success: false, error: { code: 'AUTH_004', message: 'Refresh token is invalid' } },
+    { success: false, error: { code: 'AUTH_004', message: 'refresh token ไม่ถูกต้อง' } },
     { status: HTTP_STATUS.UNAUTHORIZED }
   );
 }

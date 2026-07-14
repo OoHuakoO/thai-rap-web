@@ -30,7 +30,7 @@ const BASE_URL = `${API_URL}/stores`;
 
 function notFound(): Response {
   return HttpResponse.json<ApiErrorResponse>(
-    { success: false, error: { code: 'STORE_001', message: 'Store not found' } },
+    { success: false, error: { code: 'STORE_001', message: 'ไม่พบร้านค้า' } },
     { status: HTTP_STATUS.NOT_FOUND }
   );
 }

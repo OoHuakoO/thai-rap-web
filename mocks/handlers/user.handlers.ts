@@ -15,9 +15,9 @@ import { API_URL } from '@/constants';
 
 const BASE_URL = `${API_URL}/users`;
 
-function notFound(entity = 'Resource'): Response {
+function notFound(message = 'ไม่พบข้อมูล'): Response {
   return HttpResponse.json<ApiErrorResponse>(
-    { success: false, error: { code: 'DB_002', message: `${entity} not found` } },
+    { success: false, error: { code: 'DB_002', message } },
     { status: HTTP_STATUS.NOT_FOUND }
   );
 }
@@ -70,7 +70,7 @@ export const userHandlers = [
     if (scenario === 'server-error') return serverError();
 
     const user = userDb.findById(params.id as string);
-    if (!user) return notFound('User');
+    if (!user) return notFound('ไม่พบผู้ใช้งาน');
     return HttpResponse.json<User>(user);
   }),
 
@@ -104,7 +104,7 @@ export const userHandlers = [
 
     const body = (await request.json()) as Partial<CreateUserDto>;
     const updated = userDb.update(params.id as string, body);
-    if (!updated) return notFound('User');
+    if (!updated) return notFound('ไม่พบผู้ใช้งาน');
     return HttpResponse.json<User>(updated);
   }),
 
@@ -116,7 +116,7 @@ export const userHandlers = [
     if (scenario === 'server-error') return serverError();
 
     const removed = userDb.remove(params.id as string);
-    if (!removed) return notFound('User');
+    if (!removed) return notFound('ไม่พบผู้ใช้งาน');
     return new HttpResponse(null, { status: HTTP_STATUS.NO_CONTENT });
   }),
 ];

@@ -1,11 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/utils/cn'
+import { getInitials } from '@/utils/get-initials'
 import { ROUTES } from '@/constants/routes'
 import { getNavItemsForRole, getBottomNavItemsForRole } from '@/constants/nav-config'
 import { useAuthStore } from '@/stores/auth-store'
@@ -15,6 +17,54 @@ import { ROLE_LABELS } from '@/types/auth.types'
 
 interface SidebarProps {
   className?: string
+}
+
+interface SidebarNavLinkProps {
+  href: string
+  disabled?: boolean
+  collapsed: boolean
+  labelTh: string
+  padding: string
+  linkClassName: string
+  children: ReactNode
+}
+
+function SidebarNavLink({
+  href,
+  disabled,
+  collapsed,
+  labelTh,
+  padding,
+  linkClassName,
+  children,
+}: SidebarNavLinkProps) {
+  const title = disabled
+    ? collapsed
+      ? `${labelTh} (ยังไม่เปิดใช้งาน)`
+      : 'ยังไม่เปิดใช้งาน'
+    : collapsed
+      ? labelTh
+      : undefined
+
+  const base = cn(
+    'flex items-center gap-2.5 rounded-md transition-colors',
+    padding,
+    collapsed ? 'justify-center px-0' : 'px-2'
+  )
+
+  if (disabled) {
+    return (
+      <span aria-disabled="true" title={title} className={cn(base, 'cursor-not-allowed text-gray-500 opacity-50')}>
+        {children}
+      </span>
+    )
+  }
+
+  return (
+    <Link href={href} title={title} className={cn(base, linkClassName)}>
+      {children}
+    </Link>
+  )
 }
 
 export function Sidebar({ className }: SidebarProps) {
@@ -75,39 +125,21 @@ export function Sidebar({ className }: SidebarProps) {
             </span>
           )
 
-          if (disabled) {
-            return (
-              <span
-                key={href}
-                aria-disabled="true"
-                title={collapsed ? `${labelTh} (ยังไม่เปิดใช้งาน)` : 'ยังไม่เปิดใช้งาน'}
-                className={cn(
-                  'flex cursor-not-allowed items-center gap-2.5 rounded-md py-1.5 text-gray-500 opacity-50',
-                  collapsed ? 'justify-center px-0' : 'px-2'
-                )}
-              >
-                {iconBox}
-                {labels}
-              </span>
-            )
-          }
-
           return (
-            <Link
+            <SidebarNavLink
               key={href}
               href={href}
-              title={collapsed ? labelTh : undefined}
-              className={cn(
-                'flex items-center gap-2.5 rounded-md py-1.5 transition-colors',
-                collapsed ? 'justify-center px-0' : 'px-2',
-                isActive
-                  ? 'bg-orange text-white'
-                  : 'text-gray-300 hover:bg-white/10 hover:text-white'
-              )}
+              disabled={disabled}
+              collapsed={collapsed}
+              labelTh={labelTh}
+              padding="py-1.5"
+              linkClassName={
+                isActive ? 'bg-orange text-white' : 'text-gray-300 hover:bg-white/10 hover:text-white'
+              }
             >
               {iconBox}
               {labels}
-            </Link>
+            </SidebarNavLink>
           )
         })}
       </nav>
@@ -131,43 +163,24 @@ export function Sidebar({ className }: SidebarProps) {
         <>
           <Separator className="my-1.5 bg-white/10" />
           <nav aria-label="Help navigation" className="flex flex-col gap-0.5">
-            {bottomItems.map(({ label, labelTh, href, icon: Icon, disabled }) => {
-              const content = (
-                <>
-                  <Icon className="h-4 w-4 shrink-0" />
-                  {!collapsed && (
-                    <span className="truncate text-xs font-medium">
-                      {labelTh} / {label}
-                    </span>
-                  )}
-                </>
-              )
-              return disabled ? (
-                <span
-                  key={href}
-                  aria-disabled="true"
-                  title={collapsed ? `${labelTh} (ยังไม่เปิดใช้งาน)` : 'ยังไม่เปิดใช้งาน'}
-                  className={cn(
-                    'flex cursor-not-allowed items-center gap-2.5 rounded-md py-2 text-gray-500 opacity-50',
-                    collapsed ? 'justify-center px-0' : 'px-2'
-                  )}
-                >
-                  {content}
-                </span>
-              ) : (
-                <Link
-                  key={href}
-                  href={href}
-                  title={collapsed ? labelTh : undefined}
-                  className={cn(
-                    'flex items-center gap-2.5 rounded-md py-2 text-gray-300 transition-colors hover:bg-white/10 hover:text-white',
-                    collapsed ? 'justify-center px-0' : 'px-2'
-                  )}
-                >
-                  {content}
-                </Link>
-              )
-            })}
+            {bottomItems.map(({ label, labelTh, href, icon: Icon, disabled }) => (
+              <SidebarNavLink
+                key={href}
+                href={href}
+                disabled={disabled}
+                collapsed={collapsed}
+                labelTh={labelTh}
+                padding="py-2"
+                linkClassName="text-gray-300 hover:bg-white/10 hover:text-white"
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                {!collapsed && (
+                  <span className="truncate text-xs font-medium">
+                    {labelTh} / {label}
+                  </span>
+                )}
+              </SidebarNavLink>
+            ))}
           </nav>
         </>
       )}
@@ -184,7 +197,7 @@ export function Sidebar({ className }: SidebarProps) {
           >
             <Avatar className="h-8 w-8 shrink-0">
               <AvatarFallback className="bg-orange text-xs font-bold text-white">
-                {user.name.charAt(0).toUpperCase()}
+                {getInitials(user.name)}
               </AvatarFallback>
             </Avatar>
             {!collapsed && (

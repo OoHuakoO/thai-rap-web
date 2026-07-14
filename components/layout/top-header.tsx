@@ -9,9 +9,7 @@ import { Bell, ChevronDown, LogOut } from 'lucide-react'
 import { ROLE_LABELS } from '@/types/auth.types'
 import { useLogout } from '@/features/auth'
 import { getCurrentFiscalYearBE } from '@/utils/get-fiscal-year'
-
-// Placeholder until the notifications API exists
-const NOTIFICATION_COUNT = 0
+import { getInitials } from '@/utils/get-initials'
 
 interface TopHeaderProps {
   className?: string
@@ -37,13 +35,8 @@ export function TopHeader({ className }: TopHeaderProps) {
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
-          <Button variant="ghost" size="icon" aria-label="Notifications" className="relative h-8 w-8">
+          <Button variant="ghost" size="icon" aria-label="Notifications" className="h-8 w-8">
             <Bell className="h-4 w-4" />
-            {NOTIFICATION_COUNT > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-orange px-1 text-[8px] font-bold text-white">
-                {NOTIFICATION_COUNT}
-              </span>
-            )}
           </Button>
 
           {user && (
@@ -51,7 +44,7 @@ export function TopHeader({ className }: TopHeaderProps) {
               <div className="flex items-center gap-2">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-gradient-to-br from-orange to-orange-light text-[11px] font-bold text-white">
-                    {user.name.charAt(0).toUpperCase()}
+                    {getInitials(user.name)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="hidden sm:block">

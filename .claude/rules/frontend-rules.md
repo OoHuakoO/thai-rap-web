@@ -7,6 +7,9 @@
 * Prefer consistency over personal preference.
 * Reuse existing components and utilities whenever possible.
 * Do not introduce new libraries unless explicitly requested.
+* Never create a component in `components/shared/` speculatively. Build it in
+  `features/<name>/components/` first; promote it to `components/shared/`
+  only once a second real feature needs the same component.
 
 ---
 
@@ -567,3 +570,42 @@ PageA -> fetch users
 PageB -> fetch users
 PageC -> fetch users
 ```
+
+---
+
+## Shared Component Creation
+
+A component only belongs in `components/shared/` once a second feature
+actually needs it. Generating a "reusable" component before any caller exists
+means no real usage ever validates its props, and it silently rots as dead
+code (unused props, stale patterns) until someone has to notice and delete it.
+
+### DO
+
+Build it where the first consumer lives. Promote to `components/shared/`
+the moment a second feature needs the same thing.
+
+```tsx
+// features/assessment/components/score-badge.tsx
+// used by assessment feature only — stays local
+export function ScoreBadge({ score }: ScoreBadgeProps) { ... }
+```
+
+```tsx
+// Second consumer appears (e.g. ranking feature needs the same badge) —
+// now move it to components/shared/score-badge.tsx and import from both.
+```
+
+### DON'T
+
+Pre-build a "design system" component with no caller yet.
+
+```tsx
+// components/shared/export-panel.tsx
+// written speculatively, zero imports anywhere in the app
+export function ExportPanel({ onExport, showDateRange }: ExportPanelProps) { ... }
+```
+
+Before adding any file to `components/shared/`, name the real caller (file +
+line) that will import it in this same change. "We'll probably need this
+later" is not a caller.

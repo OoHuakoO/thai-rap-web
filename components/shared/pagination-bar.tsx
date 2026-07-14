@@ -68,6 +68,7 @@ export function PaginationBar({
               <PaginationLink
                 href="#"
                 size="icon"
+                aria-label="หน้าก่อนหน้า"
                 aria-disabled={page <= 1}
                 className={page <= 1 ? 'pointer-events-none opacity-40' : ''}
                 onClick={(e) => {
@@ -105,6 +106,7 @@ export function PaginationBar({
               <PaginationLink
                 href="#"
                 size="icon"
+                aria-label="หน้าถัดไป"
                 aria-disabled={page >= totalPages}
                 className={page >= totalPages ? 'pointer-events-none opacity-40' : ''}
                 onClick={(e) => {

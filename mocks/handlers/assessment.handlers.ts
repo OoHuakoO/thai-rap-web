@@ -41,7 +41,7 @@ function conflict(): Response {
   return HttpResponse.json<ApiErrorResponse>(
     {
       success: false,
-      error: { code: 'ASSESS_002', message: 'Assessment already exists for this round' },
+      error: { code: 'ASSESS_002', message: 'มีการประเมินรอบนี้สำหรับร้านนี้อยู่แล้ว' },
     },
     { status: HTTP_STATUS.CONFLICT }
   );
@@ -131,7 +131,7 @@ export const assessmentHandlers = [
       return validationError([{ field: 'notes', message: 'Notes is required' }]);
     }
     const updated = assessmentDb.updateNotes(params.id as string, body.notes);
-    if (!updated) return notFound('ASSESS_001', 'Assessment not found');
+    if (!updated) return notFound('ASSESS_001', 'ไม่พบการประเมิน');
     return HttpResponse.json<Assessment>(updated);
   }),
 
@@ -139,7 +139,7 @@ export const assessmentHandlers = [
     const blocked = guard(request);
     if (blocked) return blocked;
     const assessment = assessmentDb.findById(params.id as string);
-    if (!assessment) return notFound('ASSESS_001', 'Assessment not found');
+    if (!assessment) return notFound('ASSESS_001', 'ไม่พบการประเมิน');
     return HttpResponse.json<Assessment>(assessment);
   }),
 
@@ -171,9 +171,9 @@ export const assessmentHandlers = [
     }
 
     const updated = assessmentDb.updateScore(params.id as string, Number(params.questionId), body);
-    if (!updated) return notFound('ASSESS_001', 'Assessment not found');
+    if (!updated) return notFound('ASSESS_001', 'ไม่พบการประเมิน');
     const question = updated.questions.find((q) => q.questionId === Number(params.questionId));
-    if (!question) return notFound('ASSESS_007', 'Question not found');
+    if (!question) return notFound('ASSESS_007', 'ไม่พบคำถาม');
     return HttpResponse.json<AssessmentQuestion>(question);
   }),
 
@@ -192,7 +192,7 @@ export const assessmentHandlers = [
         fileType: file.type,
         fileSize: file.size,
       });
-      if (!created) return notFound('ASSESS_001', 'Assessment or scored question not found');
+      if (!created) return notFound('ASSESS_001', 'ไม่พบการประเมินหรือคำถามที่ให้คะแนนแล้ว');
       return HttpResponse.json<EvidenceFile>(created, { status: HTTP_STATUS.CREATED });
     }
   ),
@@ -201,7 +201,7 @@ export const assessmentHandlers = [
     const blocked = guard(request);
     if (blocked) return blocked;
     const removed = assessmentDb.removeEvidence(params.id as string, params.evidenceId as string);
-    if (!removed) return notFound('FILE_003', 'Evidence file not found');
+    if (!removed) return notFound('FILE_003', 'ไม่พบไฟล์หลักฐาน');
     return new HttpResponse(null, { status: HTTP_STATUS.NO_CONTENT });
   }),
 
@@ -209,7 +209,7 @@ export const assessmentHandlers = [
     const blocked = guard(request);
     if (blocked) return blocked;
     const updated = assessmentDb.submit(params.id as string);
-    if (!updated) return notFound('ASSESS_001', 'Assessment not found');
+    if (!updated) return notFound('ASSESS_001', 'ไม่พบการประเมิน');
     return HttpResponse.json<Assessment>(updated, { status: HTTP_STATUS.CREATED });
   }),
 
@@ -217,7 +217,7 @@ export const assessmentHandlers = [
     const blocked = guard(request);
     if (blocked) return blocked;
     const removed = assessmentDb.remove(params.id as string);
-    if (!removed) return notFound('ASSESS_001', 'Assessment not found');
+    if (!removed) return notFound('ASSESS_001', 'ไม่พบการประเมิน');
     return new HttpResponse(null, { status: HTTP_STATUS.NO_CONTENT });
   }),
 ];

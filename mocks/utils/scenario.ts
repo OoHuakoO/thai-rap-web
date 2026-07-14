@@ -12,14 +12,14 @@ export function getScenario(request: Request): string {
   return request.headers.get('X-Mock-Scenario') ?? 'success';
 }
 
-export function unauthorized(message = 'Unauthorized'): Response {
+export function unauthorized(message = 'access token ไม่ถูกต้องหรือหมดอายุ'): Response {
   return HttpResponse.json<ApiErrorResponse>(
     { success: false, error: { code: 'AUTH_003', message } },
     { status: HTTP_STATUS.UNAUTHORIZED }
   );
 }
 
-export function forbidden(message = 'Forbidden resource'): Response {
+export function forbidden(message = 'ไม่มีสิทธิ์เข้าถึง'): Response {
   return HttpResponse.json<ApiErrorResponse>(
     { success: false, error: { code: 'PERM_001', message } },
     { status: HTTP_STATUS.FORBIDDEN }
@@ -28,7 +28,7 @@ export function forbidden(message = 'Forbidden resource'): Response {
 
 export function serverError(): Response {
   return HttpResponse.json<ApiErrorResponse>(
-    { success: false, error: { code: 'SYS_001', message: 'Internal server error' } },
+    { success: false, error: { code: 'SYS_001', message: 'เกิดข้อผิดพลาดที่ไม่คาดคิด' } },
     { status: HTTP_STATUS.SERVER_ERROR }
   );
 }
@@ -42,7 +42,7 @@ export function notFound(code: string, message: string): Response {
 
 export function validationError(details: { field: string; message: string }[]): Response {
   return HttpResponse.json<ApiErrorResponse>(
-    { success: false, error: { code: 'VALID_002', message: 'Validation failed', details } },
+    { success: false, error: { code: 'VALID_002', message: 'ข้อมูลไม่ผ่านการตรวจสอบ', details } },
     { status: HTTP_STATUS.UNPROCESSABLE_ENTITY }
   );
 }

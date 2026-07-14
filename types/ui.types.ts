@@ -14,31 +14,6 @@ export interface StatCardData {
   };
 }
 
-// --- ScoreBadge ---
-
-export type ScoreLevel = 'excellent' | 'good' | 'average' | 'poor';
-
-export interface ScoreBadgeData {
-  score: number; // 0–100
-  level: ScoreLevel;
-  label?: string;
-}
-
-// --- RadarChart ---
-
-export interface RadarChartDataPoint {
-  subject: string;
-  value: number;
-  fullMark?: number;
-}
-
-export interface RadarChartSeries {
-  key: string;
-  label: string;
-  color?: string;
-  data: RadarChartDataPoint[];
-}
-
 // --- ProgressBar ---
 
 export type ProgressColor = 'default' | 'success' | 'warning' | 'danger';

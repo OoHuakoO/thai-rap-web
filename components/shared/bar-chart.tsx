@@ -13,9 +13,9 @@ import {
   ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,
-  type ChartConfig,
 } from '@/components/ui/chart'
 import { colors } from '@/styles/tokens'
+import { buildChartConfig } from '@/utils/build-chart-config'
 
 interface BarSeries {
   key: string
@@ -42,13 +42,13 @@ export function BarChart({
   showGrid = true,
   showLegend = true,
 }: BarChartProps) {
-  const chartConfig = series.reduce<ChartConfig>((acc, s, i) => {
-    acc[s.key] = {
-      label: s.label,
-      color: s.color ?? DEFAULT_COLORS[i % DEFAULT_COLORS.length],
-    }
-    return acc
-  }, {})
+  const chartConfig = buildChartConfig(
+    series,
+    (s) => s.key,
+    (s) => s.label,
+    (s) => s.color,
+    DEFAULT_COLORS
+  )
 
   return (
     <ChartContainer config={chartConfig} style={{ height }}>

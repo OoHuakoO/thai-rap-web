@@ -7,9 +7,9 @@ import {
   ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,
-  type ChartConfig,
 } from '@/components/ui/chart'
 import { colors } from '@/styles/tokens'
+import { buildChartConfig } from '@/utils/build-chart-config'
 
 interface DonutSlice {
   label: string
@@ -42,13 +42,13 @@ export function DonutChart({
   height = 260,
   showLegend = true,
 }: DonutChartProps) {
-  const chartConfig = data.reduce<ChartConfig>((acc, slice, i) => {
-    acc[slice.label] = {
-      label: slice.label,
-      color: slice.color ?? DEFAULT_COLORS[i % DEFAULT_COLORS.length],
-    }
-    return acc
-  }, {})
+  const chartConfig = buildChartConfig(
+    data,
+    (slice) => slice.label,
+    (slice) => slice.label,
+    (slice) => slice.color,
+    DEFAULT_COLORS
+  )
 
   return (
     <ChartContainer config={chartConfig} className="mx-auto" style={{ height }}>
