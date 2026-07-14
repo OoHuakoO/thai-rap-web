@@ -4,6 +4,15 @@ import type { ErrorCode } from './api-error'
 import type { ApiErrorResponse } from '@/types/api.types'
 import { HTTP_STATUS } from '@/constants/http-status'
 
+function isApiErrorResponse(data: unknown): data is ApiErrorResponse {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    typeof (data as { error?: unknown }).error === 'object' &&
+    (data as { error?: unknown }).error !== null
+  )
+}
+
 function codeFromStatus(status: number): ErrorCode {
   switch (status) {
     case HTTP_STATUS.BAD_REQUEST: return 'BAD_REQUEST'
@@ -35,7 +44,7 @@ export function mapToApiError(error: unknown): ApiError {
     }
 
     const { status, data, headers } = error.response
-    const body = data as ApiErrorResponse | undefined
+    const body = isApiErrorResponse(data) ? data : undefined
     const retryAfter = headers['retry-after'] ? Number(headers['retry-after']) : undefined
 
     return new ApiError({

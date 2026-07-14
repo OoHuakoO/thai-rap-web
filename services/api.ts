@@ -29,6 +29,12 @@ api.interceptors.request.use(async (config) => {
 
   if (tokenMissingButShouldExist || tokenExpiringSoon) {
     token = await refreshAccessToken()
+    if (!token) {
+      // Refresh already failed once for this request — the reactive 401
+      // handler below would only retry the same doomed refresh, so mark it
+      // pre-retried to skip straight to logout instead of refreshing twice.
+      ;(config as InternalAxiosRequestConfig & { _retry?: boolean })._retry = true
+    }
   }
 
   if (token) {

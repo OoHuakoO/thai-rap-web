@@ -21,25 +21,36 @@ Never handle errors at only one layer and ignore the others.
 
 The Axios interceptor in `services/api.ts` is responsible for:
 
-- Normalizing error shape from the server
-- Handling auth failures (401)
-- Logging unexpected errors in production
+- Normalizing every error into `ApiError` via `mapToApiError()` (`services/error-mapper.ts`)
+- Handling auth failures: refresh-and-retry once on 401, then logout + redirect to login if refresh fails
+- Redirecting on account-of-app-state errors the component layer can't meaningfully recover from (403 → `/403`, 5xx → `/500`, 503 → `/503`)
+- Showing a **global** toast for the two error classes with no per-component recovery (network error, 429 rate-limit) — see exception below
+- Always rejecting with the normalized `ApiError` so the hook/UI layer still gets `isError`/`error` for anything not listed above
 
 ```ts
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    // 401: force logout
-    if (error.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('auth-storage')
-      window.location.href = '/login'
+  async (error) => {
+    const apiError = mapToApiError(error)
+
+    if (apiError.isCancelled) return Promise.reject(apiError)
+
+    if (apiError.isNetworkError) {
+      toast.error(apiError.message, { id: 'network-error' })
+      return Promise.reject(apiError)
     }
-    return Promise.reject(error)
+
+    // 401: refresh once and retry, else logout + redirect (skipped for login/register)
+    // 403 / 5xx / 503: redirect to the matching error page
+    // 429: toast with retry-after seconds
+    // ...
+
+    return Promise.reject(apiError)
   }
 )
 ```
 
-Do NOT show UI feedback from the interceptor — that belongs in the component layer.
+**Exception to "no UI feedback from the interceptor"**: network-error and rate-limit toasts are the interceptor's job, not the component's — both are cross-cutting failures with no component-specific recovery, and gating them behind every call site would mean duplicating the same toast in every hook. Every other status (400, 404, 409, 422, etc.) still rejects with `ApiError` untouched and must be handled inline at the Hook/UI layer per the table below — the interceptor does not show UI feedback for those.
 
 ---
 
