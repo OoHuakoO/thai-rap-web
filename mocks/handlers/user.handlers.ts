@@ -108,7 +108,7 @@ export const userHandlers = [
         {
           success: false,
           error: {
-            code: 'VALID_001',
+            code: 'VALID_002',
             message: 'Validation failed',
             details: [
               ...(!body.name ? [{ field: 'name', message: 'Name is required' }] : []),
