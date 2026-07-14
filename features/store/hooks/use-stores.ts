@@ -26,7 +26,7 @@ export function useStoreStats() {
   // API only allows ADMIN and ENTREPRENEUR on /stores/stats (403 PERM_001 for
   // everyone else) — matches who can open the /stores page. Skip the call for
   // other roles rather than let it fail and retry.
-  const canReadStats = useAuthStore((s) => s.user?.role === 'ADMIN' || s.user?.role === 'ENTREPRENEUR');
+  const canReadStats = useAuthStore((s) => s.hasRole(['ADMIN', 'ENTREPRENEUR']));
   return useQuery({
     queryKey: storeKeys.stats(),
     queryFn: () => storeService.getStats(),

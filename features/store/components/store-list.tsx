@@ -13,6 +13,7 @@ import { extractErrorMessage } from '@/utils/extract-error-message';
 import { buildFileUrl } from '@/utils/build-file-url';
 import { cn } from '@/utils/cn';
 import { STORE_DIALOG_TEXT } from '../constants/store-dialog.constants';
+import { STORE_LIST_TEXT } from '../constants/store-list.constants';
 import { useStores, useDeleteStore } from '../hooks/use-stores';
 import { STORE_STATUS_LABELS } from '../types/store.types';
 import type { Store, StoreStatus, StoreQueryParams } from '../types/store.types';
@@ -65,7 +66,7 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
   const columns: TableColumn<Store>[] = [
     {
       key: 'name',
-      header: 'ชื่อร้าน',
+      header: STORE_LIST_TEXT.nameHeader,
       className: 'text-center',
       cell: (row) => (
         <div className="flex items-center justify-center gap-2.5">
@@ -87,11 +88,11 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
         </div>
       ),
     },
-    { key: 'province', header: 'จังหวัด', className: 'text-center' },
-    { key: 'storeType', header: 'ประเภท', className: 'text-center' },
+    { key: 'province', header: STORE_LIST_TEXT.provinceHeader, className: 'text-center' },
+    { key: 'storeType', header: STORE_LIST_TEXT.storeTypeHeader, className: 'text-center' },
     {
       key: 'status',
-      header: 'สถานะ',
+      header: STORE_LIST_TEXT.statusHeader,
       className: 'text-center',
       cell: (row) => (
         <StatusBadge status={STATUS_VARIANT[row.status]} label={STORE_STATUS_LABELS[row.status]} />
@@ -99,7 +100,7 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
     },
     {
       key: 'latestScore',
-      header: 'คะแนนล่าสุด',
+      header: STORE_LIST_TEXT.latestScoreHeader,
       className: 'text-center',
       cell: (row) =>
         typeof row.latestScore === 'number' ? (
@@ -110,7 +111,7 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
     },
     {
       key: 'latestAssessorName',
-      header: 'ผู้ประเมิน',
+      header: STORE_LIST_TEXT.latestAssessorHeader,
       className: 'text-center',
       cell: (row) =>
         row.latestAssessorName ? (
@@ -132,7 +133,7 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
     },
     {
       key: 'actions',
-      header: 'การจัดการ',
+      header: STORE_LIST_TEXT.actionsHeader,
       className: 'text-center',
       cell: (row) => (
         <div className="flex items-center justify-center gap-1">
@@ -145,7 +146,7 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
             )}
             asChild
           >
-            <Link href={ROUTES.STORE_DETAIL(row.id)} title="ดูรายละเอียดเต็ม">
+            <Link href={ROUTES.STORE_DETAIL(row.id)} title={STORE_LIST_TEXT.viewDetailTitle}>
               <Eye className="h-3.5 w-3.5" />
             </Link>
           </Button>
@@ -153,7 +154,7 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
             <Button variant="outline" size="icon" className="h-7 w-7" asChild>
               <Link
                 href={ROUTES.STORE_EDIT(row.id)}
-                title="แก้ไขร้าน"
+                title={STORE_LIST_TEXT.editStoreTitle}
                 onClick={(e) => e.stopPropagation()}
               >
                 <Pencil className="h-3.5 w-3.5" />
@@ -166,7 +167,7 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
               size="icon"
               className="h-7 w-7 border-destructive/30 text-destructive hover:bg-destructive/10"
               disabled={isDeleting}
-              title="ลบร้าน"
+              title={STORE_LIST_TEXT.deleteStoreTitle}
               onClick={(e) => {
                 e.stopPropagation();
                 handleDelete(row.id, row.name);
@@ -186,7 +187,7 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
       data={data?.items ?? []}
       keyField="id"
       isLoading={isLoading}
-      emptyMessage="ยังไม่มีร้านในระบบ"
+      emptyMessage={STORE_LIST_TEXT.emptyMessage}
       className="bg-card"
       onRowClick={onSelect ? (row) => onSelect(row.id) : undefined}
       isRowSelected={selectedId ? (row) => row.id === selectedId : undefined}

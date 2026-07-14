@@ -39,6 +39,8 @@ the file, don't just assert a preference:
 | ESLint/Prettier/import order | [linting-config.md](../rules/linting-config.md) |
 | `import type`, discriminated unions, `as const`/`satisfies` | [typescript-advanced.md](../rules/typescript-advanced.md) |
 | Test coverage and structure | [testing.md](../rules/testing.md) |
+| Token storage, secret handling | [state-management.md](../rules/state-management.md) |
+| 401/403 handling, redirect flow | [error-handling-patterns.md](../rules/error-handling-patterns.md) |
 
 ---
 
@@ -47,12 +49,13 @@ the file, don't just assert a preference:
 Always review in this order:
 
 1. Correctness
-2. Security
+2. Security & Authorization
 3. Architecture
 4. Performance
 5. Maintainability
 6. Accessibility
 7. Style
+8. Testing
 
 ---
 
@@ -77,6 +80,46 @@ Questions:
 
 ---
 
+# Security Review
+
+Check:
+
+* Tokens/secrets persisted to `localStorage` without a `partialize` allowlist ([state-management.md](../rules/state-management.md))
+* `dangerouslySetInnerHTML` or raw HTML injection from user-controlled data
+* Sensitive data (tokens, PII, IDs used for authorization) placed in URL query params
+* Hardcoded API keys/secrets in client-side code (anything shipped to the browser)
+* Zod validation bypassed or weakened on a form that accepts sensitive input
+* 401/403 handling that doesn't match [error-handling-patterns.md](../rules/error-handling-patterns.md) (e.g. a component swallowing an auth error instead of letting the interceptor redirect)
+
+Flag — **Critical** unless noted:
+
+* `persist((set) => ({ accessToken: null, ... }), { name: 'x-storage' })` with no `partialize` — long-lived secret lands in `localStorage`, readable by any XSS
+* `<div dangerouslySetInnerHTML={{ __html: userInput }} />` with no sanitization
+* `const API_KEY = 'sk-...'` inside a component, hook, or service file
+* `router.push(\`/reset?token=${token}\`)` — sensitive token in a URL, logged by browser history/analytics
+* Silent `catch {}` around an auth-related API call that hides a real failure (**High**)
+
+---
+
+# Auth & Permissions Review
+
+Check ([auth-permissions.md](../rules/auth-permissions.md)):
+
+* No inline `user.role === 'X'` / `role === 'Y' || role === 'Z'` checks — must go through `can()`, `hasRole()`, or `hasPermission()`
+* A new protected route has all three of: `ROUTES` entry, `ROUTE_PERMISSIONS` entry, `NAV_ITEMS` entry with matching `allowedRoles`
+* Write/delete controls on a page reachable by more than one role are gated with `can('resource:action')`, not left to the backend alone
+* Route guards (layout-level) wait on `useHasHydrated()` before making a redirect decision or rendering protected content
+* Backend enforcement isn't assumed to be covered just because the UI hides a button
+
+Flag:
+
+* `if (user.role === 'ADMIN') { ... }` anywhere outside `constants/permissions.ts` — **High**
+* A route added to `NAV_ITEMS`/`ROUTES` but missing from `ROUTE_PERMISSIONS` — reachable by typing the URL directly, nav hiding does nothing — **Critical**
+* Delete/edit button rendered unconditionally on a multi-role page with no `can()` check — **High**
+* `if (!isAuthenticated) { router.replace(ROUTES.LOGIN) }` evaluated before `hasHydrated` — logged-in user bounced to login on every reload — **High**
+
+---
+
 # TypeScript Review
 
 Check for:
@@ -98,6 +141,28 @@ Prefer:
 * explicit interfaces
 * inferred return types
 * shared domain types
+
+---
+
+# Linting / Code Quality Review
+
+Check ([linting-config.md](../rules/linting-config.md)):
+
+* Type-only imports use `import type`, not a plain `import`
+* No `any` — `unknown` + narrowing used instead
+* No unused variables (intentionally unused params prefixed `_`)
+* No `console.log` left in committed code
+* No `// @ts-ignore` / `// @ts-nocheck`
+* No `eslint-disable` comment without a specific rule name and justification
+* No `debugger` statements
+* Import order: React/Next → third-party → internal absolute (`@/`) → internal relative
+
+Flag:
+
+* `import { User } from '@/features/user/types/user.types'` where `User` is type-only — should be `import type` — **Low**
+* `console.log(data)` left in a component or hook — **Low**
+* `// eslint-disable-next-line` with no rule name — **Medium**
+* `// @ts-ignore` hiding a real type error — **Medium**
 
 ---
 
@@ -208,6 +273,26 @@ Flag:
 
 ---
 
+# Error Handling Review
+
+Check ([error-handling-patterns.md](../rules/error-handling-patterns.md)):
+
+* Every async operation handles all three states: loading, error, empty
+* Services let errors propagate — never swallow with a `catch` that returns a silent fallback
+* Query hooks expose `isError`/`error`; mutations use `onError` for side effects (toast/log)
+* Error messages go through `extractErrorMessage()` — never a raw error object or `JSON.stringify(error)` rendered to the user
+* Toast vs inline matches the rule's decision table: query fetch error → inline; mutation success → toast; recoverable mutation error → inline near submit; unexpected mutation error → toast; auth expiry → interceptor redirect; route crash → `error.tsx`
+* New route segments with SSR data fetching have an `error.tsx`
+
+Flag:
+
+* `try { await service.create(data) } catch {}` — swallowed error, user never told it failed — **High**
+* `<p>{JSON.stringify(error)}</p>` — raw error object shown to the user — **Medium**
+* Component renders `data` with no `isLoading`/`isError`/empty check first — **High**
+* Mutation with no `onError` and no inline error UI — failure is invisible to the user — **High**
+
+---
+
 # Performance Review
 
 Check:
@@ -241,6 +326,24 @@ Flag:
 * clickable divs
 * missing labels
 * inaccessible forms
+
+---
+
+# shadcn / UI Primitive Review
+
+Check ([shadcn-component-rules.md](../rules/shadcn-component-rules.md)):
+
+* Raw `<div>` styled to look like `Badge`/`Alert`/`Avatar`/`Card` instead of using the shadcn component
+* Recharts used with raw `ResponsiveContainer` instead of `ChartContainer`
+* Files inside `components/ui/*` modified directly instead of wrapped in `components/shared/`
+* A new UI need wasn't checked against `https://ui.shadcn.com/docs/components` before hand-rolling a custom implementation
+* Loading placeholder is a custom spinner/div instead of `Skeleton`/`Loading` from `components/shared/loading.tsx`
+
+Flag:
+
+* `<div className="rounded-full border px-2 py-0.5 text-xs">ผ่าน</div>` — should be `<Badge variant="outline">` — **Low**
+* `<ResponsiveContainer><BarChart>...` without `ChartContainer` — **Medium**
+* Direct edit inside `components/ui/badge.tsx` for one-off styling — should extend via `className` or wrap in `components/shared/` — **Medium**
 
 ---
 
@@ -299,18 +402,38 @@ Suggest:
 
 ---
 
+# Testing Review
+
+Check ([testing.md](../rules/testing.md)):
+
+* Every custom hook (query/mutation), service function, utility function, and Zod schema has a sibling `.test.ts`/`.test.tsx`
+* Form components and components with conditional rendering (loading/error/empty/data) have tests covering each state
+* Hook tests wrap with `QueryClientProvider`, set `retry: false`, use `waitFor` for async assertions
+* Component tests query by role/label/text — `getByTestId` only as a last resort
+* Tests assert observable behavior, not implementation details
+* No test written for a shadcn primitive or a Zustand store definition directly — both are explicitly out of scope per the rule
+
+Flag:
+
+* A new hook in `hooks/use-<x>.ts` or service in `services/<x>.service.ts` with no sibling `.test.ts` — **Medium**
+* A new Zod schema with no test covering at least one valid case and one rejection per validation rule — **Medium**
+* A form component with validation logic and no test asserting the validation message appears — **Medium**
+* Test asserting `expect(component.instance().internalMethod)` or another implementation detail — **Low**
+
+---
+
 # Severity Levels
 
 Critical
 
-* Security issue
+* Security issue (see Security Review — secret/token exposure, XSS, unguarded route reachable by URL)
 * Data corruption
 * Production failure
 
 High
 
 * Major bug
-* Missing authorization
+* Missing authorization (see Auth & Permissions Review — inline role checks, ungated write/delete UI, hydration-race redirect)
 * Broken business flow
 
 Medium
@@ -318,12 +441,16 @@ Medium
 * Maintainability issue
 * Performance concern
 * Architecture violation
+* Missing test coverage for a hook/service/schema (see Testing Review)
+* Swallowed/silent error handling, raw error rendered to user (see Error Handling Review)
+* Raw HTML used where a shadcn primitive exists, `eslint-disable` without justification
 
 Low
 
 * Readability
 * Minor optimization
 * Naming improvements
+* `console.log` left in code, missing `import type`, minor shadcn/UI primitive deviations
 
 ---
 

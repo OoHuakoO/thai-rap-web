@@ -3,21 +3,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Store as StoreIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { TagInput } from '@/components/shared/tag-input';
 import { FieldError } from '@/components/shared/field-error';
 import { useAlert } from '@/components/shared/confirm-dialog';
 import { ROUTES } from '@/constants/routes';
@@ -31,6 +22,7 @@ import { useCreateStore } from '../hooks/use-stores';
 import { storeService } from '../services/store.service';
 import { StoreMediaPicker } from './store-media-picker';
 import { StoreCoverPicker } from './store-cover-picker';
+import { StoreGeneralInfoFields } from './store-general-info-fields';
 import type { Store } from '../types/store.types';
 
 async function uploadSelectedMedia(
@@ -140,9 +132,9 @@ export function CreateStoreForm() {
               <StoreIcon className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-lg font-bold text-charcoal">ข้อมูลทั่วไป</p>
+              <p className="text-lg font-bold text-charcoal">{STORE_FORM_TEXT.generalInfoTitle}</p>
               <p className="text-sm text-muted-foreground">
-                ข้อมูลพื้นฐานและรายละเอียดของร้านอาหาร
+                {STORE_FORM_TEXT.generalInfoDescription}
               </p>
             </div>
           </div>
@@ -160,149 +152,21 @@ export function CreateStoreForm() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="province">{STORE_FORM_TEXT.provinceLabel}</Label>
-              <Controller
-                name="province"
-                control={control}
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger id="province">
-                      <SelectValue placeholder={STORE_FORM_TEXT.provincePlaceholder} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(provinces ?? []).map((p) => (
-                        <SelectItem key={p.id} value={p.nameTh}>
-                          {p.nameTh}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              <FieldError message={errors.province?.message} />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="storeType">{STORE_FORM_TEXT.storeTypeLabel}</Label>
-              <Input
-                id="storeType"
-                {...register('storeType')}
-                placeholder={CREATE_STORE_FORM_TEXT.storeTypePlaceholder}
-              />
-              <FieldError message={errors.storeType?.message} />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="ownerName">{STORE_FORM_TEXT.ownerNameLabel}</Label>
-              <Input
-                id="ownerName"
-                {...register('ownerName')}
-                placeholder={CREATE_STORE_FORM_TEXT.ownerNamePlaceholder}
-              />
-              <FieldError message={errors.ownerName?.message} />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="phone">{STORE_FORM_TEXT.phoneLabel}</Label>
-              <Input
-                id="phone"
-                {...register('phone')}
-                placeholder={CREATE_STORE_FORM_TEXT.phonePlaceholder}
-              />
-              <FieldError message={errors.phone?.message} />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="email">{STORE_FORM_TEXT.emailLabel}</Label>
-              <Input
-                id="email"
-                type="email"
-                {...register('email')}
-                placeholder={CREATE_STORE_FORM_TEXT.emailPlaceholder}
-              />
-              <FieldError message={errors.email?.message} />
-            </div>
-
-            <div className="space-y-1.5 sm:col-span-2">
-              <Label htmlFor="avgRevenueMin">{STORE_FORM_TEXT.avgRevenueLabel}</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="avgRevenueMin"
-                  inputMode="numeric"
-                  {...register('avgRevenueMin')}
-                  placeholder={CREATE_STORE_FORM_TEXT.avgRevenueMinPlaceholder}
-                />
-                <span className="text-muted-foreground">
-                  {STORE_FORM_TEXT.avgRevenueRangeSeparator}
-                </span>
-                <Input
-                  id="avgRevenueMax"
-                  inputMode="numeric"
-                  {...register('avgRevenueMax')}
-                  placeholder={CREATE_STORE_FORM_TEXT.avgRevenueMaxPlaceholder}
-                />
-              </div>
-              <FieldError
-                message={errors.avgRevenueMin?.message ?? errors.avgRevenueMax?.message}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="address">{STORE_FORM_TEXT.addressLabel}</Label>
-            <Textarea
-              id="address"
-              {...register('address')}
-              placeholder={CREATE_STORE_FORM_TEXT.addressPlaceholder}
-            />
-            <FieldError message={errors.address?.message} />
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label>{STORE_FORM_TEXT.mainProblemsLabel}</Label>
-              <Controller
-                name="mainProblems"
-                control={control}
-                render={({ field }) => (
-                  <TagInput
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder={STORE_FORM_TEXT.tagInputPlaceholder}
-                  />
-                )}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>{STORE_FORM_TEXT.goalsLabel}</Label>
-              <Controller
-                name="goals"
-                control={control}
-                render={({ field }) => (
-                  <TagInput
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder={STORE_FORM_TEXT.tagInputPlaceholder}
-                  />
-                )}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>{STORE_FORM_TEXT.socialLabel}</Label>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-              <Input {...register('facebook')} placeholder={STORE_FORM_TEXT.facebookPlaceholder} />
-              <Input {...register('line')} placeholder={STORE_FORM_TEXT.linePlaceholder} />
-              <Input
-                {...register('instagram')}
-                placeholder={STORE_FORM_TEXT.instagramPlaceholder}
-              />
-            </div>
-          </div>
+          <StoreGeneralInfoFields
+            register={register}
+            control={control}
+            errors={errors}
+            provinces={provinces}
+            placeholders={{
+              storeType: CREATE_STORE_FORM_TEXT.storeTypePlaceholder,
+              ownerName: CREATE_STORE_FORM_TEXT.ownerNamePlaceholder,
+              phone: CREATE_STORE_FORM_TEXT.phonePlaceholder,
+              email: CREATE_STORE_FORM_TEXT.emailPlaceholder,
+              avgRevenueMin: CREATE_STORE_FORM_TEXT.avgRevenueMinPlaceholder,
+              avgRevenueMax: CREATE_STORE_FORM_TEXT.avgRevenueMaxPlaceholder,
+              address: CREATE_STORE_FORM_TEXT.addressPlaceholder,
+            }}
+          />
         </div>
 
         <div className="rounded-xl border bg-card p-6 shadow-sm">

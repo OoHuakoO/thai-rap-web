@@ -2,6 +2,7 @@
 
 import { Loading } from '@/components/shared/loading';
 import { extractErrorMessage } from '@/utils/extract-error-message';
+import { STORE_DETAIL_TEXT } from '../constants/store-detail.constants';
 import { useStore } from '../hooks/use-stores';
 import { EditStoreForm } from './edit-store-form';
 
@@ -19,7 +20,7 @@ export function StoreEditPage({ storeId }: StoreEditPageProps) {
   }
 
   if (!store) {
-    return <p className="py-8 text-center text-muted-foreground">ไม่พบร้านนี้</p>;
+    return <p className="py-8 text-center text-muted-foreground">{STORE_DETAIL_TEXT.notFound}</p>;
   }
 
   return <EditStoreForm store={store} />;

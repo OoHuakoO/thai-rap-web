@@ -20,6 +20,7 @@ import { StoreList } from './store-list';
 import { StoreDetail } from './store-detail';
 import { StoreStatsBar } from './store-stats-bar';
 import { useStores, useStoreStats } from '../hooks/use-stores';
+import { STORE_EXPLORER_TEXT } from '../constants/store-explorer.constants';
 import { STORE_STATUS_LABELS } from '../types/store.types';
 import type { StoreStatus, StoreQueryParams } from '../types/store.types';
 
@@ -69,8 +70,12 @@ export function StoreExplorer() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-card p-3 shadow-sm">
         <div className="flex items-center gap-2 border-r pr-4">
-          <h1 className="whitespace-nowrap text-lg font-semibold">ข้อมูลร้านอาหาร</h1>
-          <p className="whitespace-nowrap text-sm text-muted-foreground">Restaurant Profiles</p>
+          <h1 className="whitespace-nowrap text-lg font-semibold">
+            {STORE_EXPLORER_TEXT.pageTitle}
+          </h1>
+          <p className="whitespace-nowrap text-sm text-muted-foreground">
+            {STORE_EXPLORER_TEXT.pageSubtitle}
+          </p>
         </div>
 
         <div className="relative w-56">
@@ -80,20 +85,22 @@ export function StoreExplorer() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            placeholder="ค้นหาชื่อร้าน, เจ้าของ, เบอร์โทร..."
+            placeholder={STORE_EXPLORER_TEXT.searchPlaceholder}
             className="pr-8"
           />
           <Search className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
         </div>
 
         <div className="flex h-10 w-48 items-center gap-1.5 rounded-md border border-input bg-background px-2.5">
-          <span className="whitespace-nowrap text-xs text-muted-foreground">จังหวัด</span>
+          <span className="whitespace-nowrap text-xs text-muted-foreground">
+            {STORE_EXPLORER_TEXT.provinceFilterLabel}
+          </span>
           <Select value={province} onValueChange={handleProvinceChange}>
             <SelectTrigger className="h-auto w-full border-0 bg-transparent p-0 shadow-none focus:ring-0 focus:ring-offset-0">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">ทั้งหมด</SelectItem>
+              <SelectItem value="ALL">{STORE_EXPLORER_TEXT.allOptionLabel}</SelectItem>
               {(stats?.byProvince ?? []).map((p) => (
                 <SelectItem key={p.province} value={p.province}>
                   {p.province}
@@ -104,13 +111,15 @@ export function StoreExplorer() {
         </div>
 
         <div className="flex h-10 w-52 items-center gap-1.5 rounded-md border border-input bg-background px-2.5">
-          <span className="whitespace-nowrap text-xs text-muted-foreground">ประเภทร้าน</span>
+          <span className="whitespace-nowrap text-xs text-muted-foreground">
+            {STORE_EXPLORER_TEXT.storeTypeFilterLabel}
+          </span>
           <Select value={storeType} onValueChange={handleStoreTypeChange}>
             <SelectTrigger className="h-auto w-full border-0 bg-transparent p-0 shadow-none focus:ring-0 focus:ring-offset-0">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">ทั้งหมด</SelectItem>
+              <SelectItem value="ALL">{STORE_EXPLORER_TEXT.allOptionLabel}</SelectItem>
               {(stats?.storeTypes ?? []).map((t) => (
                 <SelectItem key={t} value={t}>
                   {t}
@@ -121,7 +130,9 @@ export function StoreExplorer() {
         </div>
 
         <div className="flex h-10 w-56 items-center gap-1.5 rounded-md border border-input bg-background px-2.5">
-          <span className="whitespace-nowrap text-xs text-muted-foreground">สถานะ</span>
+          <span className="whitespace-nowrap text-xs text-muted-foreground">
+            {STORE_EXPLORER_TEXT.statusFilterLabel}
+          </span>
           <Select
             value={status}
             onValueChange={(v) => handleStatusChange(v as StoreStatus | 'ALL')}
@@ -130,7 +141,7 @@ export function StoreExplorer() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">ทั้งหมด</SelectItem>
+              <SelectItem value="ALL">{STORE_EXPLORER_TEXT.allOptionLabel}</SelectItem>
               {STATUS_OPTIONS.map(([value, label]) => (
                 <SelectItem key={value} value={value}>
                   {label}
@@ -144,7 +155,7 @@ export function StoreExplorer() {
           <Button className="ml-auto h-10 flex-shrink-0 gap-1.5" asChild>
             <Link href={ROUTES.STORE_NEW}>
               <Plus className="h-4 w-4" />
-              เพิ่มร้านอาหาร
+              {STORE_EXPLORER_TEXT.addStoreLabel}
             </Link>
           </Button>
         )}
@@ -169,7 +180,7 @@ export function StoreExplorer() {
                 setLimit(l);
                 setPage(1);
               }}
-              itemLabel="ร้าน"
+              itemLabel={STORE_EXPLORER_TEXT.paginationItemLabel}
             />
           )}
         </div>
@@ -180,7 +191,7 @@ export function StoreExplorer() {
           ) : (
             <div className="flex h-full flex-col items-center justify-center gap-2 p-10 text-center text-muted-foreground">
               <span className="text-4xl">🏪</span>
-              <p className="text-sm">เลือกร้านอาหารเพื่อดูรายละเอียด</p>
+              <p className="text-sm">{STORE_EXPLORER_TEXT.noSelectionMessage}</p>
             </div>
           )}
         </div>

@@ -8,6 +8,7 @@ import { extractErrorMessage } from '@/utils/extract-error-message';
 import { buildFileUrl } from '@/utils/build-file-url';
 import { isFileSizeValid, fileTooLargeMessage } from '@/utils/validate-file-size';
 import { STORE_FORM_TEXT } from '../constants/store-form.constants';
+import { STORE_MEDIA_TEXT } from '../constants/store-media.constants';
 import { useUploadStoreCover } from '../hooks/use-stores';
 
 interface StoreCoverManagerProps {
@@ -32,7 +33,7 @@ export function StoreCoverManager({ storeId, coverUrl }: StoreCoverManagerProps)
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={buildFileUrl(coverUrl)}
-            alt="หน้าปกร้าน"
+            alt={STORE_MEDIA_TEXT.coverAlt}
             className="h-full w-full object-cover"
           />
         ) : (

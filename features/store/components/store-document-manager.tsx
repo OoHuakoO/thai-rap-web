@@ -8,8 +8,10 @@ import { useConfirm } from '@/components/shared/confirm-dialog';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { buildFileUrl } from '@/utils/build-file-url';
 import { isFileSizeValid, fileTooLargeMessage } from '@/utils/validate-file-size';
+import { formatFileSize } from '@/utils/format-file-size';
 import { STORE_DIALOG_TEXT } from '../constants/store-dialog.constants';
 import { STORE_FORM_TEXT } from '../constants/store-form.constants';
+import { STORE_MEDIA_TEXT } from '../constants/store-media.constants';
 import { useUploadStoreDocument, useDeleteStoreDocument } from '../hooks/use-stores';
 import type { StoreDocument } from '../types/store.types';
 
@@ -20,12 +22,6 @@ function getDocIcon(fileType: string): { icon: string; className: string } {
   }
   if (fileType.startsWith('image/')) return { icon: '🖼', className: 'bg-blue-100' };
   return { icon: '📝', className: 'bg-blue-100' };
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 interface StoreDocumentManagerProps {
@@ -72,7 +68,7 @@ export function StoreDocumentManager({ storeId, documents }: StoreDocumentManage
           className="flex items-center gap-1 rounded border border-dashed border-border px-1.5 py-0.5 text-[9.5px] text-muted-foreground hover:border-orange hover:text-orange disabled:opacity-50"
         >
           <Upload className="h-2.5 w-2.5" />
-          {isUploading ? 'กำลังอัปโหลด...' : 'แนบไฟล์'}
+          {isUploading ? STORE_MEDIA_TEXT.uploadingLabel : STORE_MEDIA_TEXT.attachFileLabel}
         </button>
         <input
           ref={inputRef}
@@ -108,7 +104,7 @@ export function StoreDocumentManager({ storeId, documents }: StoreDocumentManage
                 <button
                   type="button"
                   onClick={() => handleDeleteDocument(doc)}
-                  aria-label={`ลบเอกสาร ${doc.filename}`}
+                  aria-label={STORE_MEDIA_TEXT.removeDocumentAriaLabel(doc.filename)}
                   className="absolute -right-1 -top-1 hidden h-4 w-4 items-center justify-center rounded-full bg-destructive text-white group-hover:flex"
                 >
                   <X className="h-2.5 w-2.5" />
@@ -118,7 +114,9 @@ export function StoreDocumentManager({ storeId, documents }: StoreDocumentManage
           })}
         </div>
       ) : (
-        <p className="text-[10.5px] text-muted-foreground">ยังไม่มีเอกสารอัปโหลด</p>
+        <p className="text-[10.5px] text-muted-foreground">
+          {STORE_MEDIA_TEXT.documentUploadedEmptyMessage}
+        </p>
       )}
     </div>
   );

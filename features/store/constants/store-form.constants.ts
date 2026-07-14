@@ -12,6 +12,8 @@ export const STORE_VALIDATION_MESSAGES = {
 
 // Shared field labels and placeholders used by both create and edit store forms.
 export const STORE_FORM_TEXT = {
+  generalInfoTitle: 'ข้อมูลทั่วไป',
+  generalInfoDescription: 'ข้อมูลพื้นฐานและรายละเอียดของร้านอาหาร',
   optionalLabel: (label: string) => `${label} (ไม่บังคับ)`,
   coverLabel: 'หน้าปกร้าน (ไม่บังคับ)',
   documentsLabel: 'เอกสารแนบ (ไม่บังคับ)',
@@ -60,4 +62,5 @@ export const EDIT_STORE_FORM_TEXT = {
   submit: 'บันทึกการแก้ไข',
   saving: 'กำลังบันทึก...',
   updateSuccess: 'บันทึกข้อมูลร้านสำเร็จ',
+  mediaSectionDescription: 'จัดการรูปร้านค้า เมนู และเอกสารประกอบร้าน',
 } as const;

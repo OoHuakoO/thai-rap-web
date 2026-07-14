@@ -6,7 +6,10 @@ import { Images, Plus, Upload, X } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { PhotoPreviewGrid } from '@/components/shared/photo-preview-grid';
 import { isFileSizeValid, fileTooLargeMessage } from '@/utils/validate-file-size';
+import { formatFileSize } from '@/utils/format-file-size';
 import { STORE_FORM_TEXT } from '../constants/store-form.constants';
+import { STORE_MEDIA_TEXT } from '../constants/store-media.constants';
+import { STORE_DETAIL_TEXT } from '../constants/store-detail.constants';
 
 function filterValidFiles(files: File[]): File[] {
   const valid: File[] = [];
@@ -41,7 +44,7 @@ function PhotoPickerSection({ label, files, onChange }: PhotoPickerSectionProps)
         <Label>{STORE_FORM_TEXT.optionalLabel(label)}</Label>
         <label className="flex cursor-pointer items-center gap-1 rounded border border-dashed border-border bg-card px-1.5 py-0.5 text-[10.5px] text-muted-foreground hover:border-orange hover:text-orange">
           <Plus className="h-3 w-3" />
-          เพิ่มรูป
+          {STORE_MEDIA_TEXT.addPhotoLabel}
           <input
             type="file"
             multiple
@@ -58,18 +61,12 @@ function PhotoPickerSection({ label, files, onChange }: PhotoPickerSectionProps)
       <PhotoPreviewGrid
         photos={previews}
         alt={label}
-        emptyMessage="ยังไม่มีรูป"
+        emptyMessage={STORE_MEDIA_TEXT.photoEmptyMessage}
         onRemove={(i) => onChange(files.filter((_, idx) => idx !== i))}
-        removeAriaLabel={(i) => `ลบรูป ${i + 1}`}
+        removeAriaLabel={STORE_MEDIA_TEXT.removePhotoAriaLabel}
       />
     </div>
   );
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 interface StoreMediaPickerProps {
@@ -96,18 +93,22 @@ export function StoreMediaPicker({
           <Images className="h-6 w-6" />
         </div>
         <div>
-          <p className="text-lg font-bold text-charcoal">รูปภาพและเอกสาร</p>
-          <p className="text-sm text-muted-foreground">แนบรูปร้านค้า เมนู และเอกสารประกอบร้าน</p>
+          <p className="text-lg font-bold text-charcoal">{STORE_MEDIA_TEXT.sectionTitle}</p>
+          <p className="text-sm text-muted-foreground">{STORE_MEDIA_TEXT.attachDescription}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-3">
         <PhotoPickerSection
-          label="รูปร้านค้า"
+          label={STORE_DETAIL_TEXT.storePhotosTitle}
           files={storePhotoFiles}
           onChange={onStorePhotoFilesChange}
         />
-        <PhotoPickerSection label="ภาพเมนูอาหาร" files={menuFiles} onChange={onMenuFilesChange} />
+        <PhotoPickerSection
+          label={STORE_DETAIL_TEXT.menuPhotosTitle}
+          files={menuFiles}
+          onChange={onMenuFilesChange}
+        />
       </div>
 
       <div className="space-y-2 rounded-lg border bg-muted/20 p-3">
@@ -115,7 +116,7 @@ export function StoreMediaPicker({
           <Label>{STORE_FORM_TEXT.documentsLabel}</Label>
           <label className="flex cursor-pointer items-center gap-1 rounded border border-dashed border-border bg-card px-1.5 py-0.5 text-[10.5px] text-muted-foreground hover:border-orange hover:text-orange">
             <Upload className="h-3 w-3" />
-            แนบไฟล์
+            {STORE_MEDIA_TEXT.attachFileLabel}
             <input
               type="file"
               multiple
@@ -147,7 +148,7 @@ export function StoreMediaPicker({
                 <button
                   type="button"
                   onClick={() => onDocumentFilesChange(documentFiles.filter((_, idx) => idx !== i))}
-                  aria-label={`ลบไฟล์ ${file.name}`}
+                  aria-label={STORE_MEDIA_TEXT.removeFileAriaLabel(file.name)}
                   className="ml-2 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive hover:text-white"
                 >
                   <X className="h-2.5 w-2.5" />
@@ -156,7 +157,9 @@ export function StoreMediaPicker({
             ))}
           </ul>
         ) : (
-          <p className="text-[10.5px] text-muted-foreground">ยังไม่มีเอกสารแนบ</p>
+          <p className="text-[10.5px] text-muted-foreground">
+            {STORE_MEDIA_TEXT.documentAttachEmptyMessage}
+          </p>
         )}
       </div>
     </div>

@@ -11,6 +11,7 @@ import { buildFileUrl } from '@/utils/build-file-url';
 import { isFileSizeValid, fileTooLargeMessage } from '@/utils/validate-file-size';
 import { STORE_DIALOG_TEXT } from '../constants/store-dialog.constants';
 import { STORE_FORM_TEXT } from '../constants/store-form.constants';
+import { STORE_MEDIA_TEXT } from '../constants/store-media.constants';
 import {
   useUploadStorePhoto,
   useDeleteStorePhoto,
@@ -78,7 +79,7 @@ export function StorePhotoGalleryManager({
           className="flex items-center gap-1 rounded border border-dashed border-border px-1.5 py-0.5 text-[9.5px] text-muted-foreground hover:border-orange hover:text-orange disabled:opacity-50"
         >
           <Plus className="h-2.5 w-2.5" />
-          {isUploading ? 'กำลังอัปโหลด...' : 'เพิ่มรูป'}
+          {isUploading ? STORE_MEDIA_TEXT.uploadingLabel : STORE_MEDIA_TEXT.addPhotoLabel}
         </button>
         <input
           ref={inputRef}
@@ -98,7 +99,7 @@ export function StorePhotoGalleryManager({
         alt={label}
         emptyMessage={emptyMessage}
         onRemove={(i) => handleRemove(photos[i])}
-        removeAriaLabel={() => `ลบ${label}`}
+        removeAriaLabel={() => STORE_MEDIA_TEXT.removeLabeledPhotoAriaLabel(label)}
       />
     </div>
   );

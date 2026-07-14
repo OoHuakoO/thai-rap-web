@@ -35,7 +35,9 @@ empty folder "for consistency."
 ```ts
 // features/store/index.ts
 export { StoreList } from './components/store-list';
-export { useStores, useStore, useCreateStore } from './hooks/use-stores';
+export { useStores } from './hooks/use-stores';
+export { useStore } from './hooks/use-store';
+export { useCreateStore } from './hooks/use-create-store';
 export type { Store, CreateStoreDto } from './types/store.types';
 ```
 
@@ -120,15 +122,16 @@ Within a feature specifically:
 | File | Pattern | Example |
 |---|---|---|
 | Component | `<name>.tsx` | `create-store-form.tsx` |
-| Hook file | `use-<domain-plural>.ts` (one file, many exported hooks) | `use-stores.ts` |
+| Hook file | one file per hook, `use-<action>.ts` | `use-login.ts`, `use-create-store.ts` |
 | Service file | `<domain>.service.ts` | `store.service.ts` |
 | Schema file | `<action>.schema.ts` or `<domain>.schema.ts` | `store.schema.ts`, `login.schema.ts` |
 | Types file | `<domain>.types.ts` | `store.types.ts` |
 | Constants file | `<domain>-<purpose>.constants.ts` | `store-form.constants.ts`, `store-dialog.constants.ts` |
 
-Don't split hooks into one-file-per-hook (`use-store.ts`, `use-create-store.ts`, ...) —
-keep all hooks for a domain in a single `use-<domain-plural>.ts` file, matching
-`use-stores.ts`, `use-assessment.ts`, `use-users.ts`.
+Split hooks one-per-file, named for the action the hook performs —
+`use-login.ts`, `use-register.ts`, `use-logout.ts` (`features/auth/hooks/`),
+not a single `use-auth.ts` bundling all three. Keeps each hook's diff small
+and its imports/mocks isolated in tests.
 
 ---
 

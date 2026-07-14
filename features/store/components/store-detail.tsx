@@ -1,21 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { Store as StoreIcon } from 'lucide-react';
-import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Card } from '@/components/ui/card';
 import { Loading } from '@/components/shared/loading';
-import { StatusBadge, type StatusVariant } from '@/components/shared/status-badge';
-import { FacebookIcon, LineIcon, InstagramIcon } from '@/components/shared/brand-icons';
+import type { StatusVariant } from '@/components/shared/status-badge';
 import { ROUTES } from '@/constants/routes';
 import { extractErrorMessage } from '@/utils/extract-error-message';
-import { buildFileUrl } from '@/utils/build-file-url';
 import { useAssessmentSummaries } from '@/features/assessment';
 import { useStore } from '../hooks/use-stores';
 import { STORE_DETAIL_TEXT } from '../constants/store-detail.constants';
 import { STORE_STATUS_LABELS } from '../types/store.types';
 import type { StoreStatus } from '../types/store.types';
+import { StoreCoverGalleryStrip } from './store-cover-gallery-strip';
+import { StoreContactCard } from './store-contact-card';
+import { StoreDetailDocumentsCard } from './store-detail-documents-card';
+import { StoreDetailMenuCard } from './store-detail-menu-card';
+import { StoreProgressTimelineCard, type TimelineStep } from './store-progress-timeline-card';
 
 const STATUS_VARIANT: Record<StoreStatus, StatusVariant> = {
   REGISTERED: 'new',
@@ -43,31 +44,6 @@ const DECIDED_STATUSES: StoreStatus[] = [
 const COMPACT_DOC_LIMIT = 3;
 const COMPACT_MENU_PHOTO_LIMIT = 4;
 const COMPACT_STORE_PHOTO_LIMIT = 4;
-
-function getDocMeta(fileType: string): { label: string; className: string } {
-  if (fileType.includes('pdf')) return { label: 'PDF', className: 'bg-destructive' };
-  if (fileType.includes('spreadsheet') || fileType.includes('excel')) {
-    return { label: 'XLS', className: 'bg-score-green' };
-  }
-  if (fileType.includes('word')) return { label: 'DOC', className: 'bg-blue-600' };
-  if (fileType.startsWith('image/')) return { label: 'IMG', className: 'bg-purple-banner' };
-  return { label: 'FILE', className: 'bg-slate-500' };
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function formatDate(iso: string | null): string {
-  if (!iso) return '';
-  return new Date(iso).toLocaleDateString('th-TH', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-}
 
 interface StoreDetailProps {
   storeId: string;
@@ -98,7 +74,7 @@ export function StoreDetail({ storeId, variant = 'compact' }: StoreDetailProps) 
   const t1SubmittedAt = summaries?.find((s) => s.round === 'T1')?.submittedAt ?? null;
   const decided = DECIDED_STATUSES.includes(store.status);
 
-  const timeline = [
+  const timeline: TimelineStep[] = [
     { label: STORE_DETAIL_TEXT.timelineRegistered, date: store.createdAt, done: true },
     { label: STORE_DETAIL_TEXT.timelineT0, date: t0SubmittedAt, done: !!t0SubmittedAt },
     { label: STORE_DETAIL_TEXT.timelineT1, date: t1SubmittedAt, done: !!t1SubmittedAt },
@@ -121,6 +97,11 @@ export function StoreDetail({ storeId, variant = 'compact' }: StoreDetailProps) 
     : store.menuPhotos;
   const hiddenMenuPhotosCount = store.menuPhotos.length - visibleMenuPhotos.length;
 
+  const openPreview = (url: string, alt: string) => {
+    setPreviewPhoto({ url, alt });
+    setIsPreviewOpen(true);
+  };
+
   return (
     <div className="flex flex-col">
       {/* Store identity — full-width gradient banner (matches edit-page header) */}
@@ -142,302 +123,38 @@ export function StoreDetail({ storeId, variant = 'compact' }: StoreDetailProps) 
       <div className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2">
         {/* Left column */}
         <div className="flex flex-col">
-          {/* Header — cover photo with status badge */}
-          <div className="relative h-40 overflow-hidden rounded-xl">
-            {coverPhoto ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={buildFileUrl(coverPhoto)}
-                alt={store.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-muted">
-                <StoreIcon className="h-12 w-12 text-muted-foreground/60" />
-              </div>
-            )}
-            <StatusBadge
-              status={STATUS_VARIANT[store.status]}
-              label={STORE_STATUS_LABELS[store.status]}
-              className="absolute right-2 top-2 bg-white/90 text-sm shadow-sm backdrop-blur-sm"
-            />
-          </div>
-
-          {/* Store photo gallery strip — always reserves its row so card height stays
-          consistent whether or not a store has extra menuPhotos beyond the cover. */}
-          <div className="mt-2">
-            <div className="flex min-h-14 flex-wrap items-center gap-2">
-              {stripPhotos.length > 0 ? (
-                <>
-                  {visibleStrip.map((url) => (
-                    <button
-                      key={url}
-                      type="button"
-                      onClick={() => {
-                        setPreviewPhoto({
-                          url: buildFileUrl(url),
-                          alt: STORE_DETAIL_TEXT.storePhotoAlt,
-                        });
-                        setIsPreviewOpen(true);
-                      }}
-                      aria-label={STORE_DETAIL_TEXT.viewPhotoLabel(STORE_DETAIL_TEXT.storePhotoAlt)}
-                      className="h-14 w-20 cursor-pointer overflow-hidden rounded-lg"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={buildFileUrl(url)}
-                        alt={STORE_DETAIL_TEXT.storePhotoAlt}
-                        className="h-full w-full object-cover"
-                      />
-                    </button>
-                  ))}
-                  {hiddenStripCount > 0 && (
-                    <Link
-                      href={fullDetailHref}
-                      className="flex h-14 w-20 flex-col items-center justify-center rounded-lg bg-muted text-center text-xs font-semibold text-muted-foreground hover:bg-muted/80"
-                    >
-                      <span className="text-sm">+{hiddenStripCount}</span>
-                      {STORE_DETAIL_TEXT.viewAllLabel}
-                    </Link>
-                  )}
-                </>
-              ) : (
-                <p className="text-[13px] text-muted-foreground">
-                  {STORE_DETAIL_TEXT.storePhotoGalleryEmpty}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Contact info */}
-          <Card className="mt-2 space-y-2 p-2.5 shadow-none">
-            <p className="text-sm font-bold text-charcoal">{STORE_DETAIL_TEXT.contactInfoTitle}</p>
-            <div className="grid grid-cols-[auto_1fr] gap-x-2.5 gap-y-1 text-[13px]">
-              <span className="text-muted-foreground">{STORE_DETAIL_TEXT.ownerNameLabel}</span>
-              <span className="font-medium text-charcoal">{store.ownerName}</span>
-              <span className="text-muted-foreground">{STORE_DETAIL_TEXT.phoneLabel}</span>
-              <span className="font-medium text-charcoal">{store.phone}</span>
-              <span className="text-muted-foreground">{STORE_DETAIL_TEXT.emailLabel}</span>
-              <span className="break-all font-medium text-charcoal">
-                {store.email || STORE_DETAIL_TEXT.emailEmpty}
-              </span>
-              <span className="text-muted-foreground">{STORE_DETAIL_TEXT.addressLabel}</span>
-              <span className="font-medium leading-relaxed text-charcoal">{store.address}</span>
-            </div>
-
-            <div>
-              <span className="text-[13px] text-muted-foreground">
-                {STORE_DETAIL_TEXT.onlineChannelsLabel}
-              </span>
-              {store.socialLinks.facebook ||
-              store.socialLinks.line ||
-              store.socialLinks.instagram ? (
-                <div className="mt-1 flex items-center gap-1.5">
-                  {store.socialLinks.facebook && (
-                    <a
-                      href={store.socialLinks.facebook}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title={STORE_DETAIL_TEXT.facebookTitle}
-                    >
-                      <FacebookIcon className="h-7 w-7" />
-                    </a>
-                  )}
-                  {store.socialLinks.line && (
-                    <a
-                      href={store.socialLinks.line}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title={STORE_DETAIL_TEXT.lineTitle}
-                    >
-                      <LineIcon className="h-7 w-7" />
-                    </a>
-                  )}
-                  {store.socialLinks.instagram && (
-                    <a
-                      href={store.socialLinks.instagram}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title={STORE_DETAIL_TEXT.instagramTitle}
-                    >
-                      <InstagramIcon className="h-7 w-7" />
-                    </a>
-                  )}
-                </div>
-              ) : (
-                <p className="mt-1 text-[13px] text-muted-foreground">
-                  {STORE_DETAIL_TEXT.onlineChannelsEmpty}
-                </p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-[auto_1fr] gap-x-2.5 text-[13px]">
-              <span className="text-muted-foreground">{STORE_DETAIL_TEXT.avgRevenueLabel}</span>
-              {store.avgRevenueMin !== null && store.avgRevenueMax !== null ? (
-                <span className="font-medium text-orange">
-                  {store.avgRevenueMin.toLocaleString()}{' '}
-                  {STORE_DETAIL_TEXT.avgRevenueRangeSeparator}{' '}
-                  {store.avgRevenueMax.toLocaleString()} {STORE_DETAIL_TEXT.currencyUnit}
-                </span>
-              ) : (
-                <span className="text-muted-foreground">{STORE_DETAIL_TEXT.avgRevenueEmpty}</span>
-              )}
-            </div>
-          </Card>
+          <StoreCoverGalleryStrip
+            storeName={store.name}
+            coverPhoto={coverPhoto}
+            statusVariant={STATUS_VARIANT[store.status]}
+            statusLabel={STORE_STATUS_LABELS[store.status]}
+            stripPhotos={stripPhotos}
+            visibleStrip={visibleStrip}
+            hiddenStripCount={hiddenStripCount}
+            fullDetailHref={fullDetailHref}
+            onPreview={openPreview}
+          />
+          <StoreContactCard store={store} />
         </div>
 
         {/* Right column — documents, menu menuPhotos, progress timeline */}
         <div className="space-y-2">
-          <Card className="space-y-1.5 p-2.5 shadow-none">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-bold text-charcoal">{STORE_DETAIL_TEXT.documentsTitle}</p>
-              {isCompact && store.documents.length > 0 && (
-                <Link href={fullDetailHref} className="text-[13px] text-orange hover:underline">
-                  {STORE_DETAIL_TEXT.viewAllLabel}
-                </Link>
-              )}
-            </div>
-            {store.documents.length > 0 ? (
-              <div className="flex min-h-14 flex-wrap items-center gap-2">
-                {visibleDocs.map((doc) => {
-                  const { label, className } = getDocMeta(doc.fileType);
-                  return (
-                    <div key={doc.id} className="w-14 text-center">
-                      <a href={buildFileUrl(doc.url)} target="_blank" rel="noreferrer">
-                        <div
-                          className={`mx-auto flex h-12 w-10 items-center justify-center rounded-md text-[11px] font-bold text-white ${className}`}
-                        >
-                          {label}
-                        </div>
-                      </a>
-                      <p
-                        className="mt-0.5 line-clamp-2 text-[11px] leading-tight text-muted-foreground"
-                        title={`${doc.filename} (${formatFileSize(doc.fileSize)})`}
-                      >
-                        {doc.filename}
-                      </p>
-                    </div>
-                  );
-                })}
-                {hiddenDocsCount > 0 && (
-                  <Link
-                    href={fullDetailHref}
-                    className="flex h-12 w-10 items-center justify-center rounded-md bg-muted text-xs font-semibold text-muted-foreground hover:bg-muted/80"
-                  >
-                    +{hiddenDocsCount}
-                  </Link>
-                )}
-              </div>
-            ) : (
-              <p className="flex min-h-14 items-center text-[13px] text-muted-foreground">
-                {STORE_DETAIL_TEXT.documentsEmpty}
-              </p>
-            )}
-          </Card>
-
-          <Card className="space-y-1.5 p-2.5 shadow-none">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-bold text-charcoal">{STORE_DETAIL_TEXT.menuPhotosTitle}</p>
-              {isCompact && store.menuPhotos.length > 0 && (
-                <Link href={fullDetailHref} className="text-[13px] text-orange hover:underline">
-                  {STORE_DETAIL_TEXT.viewAllLabel}
-                </Link>
-              )}
-            </div>
-            {store.menuPhotos.length > 0 ? (
-              <div className="flex min-h-14 flex-wrap items-center gap-2">
-                {visibleMenuPhotos.map((url) => (
-                  <button
-                    key={url}
-                    type="button"
-                    onClick={() => {
-                      setPreviewPhoto({
-                        url: buildFileUrl(url),
-                        alt: STORE_DETAIL_TEXT.menuPhotoAlt,
-                      });
-                      setIsPreviewOpen(true);
-                    }}
-                    aria-label={STORE_DETAIL_TEXT.viewPhotoLabel(STORE_DETAIL_TEXT.menuPhotoAlt)}
-                    className="h-14 w-14 cursor-pointer overflow-hidden rounded-md"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={buildFileUrl(url)}
-                      alt={STORE_DETAIL_TEXT.menuPhotoAlt}
-                      className="h-full w-full object-cover"
-                    />
-                  </button>
-                ))}
-                {hiddenMenuPhotosCount > 0 && (
-                  <Link
-                    href={fullDetailHref}
-                    className="flex h-14 w-14 flex-col items-center justify-center rounded-md bg-muted text-center text-xs font-semibold text-muted-foreground hover:bg-muted/80"
-                  >
-                    <span className="text-sm">+{hiddenMenuPhotosCount}</span>
-                    {STORE_DETAIL_TEXT.viewAllLabel}
-                  </Link>
-                )}
-              </div>
-            ) : (
-              <p className="flex min-h-14 items-center text-[13px] text-muted-foreground">
-                {STORE_DETAIL_TEXT.menuPhotosEmpty}
-              </p>
-            )}
-          </Card>
-
-          <Card className="space-y-1.5 p-2.5 shadow-none">
-            <p className="text-sm font-bold text-charcoal">
-              {STORE_DETAIL_TEXT.progressStatusTitle}
-            </p>
-            <div>
-              {timeline.map((t, i) => {
-                const isCurrent = i === currentStepIndex;
-                const isLast = i === timeline.length - 1;
-                return (
-                  <div key={t.label} className="flex gap-2">
-                    <div className="flex flex-col items-center">
-                      <span
-                        className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white ${
-                          isCurrent
-                            ? 'bg-purple-banner'
-                            : t.done
-                              ? 'bg-score-green'
-                              : 'border-2 border-border bg-muted'
-                        }`}
-                      >
-                        {t.done ? '✓' : ''}
-                      </span>
-                      {!isLast && (
-                        <span
-                          className={`w-px flex-1 ${t.done ? 'bg-score-green' : 'bg-border'}`}
-                        />
-                      )}
-                    </div>
-                    <div
-                      className={`flex flex-1 items-center justify-between gap-2 ${isLast ? '' : 'pb-2'}`}
-                    >
-                      <p
-                        className={`text-sm font-medium ${
-                          isCurrent
-                            ? 'text-purple-banner'
-                            : t.done
-                              ? 'text-charcoal'
-                              : 'text-muted-foreground'
-                        }`}
-                      >
-                        {t.label}
-                      </p>
-                      {t.date && (
-                        <p className="whitespace-nowrap text-xs text-muted-foreground">
-                          {formatDate(t.date)}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
+          <StoreDetailDocumentsCard
+            documents={store.documents}
+            visibleDocs={visibleDocs}
+            hiddenDocsCount={hiddenDocsCount}
+            isCompact={isCompact}
+            fullDetailHref={fullDetailHref}
+          />
+          <StoreDetailMenuCard
+            menuPhotos={store.menuPhotos}
+            visibleMenuPhotos={visibleMenuPhotos}
+            hiddenMenuPhotosCount={hiddenMenuPhotosCount}
+            isCompact={isCompact}
+            fullDetailHref={fullDetailHref}
+            onPreview={openPreview}
+          />
+          <StoreProgressTimelineCard timeline={timeline} currentStepIndex={currentStepIndex} />
         </div>
       </div>
 

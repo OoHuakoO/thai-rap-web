@@ -6,6 +6,7 @@ import { Camera } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { isFileSizeValid, fileTooLargeMessage } from '@/utils/validate-file-size';
 import { STORE_FORM_TEXT } from '../constants/store-form.constants';
+import { STORE_MEDIA_TEXT } from '../constants/store-media.constants';
 
 interface StoreCoverPickerProps {
   coverFile: File | null;
@@ -36,7 +37,11 @@ export function StoreCoverPicker({ coverFile, onCoverChange }: StoreCoverPickerP
       >
         {coverPreview ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={coverPreview} alt="หน้าปกร้าน" className="h-full w-full object-cover" />
+          <img
+            src={coverPreview}
+            alt={STORE_MEDIA_TEXT.coverAlt}
+            className="h-full w-full object-cover"
+          />
         ) : (
           <Camera className="h-7 w-7 text-muted-foreground" />
         )}

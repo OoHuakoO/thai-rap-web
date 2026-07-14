@@ -3,6 +3,7 @@
 import { Store, ClipboardList, ClipboardCheck, Trophy } from 'lucide-react';
 import { Loading } from '@/components/shared/loading';
 import { useStoreStats } from '../hooks/use-stores';
+import { STORE_STATS_TEXT } from '../constants/store-stats-bar.constants';
 
 const PROVINCE_COLORS = [
   '#F17128',
@@ -36,13 +37,15 @@ export function StoreStatsBar() {
             <Store className="h-7 w-7 text-white sm:h-9 sm:w-9" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-charcoal">จำนวนร้านทั้งหมด</p>
+            <p className="truncate text-sm font-semibold text-charcoal">
+              {STORE_STATS_TEXT.totalStoresTitle}
+            </p>
             <p className="mt-1 leading-tight text-charcoal">
               <span className="text-2xl font-extrabold">{stats.total}</span>{' '}
-              <span className="text-xs text-muted-foreground">ร้าน</span>
+              <span className="text-xs text-muted-foreground">{STORE_STATS_TEXT.storeUnit}</span>
             </p>
             <p className="mt-1.5 text-xs text-muted-foreground">
-              เป้าหมาย {stats.targetTotal} ร้าน
+              {STORE_STATS_TEXT.targetLabel(stats.targetTotal)}
             </p>
             <div className="mt-1 flex items-center gap-1.5">
               <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
@@ -61,10 +64,12 @@ export function StoreStatsBar() {
             <ClipboardList className="h-7 w-7 text-white sm:h-9 sm:w-9" />
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-charcoal">ร้านที่ประเมินแล้ว T0</p>
+            <p className="truncate text-sm font-semibold text-charcoal">
+              {STORE_STATS_TEXT.t0CompletedTitle}
+            </p>
             <p className="mt-1 leading-tight text-charcoal">
               <span className="text-2xl font-extrabold">{stats.t0CompletedCount}</span>{' '}
-              <span className="text-xs text-muted-foreground">ร้าน</span>
+              <span className="text-xs text-muted-foreground">{STORE_STATS_TEXT.storeUnit}</span>
             </p>
             <p className="mt-1.5 text-2xl font-bold text-orange">{t0Pct}%</p>
           </div>
@@ -75,10 +80,12 @@ export function StoreStatsBar() {
             <ClipboardCheck className="h-7 w-7 text-white sm:h-9 sm:w-9" />
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-charcoal">ร้านที่ประเมินแล้ว T1</p>
+            <p className="truncate text-sm font-semibold text-charcoal">
+              {STORE_STATS_TEXT.t1CompletedTitle}
+            </p>
             <p className="mt-1 leading-tight text-charcoal">
               <span className="text-2xl font-extrabold">{stats.t1CompletedCount}</span>{' '}
-              <span className="text-xs text-muted-foreground">ร้าน</span>
+              <span className="text-xs text-muted-foreground">{STORE_STATS_TEXT.storeUnit}</span>
             </p>
             <p className="mt-1.5 text-2xl font-bold text-purple-banner">{t1Pct}%</p>
           </div>
@@ -89,10 +96,12 @@ export function StoreStatsBar() {
             <Trophy className="h-7 w-7 text-white sm:h-9 sm:w-9" />
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-charcoal">ร้านที่ผ่านเข้ารอบ</p>
+            <p className="truncate text-sm font-semibold text-charcoal">
+              {STORE_STATS_TEXT.passedTitle}
+            </p>
             <p className="mt-1 leading-tight text-charcoal">
               <span className="text-2xl font-extrabold">{stats.passedCount}</span>{' '}
-              <span className="text-xs text-muted-foreground">ร้าน</span>
+              <span className="text-xs text-muted-foreground">{STORE_STATS_TEXT.storeUnit}</span>
             </p>
             <p className="mt-1.5 text-2xl font-bold text-score-green">{passedPct}%</p>
           </div>
@@ -100,7 +109,9 @@ export function StoreStatsBar() {
       </div>
 
       <div className="rounded-xl border bg-card p-3 shadow-sm xl:w-72 xl:flex-shrink-0">
-        <p className="mb-2 text-sm font-bold text-charcoal">การกระจายตัวของร้านอาหารรายจังหวัด</p>
+        <p className="mb-2 text-sm font-bold text-charcoal">
+          {STORE_STATS_TEXT.provinceDistributionTitle}
+        </p>
         <div className="flex flex-col gap-1.5">
           {stats.byProvince.map((p, i) => (
             <div key={p.province} className="flex items-center gap-2 text-sm">
@@ -110,7 +121,7 @@ export function StoreStatsBar() {
               />
               <span className="min-w-[72px] text-charcoal">{p.province}</span>
               <span className="text-muted-foreground">
-                {p.count} ร้าน ({p.pct}%)
+                {STORE_STATS_TEXT.provinceCountLabel(p.count, p.pct)}
               </span>
             </div>
           ))}
