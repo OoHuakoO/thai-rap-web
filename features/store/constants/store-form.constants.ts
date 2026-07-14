@@ -37,6 +37,7 @@ export const STORE_FORM_TEXT = {
 } as const;
 
 export const CREATE_STORE_FORM_TEXT = {
+  pageSubtitle: 'กรอกข้อมูลร้านอาหารเพื่อเพิ่มเข้าสู่ระบบ',
   namePlaceholder: 'ร้านส้มตำป้าแดง',
   storeTypePlaceholder: 'อาหารตามสั่ง',
   ownerNamePlaceholder: 'สมศรี ใจดี',
@@ -59,6 +60,8 @@ export const CREATE_STORE_FORM_TEXT = {
 } as const;
 
 export const EDIT_STORE_FORM_TEXT = {
+  pageTitle: 'แก้ไขร้านอาหาร',
+  pageSubtitle: 'แก้ไขข้อมูลร้านอาหารในระบบ',
   submit: 'บันทึกการแก้ไข',
   saving: 'กำลังบันทึก...',
   updateSuccess: 'บันทึกข้อมูลร้านสำเร็จ',

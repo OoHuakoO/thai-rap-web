@@ -229,9 +229,45 @@ let store: Store[] = [...seed];
 
 export const STORE_TARGET_TOTAL = 400;
 
+// Progression order of a store's incubation stage. Some statuses (WAITING_LIST,
+// NOT_SELECTED, FIELD_AUDITED, IDP_CREATED, COMPLETED) are terminal branches
+// rather than a strictly linear path, but every branch is only reachable after
+// T1_COMPLETED — so index comparison still answers "has this store passed
+// stage X" correctly for stats purposes.
+const STORE_STATUS_ORDER: StoreStatus[] = [
+  'REGISTERED',
+  'T0_COMPLETED',
+  'CAMP_COMPLETED',
+  'T1_COMPLETED',
+  'PITCHING_COMPLETED',
+  'SELECTED',
+  'CONDITIONAL_SELECTED',
+  'WAITING_LIST',
+  'NOT_SELECTED',
+  'FIELD_AUDITED',
+  'IDP_CREATED',
+  'COMPLETED',
+];
+
+export function hasReachedStatus(status: StoreStatus, target: StoreStatus): boolean {
+  return STORE_STATUS_ORDER.indexOf(status) >= STORE_STATUS_ORDER.indexOf(target);
+}
+
+// Unique suffix for generated upload URLs/ids — using file.name alone collides
+// when the same filename is uploaded twice (common re-upload case), which
+// broke delete-by-url for menu/store photos and could collide on document ids
+// uploaded within the same millisecond.
+let mockFileIdCounter = 0;
+
+export function nextMockFileId(): string {
+  mockFileIdCounter += 1;
+  return `${Date.now()}-${mockFileIdCounter}`;
+}
+
 export const storeDb = {
   reset: () => {
     store = [...seed];
+    mockFileIdCounter = 0;
   },
 
   getAll: () => store,

@@ -13,7 +13,8 @@ export default function ServiceUnavailablePage() {
       title="ระบบไม่พร้อมให้บริการ"
       message="ระบบกำลังอยู่ในช่วงบำรุงรักษาหรือมีโหลดสูง กรุณาลองอีกครั้งในอีกสักครู่"
       actions={[
-        { label: 'ลองอีกครั้ง', href: ROUTES.HOME, variant: 'default' },
+        { label: 'ลองอีกครั้ง', reload: true, variant: 'default' },
+        { label: 'กลับหน้าหลัก', href: ROUTES.HOME, variant: 'outline' },
       ]}
     />
   )

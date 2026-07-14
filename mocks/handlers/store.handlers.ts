@@ -1,6 +1,19 @@
 import { http, HttpResponse } from 'msw';
-import { storeDb, STORE_TARGET_TOTAL } from '../fixtures/store.fixtures';
+import {
+  storeDb,
+  STORE_TARGET_TOTAL,
+  hasReachedStatus,
+  nextMockFileId,
+} from '../fixtures/store.fixtures';
 import { createStoreFromDto } from '../factories/store.factory';
+import {
+  getScenario,
+  unauthorized,
+  forbidden,
+  serverError,
+  validationError,
+} from '../utils/scenario';
+import { HTTP_STATUS } from '@/constants/http-status';
 import type {
   Store,
   CreateStoreDto,
@@ -15,42 +28,31 @@ import { API_URL } from '@/constants';
 
 const BASE_URL = `${API_URL}/stores`;
 
-function getScenario(request: Request): string {
-  return request.headers.get('X-Mock-Scenario') ?? 'success';
-}
-
-function unauthorized(): Response {
-  return HttpResponse.json<ApiErrorResponse>(
-    { success: false, error: { code: 'AUTH_003', message: 'Unauthorized' } },
-    { status: 401 }
-  );
-}
-
-function forbidden(): Response {
-  return HttpResponse.json<ApiErrorResponse>(
-    { success: false, error: { code: 'PERM_001', message: 'Forbidden resource' } },
-    { status: 403 }
-  );
-}
-
-function serverError(): Response {
-  return HttpResponse.json<ApiErrorResponse>(
-    { success: false, error: { code: 'SYS_001', message: 'Internal server error' } },
-    { status: 500 }
-  );
-}
-
 function notFound(): Response {
   return HttpResponse.json<ApiErrorResponse>(
     { success: false, error: { code: 'STORE_001', message: 'Store not found' } },
-    { status: 404 }
+    { status: HTTP_STATUS.NOT_FOUND }
   );
 }
+
+function fileRequired(): Response {
+  return validationError([{ field: 'file', message: 'File is required' }]);
+}
+
+const REQUIRED_STORE_FIELDS: { field: keyof CreateStoreDto; message: string }[] = [
+  { field: 'name', message: 'Name is required' },
+  { field: 'province', message: 'Province is required' },
+  { field: 'storeType', message: 'Store type is required' },
+  { field: 'ownerName', message: 'Owner name is required' },
+  { field: 'phone', message: 'Phone is required' },
+  { field: 'address', message: 'Address is required' },
+];
 
 export const storeHandlers = [
   http.get(BASE_URL, ({ request }) => {
     const scenario = getScenario(request);
     if (scenario === 'unauthorized') return unauthorized();
+    if (scenario === 'forbidden') return forbidden();
     if (scenario === 'server-error') return serverError();
 
     const url = new URL(request.url);
@@ -85,13 +87,21 @@ export const storeHandlers = [
     const scenario = getScenario(request);
     // API forbids ENTREPRENEUR from this endpoint (403 PERM_001) — simulate via
     // X-Mock-Scenario: forbidden, same as every other write/read gate below.
+    if (scenario === 'unauthorized') return unauthorized();
     if (scenario === 'forbidden') return forbidden();
     if (scenario === 'server-error') return serverError();
 
     const stores = storeDb.getAll();
     const total = stores.length;
-    const t0CompletedCount = stores.filter((s) => s.latestScore !== null).length;
-    const t1CompletedCount = stores.filter((s) => s.status === 'T1_COMPLETED').length;
+    // Both counts use the same "has this store reached stage X" rule, so a
+    // store that has since moved past T1_COMPLETED (e.g. SELECTED) still
+    // counts toward t1CompletedCount instead of only exact status matches.
+    const t0CompletedCount = stores.filter((s) =>
+      hasReachedStatus(s.status, 'T0_COMPLETED')
+    ).length;
+    const t1CompletedCount = stores.filter((s) =>
+      hasReachedStatus(s.status, 'T1_COMPLETED')
+    ).length;
     const passedCount = stores.filter((s) =>
       ['SELECTED', 'CONDITIONAL_SELECTED'].includes(s.status)
     ).length;
@@ -140,9 +150,15 @@ export const storeHandlers = [
     if (scenario === 'server-error') return serverError();
 
     const body = (await request.json()) as CreateStoreDto;
+
+    const missing = REQUIRED_STORE_FIELDS.filter(({ field }) => !body[field]);
+    if (scenario === 'validation-error' || missing.length > 0) {
+      return validationError(missing.map(({ field, message }) => ({ field, message })));
+    }
+
     const store = createStoreFromDto(body);
     storeDb.create(store);
-    return HttpResponse.json<Store>(store, { status: 201 });
+    return HttpResponse.json<Store>(store, { status: HTTP_STATUS.CREATED });
   }),
 
   http.patch(`${BASE_URL}/:id/status`, async ({ request, params }) => {
@@ -152,6 +168,10 @@ export const storeHandlers = [
     if (scenario === 'server-error') return serverError();
 
     const body = (await request.json()) as { status: StoreStatus };
+    if (scenario === 'validation-error' || !body.status) {
+      return validationError([{ field: 'status', message: 'Status is required' }]);
+    }
+
     const updated = storeDb.setStatus(params.id as string, body.status);
     if (!updated) return notFound();
     return HttpResponse.json<Store>(updated);
@@ -177,7 +197,7 @@ export const storeHandlers = [
 
     const removed = storeDb.remove(params.id as string);
     if (!removed) return notFound();
-    return new HttpResponse(null, { status: 200 });
+    return new HttpResponse(null, { status: HTTP_STATUS.NO_CONTENT });
   }),
 
   http.post(`${BASE_URL}/:id/documents`, async ({ request, params }) => {
@@ -188,10 +208,10 @@ export const storeHandlers = [
 
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
-    if (!file) return serverError();
+    if (!file) return fileRequired();
 
     const doc: StoreDocument = {
-      id: `doc-${Date.now()}`,
+      id: `doc-${nextMockFileId()}`,
       filename: file.name,
       fileType: file.type || 'application/octet-stream',
       fileSize: file.size,
@@ -200,7 +220,7 @@ export const storeHandlers = [
     };
     const updated = storeDb.addDocument(params.id as string, doc);
     if (!updated) return notFound();
-    return HttpResponse.json<StoreDocument>(doc, { status: 201 });
+    return HttpResponse.json<StoreDocument>(doc, { status: HTTP_STATUS.CREATED });
   }),
 
   http.delete(`${BASE_URL}/:id/documents/:documentId`, ({ request, params }) => {
@@ -211,7 +231,7 @@ export const storeHandlers = [
 
     const updated = storeDb.removeDocument(params.id as string, params.documentId as string);
     if (!updated) return notFound();
-    return new HttpResponse(null, { status: 200 });
+    return new HttpResponse(null, { status: HTTP_STATUS.NO_CONTENT });
   }),
 
   http.post(`${BASE_URL}/:id/menu-photos`, async ({ request, params }) => {
@@ -222,12 +242,12 @@ export const storeHandlers = [
 
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
-    if (!file) return serverError();
+    if (!file) return fileRequired();
 
-    const url = `/uploads/stores/${params.id}/menu-photos/${file.name}`;
+    const url = `/uploads/stores/${params.id}/menu-photos/${nextMockFileId()}-${file.name}`;
     const updated = storeDb.addMenuPhoto(params.id as string, url);
     if (!updated) return notFound();
-    return HttpResponse.json<string[]>(updated.menuPhotos, { status: 201 });
+    return HttpResponse.json<string[]>(updated.menuPhotos, { status: HTTP_STATUS.CREATED });
   }),
 
   http.delete(`${BASE_URL}/:id/menu-photos`, async ({ request, params }) => {
@@ -250,12 +270,12 @@ export const storeHandlers = [
 
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
-    if (!file) return serverError();
+    if (!file) return fileRequired();
 
-    const coverUrl = `/uploads/stores/${params.id}/cover/${file.name}`;
+    const coverUrl = `/uploads/stores/${params.id}/cover/${nextMockFileId()}-${file.name}`;
     const updated = storeDb.setCover(params.id as string, coverUrl);
     if (!updated) return notFound();
-    return HttpResponse.json<string>(coverUrl, { status: 201 });
+    return HttpResponse.json<string>(coverUrl, { status: HTTP_STATUS.CREATED });
   }),
 
   http.delete(`${BASE_URL}/:id/cover`, ({ request, params }) => {
@@ -266,7 +286,7 @@ export const storeHandlers = [
 
     const updated = storeDb.setCover(params.id as string, null);
     if (!updated) return notFound();
-    return new HttpResponse(null, { status: 200 });
+    return new HttpResponse(null, { status: HTTP_STATUS.NO_CONTENT });
   }),
 
   http.post(`${BASE_URL}/:id/store-photos`, async ({ request, params }) => {
@@ -277,12 +297,12 @@ export const storeHandlers = [
 
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
-    if (!file) return serverError();
+    if (!file) return fileRequired();
 
-    const url = `/uploads/stores/${params.id}/store-photos/${file.name}`;
+    const url = `/uploads/stores/${params.id}/store-photos/${nextMockFileId()}-${file.name}`;
     const updated = storeDb.addStorePhoto(params.id as string, url);
     if (!updated) return notFound();
-    return HttpResponse.json<string[]>(updated.storePhotos, { status: 201 });
+    return HttpResponse.json<string[]>(updated.storePhotos, { status: HTTP_STATUS.CREATED });
   }),
 
   http.delete(`${BASE_URL}/:id/store-photos`, async ({ request, params }) => {

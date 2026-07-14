@@ -3,17 +3,8 @@ import { Card } from '@/components/ui/card';
 import { buildFileUrl } from '@/utils/build-file-url';
 import { formatFileSize } from '@/utils/format-file-size';
 import { STORE_DETAIL_TEXT } from '../constants/store-detail.constants';
+import { getDocumentBadgeMeta } from '../utils/document-visuals';
 import type { StoreDocument } from '../types/store.types';
-
-function getDocMeta(fileType: string): { label: string; className: string } {
-  if (fileType.includes('pdf')) return { label: 'PDF', className: 'bg-destructive' };
-  if (fileType.includes('spreadsheet') || fileType.includes('excel')) {
-    return { label: 'XLS', className: 'bg-score-green' };
-  }
-  if (fileType.includes('word')) return { label: 'DOC', className: 'bg-blue-600' };
-  if (fileType.startsWith('image/')) return { label: 'IMG', className: 'bg-purple-banner' };
-  return { label: 'FILE', className: 'bg-slate-500' };
-}
 
 interface StoreDetailDocumentsCardProps {
   documents: StoreDocument[];
@@ -43,7 +34,7 @@ export function StoreDetailDocumentsCard({
       {documents.length > 0 ? (
         <div className="flex min-h-14 flex-wrap items-center gap-2">
           {visibleDocs.map((doc) => {
-            const { label, className } = getDocMeta(doc.fileType);
+            const { label, className } = getDocumentBadgeMeta(doc.fileType);
             return (
               <div key={doc.id} className="w-14 text-center">
                 <a href={buildFileUrl(doc.url)} target="_blank" rel="noreferrer">

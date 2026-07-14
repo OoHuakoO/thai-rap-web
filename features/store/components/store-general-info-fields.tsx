@@ -17,7 +17,6 @@ import { STORE_FORM_TEXT } from '../constants/store-form.constants';
 import type { StoreFormValues } from '../schemas/store.schema';
 
 interface StoreGeneralInfoFieldsPlaceholders {
-  name?: string;
   storeType?: string;
   ownerName?: string;
   phone?: string;
@@ -92,11 +91,7 @@ export function StoreGeneralInfoFields({
 
         <div className="space-y-1.5">
           <Label htmlFor={`${idPrefix}phone`}>{STORE_FORM_TEXT.phoneLabel}</Label>
-          <Input
-            id={`${idPrefix}phone`}
-            {...register('phone')}
-            placeholder={placeholders?.phone}
-          />
+          <Input id={`${idPrefix}phone`} {...register('phone')} placeholder={placeholders?.phone} />
           <FieldError message={errors.phone?.message} />
         </div>
 

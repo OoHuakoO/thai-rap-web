@@ -4,46 +4,24 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Card } from '@/components/ui/card';
 import { Loading } from '@/components/shared/loading';
-import type { StatusVariant } from '@/components/shared/status-badge';
 import { ROUTES } from '@/constants/routes';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { useAssessmentSummaries } from '@/features/assessment';
 import { useStore } from '../hooks/use-stores';
-import { STORE_DETAIL_TEXT } from '../constants/store-detail.constants';
+import {
+  STORE_DETAIL_TEXT,
+  STORE_DETAIL_STATUS_VARIANT,
+  DECIDED_STORE_STATUSES,
+  COMPACT_DOC_LIMIT,
+  COMPACT_MENU_PHOTO_LIMIT,
+  COMPACT_STORE_PHOTO_LIMIT,
+} from '../constants/store-detail.constants';
 import { STORE_STATUS_LABELS } from '../types/store.types';
-import type { StoreStatus } from '../types/store.types';
 import { StoreCoverGalleryStrip } from './store-cover-gallery-strip';
 import { StoreContactCard } from './store-contact-card';
 import { StoreDetailDocumentsCard } from './store-detail-documents-card';
 import { StoreDetailMenuCard } from './store-detail-menu-card';
 import { StoreProgressTimelineCard, type TimelineStep } from './store-progress-timeline-card';
-
-const STATUS_VARIANT: Record<StoreStatus, StatusVariant> = {
-  REGISTERED: 'new',
-  T0_COMPLETED: 'pending',
-  CAMP_COMPLETED: 'pending',
-  T1_COMPLETED: 'pending',
-  PITCHING_COMPLETED: 'pending',
-  SELECTED: 'pass',
-  CONDITIONAL_SELECTED: 'warning',
-  WAITING_LIST: 'pending',
-  NOT_SELECTED: 'fail',
-  FIELD_AUDITED: 'pending',
-  IDP_CREATED: 'pending',
-  COMPLETED: 'active',
-};
-
-const DECIDED_STATUSES: StoreStatus[] = [
-  'SELECTED',
-  'CONDITIONAL_SELECTED',
-  'WAITING_LIST',
-  'NOT_SELECTED',
-];
-
-// How many items the compact (side-panel) view shows before "ดูทั้งหมด".
-const COMPACT_DOC_LIMIT = 3;
-const COMPACT_MENU_PHOTO_LIMIT = 4;
-const COMPACT_STORE_PHOTO_LIMIT = 4;
 
 interface StoreDetailProps {
   storeId: string;
@@ -72,7 +50,7 @@ export function StoreDetail({ storeId, variant = 'compact' }: StoreDetailProps) 
 
   const t0SubmittedAt = summaries?.find((s) => s.round === 'T0')?.submittedAt ?? null;
   const t1SubmittedAt = summaries?.find((s) => s.round === 'T1')?.submittedAt ?? null;
-  const decided = DECIDED_STATUSES.includes(store.status);
+  const decided = DECIDED_STORE_STATUSES.includes(store.status);
 
   const timeline: TimelineStep[] = [
     { label: STORE_DETAIL_TEXT.timelineRegistered, date: store.createdAt, done: true },
@@ -126,7 +104,7 @@ export function StoreDetail({ storeId, variant = 'compact' }: StoreDetailProps) 
           <StoreCoverGalleryStrip
             storeName={store.name}
             coverPhoto={coverPhoto}
-            statusVariant={STATUS_VARIANT[store.status]}
+            statusVariant={STORE_DETAIL_STATUS_VARIANT[store.status]}
             statusLabel={STORE_STATUS_LABELS[store.status]}
             stripPhotos={stripPhotos}
             visibleStrip={visibleStrip}

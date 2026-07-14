@@ -1,4 +1,5 @@
 import type { User, CreateUserDto } from '@/features/user/types/user.types';
+import { ROLES } from '@/types/auth.types';
 
 // Increments on every call so each generated user gets a unique id.
 let idCounter = 100;
@@ -10,7 +11,7 @@ export function createUser(overrides: Partial<User> = {}): User {
     id,
     name: `User ${id}`,
     email: `user${id}@example.com`,
-    role: 'ENTREPRENEUR',
+    role: ROLES.ENTREPRENEUR,
     createdAt: now,
     updatedAt: now,
     ...overrides,

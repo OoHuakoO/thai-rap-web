@@ -1,13 +1,14 @@
 import { z } from 'zod';
+import { ROLES } from '@/types/auth.types';
 import { CREATE_USER_VALIDATION_MESSAGES } from '../constants/create-user-form.constants';
 
 export const USER_ROLES = [
-  'ADMIN',
-  'ASSESSOR',
-  'MENTOR',
-  'ENTREPRENEUR',
-  'JUDGE',
-  'ME_TEAM',
+  ROLES.ADMIN,
+  ROLES.ASSESSOR,
+  ROLES.MENTOR,
+  ROLES.ENTREPRENEUR,
+  ROLES.JUDGE,
+  ROLES.ME_TEAM,
 ] as const;
 
 export const createUserSchema = z.object({

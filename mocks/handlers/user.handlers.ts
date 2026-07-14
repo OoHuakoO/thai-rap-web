@@ -1,44 +1,24 @@
 import { http, HttpResponse } from 'msw';
 import { userDb } from '../fixtures/user.fixtures';
 import { createUserFromDto } from '../factories/user.factory';
+import {
+  getScenario,
+  unauthorized,
+  forbidden,
+  serverError,
+  validationError,
+} from '../utils/scenario';
+import { HTTP_STATUS } from '@/constants/http-status';
 import type { User, CreateUserDto } from '@/features/user/types/user.types';
 import type { ApiErrorResponse, PaginatedResponse } from '@/types/api.types';
 import { API_URL } from '@/constants';
 
 const BASE_URL = `${API_URL}/users`;
 
-// Read the scenario header to simulate specific error states without changing
-// the actual request URL. Set X-Mock-Scenario on Axios config.headers for
-// targeted testing: 'unauthorized' | 'forbidden' | 'server-error' | 'validation-error'
-function getScenario(request: Request): string {
-  return request.headers.get('X-Mock-Scenario') ?? 'success';
-}
-
-function unauthorized(): Response {
-  return HttpResponse.json<ApiErrorResponse>(
-    { success: false, error: { code: 'AUTH_003', message: 'Unauthorized' } },
-    { status: 401 }
-  );
-}
-
-function forbidden(): Response {
-  return HttpResponse.json<ApiErrorResponse>(
-    { success: false, error: { code: 'PERM_001', message: 'Forbidden resource' } },
-    { status: 403 }
-  );
-}
-
-function serverError(): Response {
-  return HttpResponse.json<ApiErrorResponse>(
-    { success: false, error: { code: 'SYS_001', message: 'Internal server error' } },
-    { status: 500 }
-  );
-}
-
 function notFound(entity = 'Resource'): Response {
   return HttpResponse.json<ApiErrorResponse>(
     { success: false, error: { code: 'DB_002', message: `${entity} not found` } },
-    { status: 404 }
+    { status: HTTP_STATUS.NOT_FOUND }
   );
 }
 
@@ -104,25 +84,15 @@ export const userHandlers = [
     const body = (await request.json()) as CreateUserDto;
 
     if (scenario === 'validation-error' || !body.name || !body.email) {
-      return HttpResponse.json<ApiErrorResponse>(
-        {
-          success: false,
-          error: {
-            code: 'VALID_002',
-            message: 'Validation failed',
-            details: [
-              ...(!body.name ? [{ field: 'name', message: 'Name is required' }] : []),
-              ...(!body.email ? [{ field: 'email', message: 'Email is required' }] : []),
-            ],
-          },
-        },
-        { status: 422 }
-      );
+      return validationError([
+        ...(!body.name ? [{ field: 'name', message: 'Name is required' }] : []),
+        ...(!body.email ? [{ field: 'email', message: 'Email is required' }] : []),
+      ]);
     }
 
     const user = createUserFromDto(body);
     userDb.create(user);
-    return HttpResponse.json<User>(user, { status: 201 });
+    return HttpResponse.json<User>(user, { status: HTTP_STATUS.CREATED });
   }),
 
   // PATCH /users/:id
@@ -147,6 +117,6 @@ export const userHandlers = [
 
     const removed = userDb.remove(params.id as string);
     if (!removed) return notFound('User');
-    return new HttpResponse(null, { status: 204 });
+    return new HttpResponse(null, { status: HTTP_STATUS.NO_CONTENT });
   }),
 ];

@@ -1,19 +1,11 @@
 import { Card } from '@/components/ui/card';
+import { formatThaiDate } from '@/utils/format-thai-date';
 import { STORE_DETAIL_TEXT } from '../constants/store-detail.constants';
 
 export interface TimelineStep {
   label: string;
   date: string | null;
   done: boolean;
-}
-
-function formatDate(iso: string | null): string {
-  if (!iso) return '';
-  return new Date(iso).toLocaleDateString('th-TH', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
 }
 
 interface StoreProgressTimelineCardProps {
@@ -66,7 +58,7 @@ export function StoreProgressTimelineCard({
                 </p>
                 {t.date && (
                   <p className="whitespace-nowrap text-xs text-muted-foreground">
-                    {formatDate(t.date)}
+                    {formatThaiDate(t.date)}
                   </p>
                 )}
               </div>

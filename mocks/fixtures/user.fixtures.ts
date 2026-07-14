@@ -1,11 +1,12 @@
 import type { User, UpdateUserDto } from '@/features/user/types/user.types';
+import { ROLES } from '@/types/auth.types';
 
 const seed: User[] = [
   {
     id: '1',
     name: 'นายคมศักดิ์ กรณย์ประกิตต์',
     email: 'komsak01@gmail.com',
-    role: 'ADMIN',
+    role: ROLES.ADMIN,
     createdAt: '2024-01-15T08:00:00Z',
     updatedAt: '2024-03-20T12:00:00Z',
   },
@@ -13,7 +14,7 @@ const seed: User[] = [
     id: '2',
     name: 'นายสมชาย วงษ์สมบัติ',
     email: 'somchai.w@rbru.ac.th',
-    role: 'ASSESSOR',
+    role: ROLES.ASSESSOR,
     createdAt: '2024-02-01T09:30:00Z',
     updatedAt: '2024-04-10T15:00:00Z',
   },
@@ -21,7 +22,7 @@ const seed: User[] = [
     id: '3',
     name: 'ผศ.ดร.เมฆนนา พรหมคำ',
     email: 'meknana.p@rbru.ac.th',
-    role: 'MENTOR',
+    role: ROLES.MENTOR,
     createdAt: '2024-02-14T11:00:00Z',
     updatedAt: '2024-04-11T10:00:00Z',
   },
@@ -29,7 +30,7 @@ const seed: User[] = [
     id: '4',
     name: 'ดร.กฤษฎา วงษ์สมบัติ',
     email: 'kritsada.w@example.com',
-    role: 'JUDGE',
+    role: ROLES.JUDGE,
     createdAt: '2024-03-01T10:00:00Z',
     updatedAt: '2024-05-01T09:00:00Z',
   },
@@ -37,7 +38,7 @@ const seed: User[] = [
     id: '5',
     name: 'นายสมศักดิ์ ร่มเย็น',
     email: 'somsak.r@example.com',
-    role: 'ENTREPRENEUR',
+    role: ROLES.ENTREPRENEUR,
     createdAt: '2024-03-15T08:00:00Z',
     updatedAt: '2024-05-10T11:00:00Z',
   },
@@ -45,7 +46,7 @@ const seed: User[] = [
     id: '6',
     name: 'นางสาวพิมพ์ชนก สุขใจ',
     email: 'pimchanok.s@nstda.or.th',
-    role: 'ME_TEAM',
+    role: ROLES.ME_TEAM,
     createdAt: '2024-03-20T09:00:00Z',
     updatedAt: '2024-05-15T14:00:00Z',
   },

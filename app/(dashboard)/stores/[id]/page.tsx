@@ -1,7 +1,5 @@
 import type { Metadata } from 'next'
-import { BackLink } from '@/components/shared/back-link'
-import { ROUTES } from '@/constants/routes'
-import { StoreDetail } from '@/features/store'
+import { StoreDetail, StoreListBackLink } from '@/features/store'
 
 export const metadata: Metadata = {
   title: 'รายละเอียดร้าน | Thai Rap',
@@ -16,7 +14,7 @@ export default async function StoreDetailPage({ params }: StoreDetailPageProps) 
 
   return (
     <section className="space-y-4">
-      <BackLink href={ROUTES.STORES}>กลับไปรายการร้านอาหาร</BackLink>
+      <StoreListBackLink />
       <StoreDetail storeId={id} variant="full" />
     </section>
   )

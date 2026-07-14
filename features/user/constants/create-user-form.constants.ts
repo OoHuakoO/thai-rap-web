@@ -1,3 +1,4 @@
+import { ROLES } from '@/types/auth.types';
 import type { CreateUserFormValues } from '../schemas/create-user.schema';
 
 export const CREATE_USER_VALIDATION_MESSAGES = {
@@ -6,12 +7,12 @@ export const CREATE_USER_VALIDATION_MESSAGES = {
 } as const;
 
 export const CREATE_USER_ROLE_OPTIONS: { value: CreateUserFormValues['role']; label: string }[] = [
-  { value: 'ENTREPRENEUR', label: 'ผู้ประกอบการ' },
-  { value: 'ASSESSOR', label: 'ผู้ประเมิน (Assessor)' },
-  { value: 'MENTOR', label: 'ที่ปรึกษา (Mentor / Coach)' },
-  { value: 'JUDGE', label: 'กรรมการ Pitching' },
-  { value: 'ME_TEAM', label: 'ทีม M&E' },
-  { value: 'ADMIN', label: 'ผู้ดูแลระบบ (Admin / PMO)' },
+  { value: ROLES.ENTREPRENEUR, label: 'ผู้ประกอบการ' },
+  { value: ROLES.ASSESSOR, label: 'ผู้ประเมิน (Assessor)' },
+  { value: ROLES.MENTOR, label: 'ที่ปรึกษา (Mentor / Coach)' },
+  { value: ROLES.JUDGE, label: 'กรรมการ Pitching' },
+  { value: ROLES.ME_TEAM, label: 'ทีม M&E' },
+  { value: ROLES.ADMIN, label: 'ผู้ดูแลระบบ (Admin / PMO)' },
 ];
 
 export const CREATE_USER_FORM_TEXT = {

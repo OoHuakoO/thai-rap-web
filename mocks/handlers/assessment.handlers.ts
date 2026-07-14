@@ -6,6 +6,16 @@ import {
   getDimensionAverages,
 } from '../fixtures/assessment.fixtures';
 import { storeDb } from '../fixtures/store.fixtures';
+import {
+  getScenario,
+  unauthorized,
+  forbidden,
+  serverError,
+  notFound,
+  validationError,
+  getMockUserId,
+} from '../utils/scenario';
+import { HTTP_STATUS } from '@/constants/http-status';
 import type {
   Assessment,
   AssessmentSummary,
@@ -23,23 +33,9 @@ import { API_URL } from '@/constants';
 
 const BASE_URL = `${API_URL}`;
 
-function getScenario(request: Request): string {
-  return request.headers.get('X-Mock-Scenario') ?? 'success';
-}
-
-function serverError(): Response {
-  return HttpResponse.json<ApiErrorResponse>(
-    { success: false, error: { code: 'SYS_001', message: 'Internal server error' } },
-    { status: 500 }
-  );
-}
-
-function notFound(code: string, message: string): Response {
-  return HttpResponse.json<ApiErrorResponse>(
-    { success: false, error: { code, message } },
-    { status: 404 }
-  );
-}
+// Fallback when the request carries no recognizable mock access token
+// (e.g. a direct test call) — real requests attribute to the logged-in user.
+const FALLBACK_ASSESSOR_ID = 'mock-assessor';
 
 function conflict(): Response {
   return HttpResponse.json<ApiErrorResponse>(
@@ -47,18 +43,26 @@ function conflict(): Response {
       success: false,
       error: { code: 'ASSESS_002', message: 'Assessment already exists for this round' },
     },
-    { status: 409 }
+    { status: HTTP_STATUS.CONFLICT }
   );
+}
+
+function guard(request: Request): Response | null {
+  const scenario = getScenario(request);
+  if (scenario === 'unauthorized') return unauthorized();
+  if (scenario === 'forbidden') return forbidden();
+  if (scenario === 'server-error') return serverError();
+  return null;
 }
 
 export const assessmentHandlers = [
   http.get(`${BASE_URL}/dimensions`, ({ request }) => {
-    if (getScenario(request) === 'server-error') return serverError();
-    return HttpResponse.json<Dimension[]>(dimensionSeed);
+    return guard(request) ?? HttpResponse.json<Dimension[]>(dimensionSeed);
   }),
 
   http.get(`${BASE_URL}/questions`, ({ request }) => {
-    if (getScenario(request) === 'server-error') return serverError();
+    const blocked = guard(request);
+    if (blocked) return blocked;
     const url = new URL(request.url);
     const dimensionId = url.searchParams.get('dimensionId');
     const items = dimensionId
@@ -68,7 +72,8 @@ export const assessmentHandlers = [
   }),
 
   http.get(`${BASE_URL}/assessments`, ({ request }) => {
-    if (getScenario(request) === 'server-error') return serverError();
+    const blocked = guard(request);
+    if (blocked) return blocked;
     const url = new URL(request.url);
     const storeId = url.searchParams.get('storeId');
     const round = url.searchParams.get('round');
@@ -83,11 +88,17 @@ export const assessmentHandlers = [
   }),
 
   http.get(`${BASE_URL}/assessments/rank`, ({ request }) => {
-    if (getScenario(request) === 'server-error') return serverError();
+    const blocked = guard(request);
+    if (blocked) return blocked;
     const url = new URL(request.url);
     const storeId = url.searchParams.get('storeId');
     const round = url.searchParams.get('round') as Round | null;
-    if (!storeId || !round) return notFound('ASSESS_003', 'storeId and round are required');
+    if (!storeId || !round) {
+      return validationError([
+        ...(!storeId ? [{ field: 'storeId', message: 'storeId is required' }] : []),
+        ...(!round ? [{ field: 'round', message: 'round is required' }] : []),
+      ]);
+    }
 
     const store = storeDb.findById(storeId);
     const ranked = [...assessmentDb.findAllByRound(round)].sort(
@@ -113,31 +124,52 @@ export const assessmentHandlers = [
   }),
 
   http.patch(`${BASE_URL}/assessments/:id/notes`, async ({ request, params }) => {
-    if (getScenario(request) === 'server-error') return serverError();
+    const blocked = guard(request);
+    if (blocked) return blocked;
     const body = (await request.json()) as { notes: string };
+    if (getScenario(request) === 'validation-error' || typeof body.notes !== 'string') {
+      return validationError([{ field: 'notes', message: 'Notes is required' }]);
+    }
     const updated = assessmentDb.updateNotes(params.id as string, body.notes);
     if (!updated) return notFound('ASSESS_001', 'Assessment not found');
     return HttpResponse.json<Assessment>(updated);
   }),
 
   http.get(`${BASE_URL}/assessments/:id`, ({ request, params }) => {
-    if (getScenario(request) === 'server-error') return serverError();
+    const blocked = guard(request);
+    if (blocked) return blocked;
     const assessment = assessmentDb.findById(params.id as string);
     if (!assessment) return notFound('ASSESS_001', 'Assessment not found');
     return HttpResponse.json<Assessment>(assessment);
   }),
 
   http.post(`${BASE_URL}/assessments`, async ({ request }) => {
-    if (getScenario(request) === 'server-error') return serverError();
+    const blocked = guard(request);
+    if (blocked) return blocked;
     const body = (await request.json()) as CreateAssessmentDto;
+
+    if (getScenario(request) === 'validation-error' || !body.storeId || !body.round) {
+      return validationError([
+        ...(!body.storeId ? [{ field: 'storeId', message: 'storeId is required' }] : []),
+        ...(!body.round ? [{ field: 'round', message: 'round is required' }] : []),
+      ]);
+    }
     if (assessmentDb.findByStoreAndRound(body.storeId, body.round)) return conflict();
-    const created = assessmentDb.create(body.storeId, body.round, 'mock-assessor');
-    return HttpResponse.json<Assessment>(created, { status: 201 });
+
+    const assessorId = getMockUserId(request) ?? FALLBACK_ASSESSOR_ID;
+    const created = assessmentDb.create(body.storeId, body.round, assessorId);
+    return HttpResponse.json<Assessment>(created, { status: HTTP_STATUS.CREATED });
   }),
 
   http.put(`${BASE_URL}/assessments/:id/scores/:questionId`, async ({ request, params }) => {
-    if (getScenario(request) === 'server-error') return serverError();
+    const blocked = guard(request);
+    if (blocked) return blocked;
     const body = (await request.json()) as UpdateScoreDto;
+
+    if (getScenario(request) === 'validation-error' || typeof body.rawScore !== 'number') {
+      return validationError([{ field: 'rawScore', message: 'rawScore is required' }]);
+    }
+
     const updated = assessmentDb.updateScore(params.id as string, Number(params.questionId), body);
     if (!updated) return notFound('ASSESS_001', 'Assessment not found');
     const question = updated.questions.find((q) => q.questionId === Number(params.questionId));
@@ -148,14 +180,12 @@ export const assessmentHandlers = [
   http.post(
     `${BASE_URL}/assessments/:id/scores/:questionId/evidence`,
     async ({ request, params }) => {
-      if (getScenario(request) === 'server-error') return serverError();
+      const blocked = guard(request);
+      if (blocked) return blocked;
       const form = await request.formData();
       const file = form.get('file');
       if (!(file instanceof File)) {
-        return HttpResponse.json<ApiErrorResponse>(
-          { success: false, error: { code: 'FILE_001', message: 'file is required' } },
-          { status: 400 }
-        );
+        return validationError([{ field: 'file', message: 'file is required' }]);
       }
       const created = assessmentDb.addEvidence(params.id as string, Number(params.questionId), {
         filename: file.name,
@@ -163,28 +193,31 @@ export const assessmentHandlers = [
         fileSize: file.size,
       });
       if (!created) return notFound('ASSESS_001', 'Assessment or scored question not found');
-      return HttpResponse.json<EvidenceFile>(created, { status: 201 });
+      return HttpResponse.json<EvidenceFile>(created, { status: HTTP_STATUS.CREATED });
     }
   ),
 
   http.delete(`${BASE_URL}/assessments/:id/evidence/:evidenceId`, ({ request, params }) => {
-    if (getScenario(request) === 'server-error') return serverError();
+    const blocked = guard(request);
+    if (blocked) return blocked;
     const removed = assessmentDb.removeEvidence(params.id as string, params.evidenceId as string);
     if (!removed) return notFound('FILE_003', 'Evidence file not found');
-    return new HttpResponse(null, { status: 200 });
+    return new HttpResponse(null, { status: HTTP_STATUS.NO_CONTENT });
   }),
 
   http.post(`${BASE_URL}/assessments/:id/submit`, ({ request, params }) => {
-    if (getScenario(request) === 'server-error') return serverError();
+    const blocked = guard(request);
+    if (blocked) return blocked;
     const updated = assessmentDb.submit(params.id as string);
     if (!updated) return notFound('ASSESS_001', 'Assessment not found');
-    return HttpResponse.json<Assessment>(updated, { status: 201 });
+    return HttpResponse.json<Assessment>(updated, { status: HTTP_STATUS.CREATED });
   }),
 
   http.delete(`${BASE_URL}/assessments/:id`, ({ request, params }) => {
-    if (getScenario(request) === 'server-error') return serverError();
+    const blocked = guard(request);
+    if (blocked) return blocked;
     const removed = assessmentDb.remove(params.id as string);
     if (!removed) return notFound('ASSESS_001', 'Assessment not found');
-    return new HttpResponse(null, { status: 200 });
+    return new HttpResponse(null, { status: HTTP_STATUS.NO_CONTENT });
   }),
 ];

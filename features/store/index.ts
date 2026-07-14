@@ -8,6 +8,8 @@ export { StoreCoverManager } from './components/store-cover-manager';
 export { StorePhotoGalleryManager } from './components/store-photo-gallery-manager';
 export { StoreDocumentManager } from './components/store-document-manager';
 export { StoreEditPage } from './components/store-edit-page';
+export { StoreListBackLink } from './components/store-list-back-link';
+export { StoreFormHeader } from './components/store-form-header';
 export {
   useStores,
   useStore,

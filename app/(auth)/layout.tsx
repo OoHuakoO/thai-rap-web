@@ -19,7 +19,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   }, [hasHydrated, isAuthenticated, role, router])
 
   if (!hasHydrated) return <Loading className="min-h-screen" />
-  if (isAuthenticated) return null
+  if (isAuthenticated && role) return null
 
   return <>{children}</>
 }

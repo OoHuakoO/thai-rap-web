@@ -8,55 +8,45 @@ import {
   activityItems,
   reportsStatus,
 } from '../fixtures/dashboard.fixtures';
-import type { ApiErrorResponse } from '@/types/api.types';
+import { getScenario, unauthorized, forbidden, serverError } from '../utils/scenario';
 import { API_URL } from '@/constants';
 
 const BASE_URL = `${API_URL}/dashboard`;
 
-function getScenario(request: Request): string {
-  return request.headers.get('X-Mock-Scenario') ?? 'success';
-}
-
-function serverError(): Response {
-  return HttpResponse.json<ApiErrorResponse>(
-    { success: false, error: { code: 'SYS_001', message: 'Internal server error' } },
-    { status: 500 }
-  );
+function checkScenario(request: Request): Response | null {
+  const scenario = getScenario(request);
+  if (scenario === 'unauthorized') return unauthorized();
+  if (scenario === 'forbidden') return forbidden();
+  if (scenario === 'server-error') return serverError();
+  return null;
 }
 
 export const dashboardHandlers = [
   http.get(`${BASE_URL}/kpi`, ({ request }) => {
-    if (getScenario(request) === 'server-error') return serverError();
-    return HttpResponse.json(dashboardKpi);
+    return checkScenario(request) ?? HttpResponse.json(dashboardKpi);
   }),
 
   http.get(`${BASE_URL}/province-distribution`, ({ request }) => {
-    if (getScenario(request) === 'server-error') return serverError();
-    return HttpResponse.json(provinceDistribution);
+    return checkScenario(request) ?? HttpResponse.json(provinceDistribution);
   }),
 
   http.get(`${BASE_URL}/top20`, ({ request }) => {
-    if (getScenario(request) === 'server-error') return serverError();
-    return HttpResponse.json(top20Stores);
+    return checkScenario(request) ?? HttpResponse.json(top20Stores);
   }),
 
   http.get(`${BASE_URL}/incubation-steps`, ({ request }) => {
-    if (getScenario(request) === 'server-error') return serverError();
-    return HttpResponse.json(incubationSteps);
+    return checkScenario(request) ?? HttpResponse.json(incubationSteps);
   }),
 
   http.get(`${BASE_URL}/province-comparison`, ({ request }) => {
-    if (getScenario(request) === 'server-error') return serverError();
-    return HttpResponse.json(provinceComparison);
+    return checkScenario(request) ?? HttpResponse.json(provinceComparison);
   }),
 
   http.get(`${BASE_URL}/activity`, ({ request }) => {
-    if (getScenario(request) === 'server-error') return serverError();
-    return HttpResponse.json(activityItems);
+    return checkScenario(request) ?? HttpResponse.json(activityItems);
   }),
 
   http.get(`${BASE_URL}/reports-status`, ({ request }) => {
-    if (getScenario(request) === 'server-error') return serverError();
-    return HttpResponse.json(reportsStatus);
+    return checkScenario(request) ?? HttpResponse.json(reportsStatus);
   }),
 ];

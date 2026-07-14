@@ -1,6 +1,6 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,8 +16,7 @@ import {
 } from '@/components/ui/select';
 import { FieldError } from '@/components/shared/field-error';
 import { ROUTES } from '@/constants/routes';
-import { ROLE_LABELS } from '@/types/auth.types';
-import type { Role } from '@/types/auth.types';
+import { ROLE_LABELS, ROLES } from '@/types/auth.types';
 import { REGISTER_FORM_TEXT } from '../constants/auth-form.constants';
 import { registerSchema, REGISTERABLE_ROLES } from '../schemas/register.schema';
 import type { RegisterFormValues } from '../schemas/register.schema';
@@ -30,12 +29,11 @@ export function RegisterForm() {
   const {
     register,
     handleSubmit,
-    watch,
-    setValue,
+    control,
     formState: { errors },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { role: 'ENTREPRENEUR' },
+    defaultValues: { role: ROLES.ENTREPRENEUR },
   });
 
   return (
@@ -83,27 +81,24 @@ export function RegisterForm() {
 
           <div className="space-y-1.5">
             <Label htmlFor="role">{REGISTER_FORM_TEXT.roleLabel}</Label>
-            <Select
-              value={watch('role')}
-              onValueChange={(val) => setValue('role', val as RegisterFormValues['role'])}
-            >
-              <SelectTrigger id="role">
-                <SelectValue placeholder={REGISTER_FORM_TEXT.rolePlaceholder} />
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.keys(ROLE_LABELS) as Role[]).map((role) => (
-                  <SelectItem
-                    key={role}
-                    value={role}
-                    disabled={
-                      !REGISTERABLE_ROLES.includes(role as (typeof REGISTERABLE_ROLES)[number])
-                    }
-                  >
-                    {ROLE_LABELS[role]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Controller
+              name="role"
+              control={control}
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger id="role">
+                    <SelectValue placeholder={REGISTER_FORM_TEXT.rolePlaceholder} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {REGISTERABLE_ROLES.map((role) => (
+                      <SelectItem key={role} value={role}>
+                        {ROLE_LABELS[role]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
             <FieldError message={errors.role?.message} />
           </div>
 

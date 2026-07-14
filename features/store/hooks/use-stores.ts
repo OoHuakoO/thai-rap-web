@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/stores/auth-store';
+import { ROLES } from '@/types/auth.types';
 import { storeService } from '../services/store.service';
 import type {
   CreateStoreDto,
@@ -26,7 +27,7 @@ export function useStoreStats() {
   // API only allows ADMIN and ENTREPRENEUR on /stores/stats (403 PERM_001 for
   // everyone else) — matches who can open the /stores page. Skip the call for
   // other roles rather than let it fail and retry.
-  const canReadStats = useAuthStore((s) => s.hasRole(['ADMIN', 'ENTREPRENEUR']));
+  const canReadStats = useAuthStore((s) => s.hasRole([ROLES.ADMIN, ROLES.ENTREPRENEUR]));
   return useQuery({
     queryKey: storeKeys.stats(),
     queryFn: () => storeService.getStats(),

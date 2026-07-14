@@ -1,5 +1,7 @@
 // Text for the store explorer toolbar (search/filter bar + empty detail state).
 
+export const DEFAULT_STORE_PAGE_LIMIT = 10;
+
 export const STORE_EXPLORER_TEXT = {
   pageTitle: 'ข้อมูลร้านอาหาร',
   pageSubtitle: 'Restaurant Profiles',
@@ -9,6 +11,7 @@ export const STORE_EXPLORER_TEXT = {
   statusFilterLabel: 'สถานะ',
   allOptionLabel: 'ทั้งหมด',
   addStoreLabel: 'เพิ่มร้านอาหาร',
+  backToListLabel: 'กลับไปรายการร้านอาหาร',
   paginationItemLabel: 'ร้าน',
   noSelectionMessage: 'เลือกร้านอาหารเพื่อดูรายละเอียด',
 } as const;

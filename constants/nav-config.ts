@@ -7,18 +7,19 @@ import {
   UserCog,
   Settings,
   BookOpen,
-} from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
-import type { Role } from '@/types/auth.types'
-import { ROUTES } from './routes'
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import type { Role } from '@/types/auth.types';
+import { ROLES } from '@/types/auth.types';
+import { ROUTES } from './routes';
 
 export interface NavItem {
-  label: string
-  labelTh: string
-  href: string
-  icon: LucideIcon
-  allowedRoles: Role[]
-  disabled?: boolean
+  label: string;
+  labelTh: string;
+  href: string;
+  icon: LucideIcon;
+  allowedRoles: Role[];
+  disabled?: boolean;
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -27,28 +28,28 @@ export const NAV_ITEMS: NavItem[] = [
     labelTh: 'ภาพรวมโครงการ',
     href: ROUTES.HOME,
     icon: Home,
-    allowedRoles: ['ADMIN', 'ASSESSOR', 'MENTOR', 'ME_TEAM', 'JUDGE'],
+    allowedRoles: [ROLES.ADMIN, ROLES.ASSESSOR, ROLES.MENTOR, ROLES.ME_TEAM, ROLES.JUDGE],
   },
   {
     label: 'Restaurant Profiles',
     labelTh: 'ข้อมูลร้านอาหาร',
     href: ROUTES.STORES,
     icon: UtensilsCrossed,
-    allowedRoles: ['ADMIN', 'ENTREPRENEUR'],
+    allowedRoles: [ROLES.ADMIN, ROLES.ENTREPRENEUR],
   },
   {
     label: 'Restaurant Assessment',
     labelTh: 'แบบประเมินร้าน',
     href: ROUTES.ASSESSMENT,
     icon: FileCheck2,
-    allowedRoles: ['ADMIN', 'ASSESSOR'],
+    allowedRoles: [ROLES.ADMIN, ROLES.ASSESSOR],
   },
   {
     label: 'Performance Analytics',
     labelTh: 'วิเคราะห์ผลการดำเนิน',
     href: ROUTES.ANALYTICS,
     icon: BarChart3,
-    allowedRoles: ['ADMIN', 'ASSESSOR', 'MENTOR', 'ME_TEAM', 'ENTREPRENEUR'],
+    allowedRoles: [ROLES.ADMIN, ROLES.ASSESSOR, ROLES.MENTOR, ROLES.ME_TEAM, ROLES.ENTREPRENEUR],
     disabled: true,
   },
   {
@@ -56,7 +57,7 @@ export const NAV_ITEMS: NavItem[] = [
     labelTh: 'คะแนนพิชชิ่ง',
     href: ROUTES.PITCHING,
     icon: Trophy,
-    allowedRoles: ['ADMIN', 'ASSESSOR', 'JUDGE', 'ME_TEAM'],
+    allowedRoles: [ROLES.ADMIN, ROLES.ASSESSOR, ROLES.JUDGE, ROLES.ME_TEAM],
     disabled: true,
   },
   {
@@ -64,7 +65,7 @@ export const NAV_ITEMS: NavItem[] = [
     labelTh: 'รายงานและส่งออก',
     href: ROUTES.REPORTS,
     icon: FileCheck2,
-    allowedRoles: ['ADMIN', 'ASSESSOR', 'MENTOR', 'ME_TEAM'],
+    allowedRoles: [ROLES.ADMIN, ROLES.ASSESSOR, ROLES.MENTOR, ROLES.ME_TEAM],
     disabled: true,
   },
   {
@@ -72,7 +73,7 @@ export const NAV_ITEMS: NavItem[] = [
     labelTh: 'ผู้ใช้งานและสิทธิ์',
     href: ROUTES.USERS,
     icon: UserCog,
-    allowedRoles: ['ADMIN', 'ME_TEAM'],
+    allowedRoles: [ROLES.ADMIN, ROLES.ME_TEAM],
     disabled: true,
   },
   {
@@ -80,10 +81,10 @@ export const NAV_ITEMS: NavItem[] = [
     labelTh: 'ตั้งค่า',
     href: ROUTES.SETTINGS,
     icon: Settings,
-    allowedRoles: ['ADMIN'],
+    allowedRoles: [ROLES.ADMIN],
     disabled: true,
   },
-]
+];
 
 export const NAV_BOTTOM_ITEMS: NavItem[] = [
   {
@@ -91,20 +92,27 @@ export const NAV_BOTTOM_ITEMS: NavItem[] = [
     labelTh: 'คู่มือการใช้งาน',
     href: ROUTES.MANUAL,
     icon: BookOpen,
-    allowedRoles: ['ADMIN', 'ASSESSOR', 'MENTOR', 'ENTREPRENEUR', 'JUDGE', 'ME_TEAM'],
+    allowedRoles: [
+      ROLES.ADMIN,
+      ROLES.ASSESSOR,
+      ROLES.MENTOR,
+      ROLES.ENTREPRENEUR,
+      ROLES.JUDGE,
+      ROLES.ME_TEAM,
+    ],
     disabled: true,
   },
-]
+];
 
 export function getNavItemsForRole(role: Role): NavItem[] {
-  return NAV_ITEMS.filter((item) => item.allowedRoles.includes(role))
+  return NAV_ITEMS.filter((item) => item.allowedRoles.includes(role));
 }
 
 export function getBottomNavItemsForRole(role: Role): NavItem[] {
-  return NAV_BOTTOM_ITEMS.filter((item) => item.allowedRoles.includes(role))
+  return NAV_BOTTOM_ITEMS.filter((item) => item.allowedRoles.includes(role));
 }
 
 export function getDefaultRouteForRole(role: Role): string {
-  const firstAccessible = getNavItemsForRole(role).find((item) => !item.disabled)
-  return firstAccessible?.href ?? ROUTES.HOME
+  const firstAccessible = getNavItemsForRole(role).find((item) => !item.disabled);
+  return firstAccessible?.href ?? ROUTES.HOME;
 }

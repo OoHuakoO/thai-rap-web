@@ -13,16 +13,8 @@ import { STORE_DIALOG_TEXT } from '../constants/store-dialog.constants';
 import { STORE_FORM_TEXT } from '../constants/store-form.constants';
 import { STORE_MEDIA_TEXT } from '../constants/store-media.constants';
 import { useUploadStoreDocument, useDeleteStoreDocument } from '../hooks/use-stores';
+import { getDocumentIconMeta } from '../utils/document-visuals';
 import type { StoreDocument } from '../types/store.types';
-
-function getDocIcon(fileType: string): { icon: string; className: string } {
-  if (fileType.includes('pdf')) return { icon: '📄', className: 'bg-destructive/10' };
-  if (fileType.includes('spreadsheet') || fileType.includes('excel')) {
-    return { icon: '📊', className: 'bg-score-green/10' };
-  }
-  if (fileType.startsWith('image/')) return { icon: '🖼', className: 'bg-blue-100' };
-  return { icon: '📝', className: 'bg-blue-100' };
-}
 
 interface StoreDocumentManagerProps {
   storeId: string;
@@ -85,7 +77,7 @@ export function StoreDocumentManager({ storeId, documents }: StoreDocumentManage
       {documents.length > 0 ? (
         <div className="flex flex-wrap gap-2">
           {documents.map((doc) => {
-            const { icon, className } = getDocIcon(doc.fileType);
+            const { icon, className } = getDocumentIconMeta(doc.fileType);
             return (
               <div key={doc.id} className="group relative w-16 text-center">
                 <a href={buildFileUrl(doc.url)} target="_blank" rel="noreferrer">

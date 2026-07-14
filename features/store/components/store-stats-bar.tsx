@@ -2,18 +2,9 @@
 
 import { Store, ClipboardList, ClipboardCheck, Trophy } from 'lucide-react';
 import { Loading } from '@/components/shared/loading';
+import { provinceChartColors } from '@/styles/tokens';
 import { useStoreStats } from '../hooks/use-stores';
 import { STORE_STATS_TEXT } from '../constants/store-stats-bar.constants';
-
-const PROVINCE_COLORS = [
-  '#F17128',
-  '#7B1FA2',
-  '#1976d2',
-  '#4caf50',
-  '#9E9E9E',
-  '#F44336',
-  '#00897B',
-];
 
 export function StoreStatsBar() {
   const { data: stats, isLoading } = useStoreStats();
@@ -117,7 +108,7 @@ export function StoreStatsBar() {
             <div key={p.province} className="flex items-center gap-2 text-sm">
               <span
                 className="h-2.5 w-2.5 flex-shrink-0 rounded-sm"
-                style={{ background: PROVINCE_COLORS[i % PROVINCE_COLORS.length] }}
+                style={{ background: provinceChartColors[i % provinceChartColors.length] }}
               />
               <span className="min-w-[72px] text-charcoal">{p.province}</span>
               <span className="text-muted-foreground">

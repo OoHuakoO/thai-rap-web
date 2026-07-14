@@ -16,16 +16,19 @@ import { PaginationBar } from '@/components/shared/pagination-bar';
 import { ROUTES } from '@/constants/routes';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useAuthStore } from '@/stores/auth-store';
+import { PERMISSIONS } from '@/types/auth.types';
 import { StoreList } from './store-list';
 import { StoreDetail } from './store-detail';
 import { StoreStatsBar } from './store-stats-bar';
 import { useStores, useStoreStats } from '../hooks/use-stores';
-import { STORE_EXPLORER_TEXT } from '../constants/store-explorer.constants';
+import {
+  STORE_EXPLORER_TEXT,
+  DEFAULT_STORE_PAGE_LIMIT,
+} from '../constants/store-explorer.constants';
 import { STORE_STATUS_LABELS } from '../types/store.types';
 import type { StoreStatus, StoreQueryParams } from '../types/store.types';
 
 const STATUS_OPTIONS = Object.entries(STORE_STATUS_LABELS) as [StoreStatus, string][];
-const DEFAULT_LIMIT = 10;
 
 export function StoreExplorer() {
   const can = useAuthStore((s) => s.can);
@@ -35,7 +38,7 @@ export function StoreExplorer() {
   const [status, setStatus] = useState<StoreStatus | 'ALL'>('ALL');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(DEFAULT_LIMIT);
+  const [limit, setLimit] = useState(DEFAULT_STORE_PAGE_LIMIT);
 
   const debouncedSearch = useDebounce(search, 300);
 
@@ -151,7 +154,7 @@ export function StoreExplorer() {
           </Select>
         </div>
 
-        {can('store:write') && (
+        {can(PERMISSIONS.STORE_WRITE) && (
           <Button className="ml-auto h-10 flex-shrink-0 gap-1.5" asChild>
             <Link href={ROUTES.STORE_NEW}>
               <Plus className="h-4 w-4" />

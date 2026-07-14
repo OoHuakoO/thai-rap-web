@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ROLES } from '@/types/auth.types';
 import {
   CREATE_USER_FORM_TEXT,
   CREATE_USER_ROLE_OPTIONS,
@@ -32,7 +33,7 @@ export function CreateUserForm() {
     formState: { errors },
   } = useForm<CreateUserFormValues>({
     resolver: zodResolver(createUserSchema),
-    defaultValues: { role: 'ENTREPRENEUR' },
+    defaultValues: { role: ROLES.ENTREPRENEUR },
   });
 
   const onSubmit = (data: CreateUserFormValues) => {

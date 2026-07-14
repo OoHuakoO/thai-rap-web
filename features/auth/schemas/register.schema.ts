@@ -1,7 +1,8 @@
 import { z } from 'zod';
+import { ROLES } from '@/types/auth.types';
 import { AUTH_VALIDATION_MESSAGES } from '../constants/auth-form.constants';
 
-export const REGISTERABLE_ROLES = ['ENTREPRENEUR', 'ASSESSOR'] as const;
+export const REGISTERABLE_ROLES = [ROLES.ENTREPRENEUR, ROLES.ASSESSOR] as const;
 
 export const registerSchema = z
   .object({

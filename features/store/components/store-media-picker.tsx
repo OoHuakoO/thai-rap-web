@@ -1,27 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import { Images, Plus, Upload, X } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { PhotoPreviewGrid } from '@/components/shared/photo-preview-grid';
-import { isFileSizeValid, fileTooLargeMessage } from '@/utils/validate-file-size';
 import { formatFileSize } from '@/utils/format-file-size';
 import { STORE_FORM_TEXT } from '../constants/store-form.constants';
 import { STORE_MEDIA_TEXT } from '../constants/store-media.constants';
 import { STORE_DETAIL_TEXT } from '../constants/store-detail.constants';
-
-function filterValidFiles(files: File[]): File[] {
-  const valid: File[] = [];
-  for (const file of files) {
-    if (isFileSizeValid(file)) {
-      valid.push(file);
-    } else {
-      toast.error(fileTooLargeMessage(file));
-    }
-  }
-  return valid;
-}
+import { filterValidFiles } from '../utils/filter-valid-files';
 
 interface PhotoPickerSectionProps {
   label: string;

@@ -14,7 +14,12 @@ export default function ForbiddenPage() {
       message="คุณไม่มีสิทธิ์เข้าถึงหน้านี้ กรุณาติดต่อผู้ดูแลระบบหากคิดว่านี่เป็นข้อผิดพลาด"
       actions={[
         { label: 'กลับหน้าหลัก', href: ROUTES.HOME, variant: 'default' },
-        { label: 'เข้าสู่ระบบอีกครั้ง', href: ROUTES.LOGIN, variant: 'outline' },
+        {
+          label: 'เข้าสู่ระบบอีกครั้ง',
+          href: ROUTES.LOGIN,
+          hideWhenAuthenticated: true,
+          variant: 'outline',
+        },
       ]}
     />
   )

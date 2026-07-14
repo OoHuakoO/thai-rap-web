@@ -4,35 +4,22 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { Eye, Pencil, Trash2, Store as StoreIcon } from 'lucide-react';
 import { DataTable } from '@/components/shared/data-table';
-import { StatusBadge, type StatusVariant } from '@/components/shared/status-badge';
+import { StatusBadge } from '@/components/shared/status-badge';
 import { useConfirm } from '@/components/shared/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import { useAuthStore } from '@/stores/auth-store';
+import { PERMISSIONS } from '@/types/auth.types';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { buildFileUrl } from '@/utils/build-file-url';
 import { cn } from '@/utils/cn';
+import { formatThaiDate } from '@/utils/format-thai-date';
 import { STORE_DIALOG_TEXT } from '../constants/store-dialog.constants';
-import { STORE_LIST_TEXT } from '../constants/store-list.constants';
+import { STORE_LIST_TEXT, STORE_LIST_STATUS_VARIANT } from '../constants/store-list.constants';
 import { useStores, useDeleteStore } from '../hooks/use-stores';
 import { STORE_STATUS_LABELS } from '../types/store.types';
-import type { Store, StoreStatus, StoreQueryParams } from '../types/store.types';
+import type { Store, StoreQueryParams } from '../types/store.types';
 import type { TableColumn } from '@/types';
-
-const STATUS_VARIANT: Record<StoreStatus, StatusVariant> = {
-  REGISTERED: 'inactive',
-  T0_COMPLETED: 'new',
-  CAMP_COMPLETED: 'pending',
-  T1_COMPLETED: 'purple',
-  PITCHING_COMPLETED: 'pending',
-  SELECTED: 'pass',
-  CONDITIONAL_SELECTED: 'warning',
-  WAITING_LIST: 'pending',
-  NOT_SELECTED: 'fail',
-  FIELD_AUDITED: 'pending',
-  IDP_CREATED: 'pending',
-  COMPLETED: 'active',
-};
 
 interface StoreListProps {
   query?: StoreQueryParams;
@@ -95,7 +82,10 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
       header: STORE_LIST_TEXT.statusHeader,
       className: 'text-center',
       cell: (row) => (
-        <StatusBadge status={STATUS_VARIANT[row.status]} label={STORE_STATUS_LABELS[row.status]} />
+        <StatusBadge
+          status={STORE_LIST_STATUS_VARIANT[row.status]}
+          label={STORE_STATUS_LABELS[row.status]}
+        />
       ),
     },
     {
@@ -119,11 +109,7 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
             <p className="text-xs font-medium text-charcoal">{row.latestAssessorName}</p>
             {row.latestAssessedAt && (
               <p className="text-[10px] text-muted-foreground">
-                {new Date(row.latestAssessedAt).toLocaleDateString('th-TH', {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-                })}
+                {formatThaiDate(row.latestAssessedAt)}
               </p>
             )}
           </div>
@@ -150,7 +136,7 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
               <Eye className="h-3.5 w-3.5" />
             </Link>
           </Button>
-          {can('store:write') && (
+          {can(PERMISSIONS.STORE_WRITE) && (
             <Button variant="outline" size="icon" className="h-7 w-7" asChild>
               <Link
                 href={ROUTES.STORE_EDIT(row.id)}
@@ -161,7 +147,7 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
               </Link>
             </Button>
           )}
-          {can('store:delete') && (
+          {can(PERMISSIONS.STORE_DELETE) && (
             <Button
               variant="outline"
               size="icon"

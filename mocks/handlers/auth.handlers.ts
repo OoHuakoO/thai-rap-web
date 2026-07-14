@@ -2,6 +2,8 @@ import { http, HttpResponse } from 'msw';
 import { userDb } from '../fixtures/user.fixtures';
 import { authSession } from '../fixtures/auth.fixtures';
 import { createUser } from '../factories/user.factory';
+import { getScenario, serverError } from '../utils/scenario';
+import { HTTP_STATUS } from '@/constants/http-status';
 import type {
   LoginDto,
   LoginResponse,
@@ -15,35 +17,26 @@ import { API_URL } from '@/constants';
 
 const BASE_URL = `${API_URL}/auth`;
 
-function getScenario(request: Request): string {
-  return request.headers.get('X-Mock-Scenario') ?? 'success';
-}
-
+// login failures use their own code (AUTH_001, Thai copy) — distinct from the
+// generic AUTH_003 "Unauthorized" used by route-guard checks elsewhere.
 function unauthorized(message = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'): Response {
   return HttpResponse.json<ApiErrorResponse>(
     { success: false, error: { code: 'AUTH_001', message } },
-    { status: 401 }
+    { status: HTTP_STATUS.UNAUTHORIZED }
   );
 }
 
 function conflict(message: string): Response {
   return HttpResponse.json<ApiErrorResponse>(
     { success: false, error: { code: 'USER_002', message } },
-    { status: 409 }
-  );
-}
-
-function serverError(): Response {
-  return HttpResponse.json<ApiErrorResponse>(
-    { success: false, error: { code: 'SYS_001', message: 'Internal server error' } },
-    { status: 500 }
+    { status: HTTP_STATUS.CONFLICT }
   );
 }
 
 function refreshTokenInvalid(): Response {
   return HttpResponse.json<ApiErrorResponse>(
     { success: false, error: { code: 'AUTH_004', message: 'Refresh token is invalid' } },
-    { status: 401 }
+    { status: HTTP_STATUS.UNAUTHORIZED }
   );
 }
 
@@ -92,7 +85,7 @@ export const authHandlers = [
     };
     return HttpResponse.json<RegisterResponse>(
       { user, tokens: mockTokens(created.id) },
-      { status: 201 }
+      { status: HTTP_STATUS.CREATED }
     );
   }),
 
