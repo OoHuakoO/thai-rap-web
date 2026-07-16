@@ -66,7 +66,12 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
   const handleScoreChange = (questionId: number, score: number) => {
     const question = assessment.questions.find((q) => q.questionId === questionId);
     updateScore.mutate(
-      { questionId, rawScore: score, note: question?.note ?? undefined },
+      {
+        questionId,
+        rawScore: score,
+        note: question?.note ?? undefined,
+        suggestion: question?.suggestion ?? undefined,
+      },
       { onError: (err) => toast.error(extractErrorMessage(err)) }
     );
   };
@@ -75,7 +80,16 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
     const question = assessment.questions.find((q) => q.questionId === questionId);
     if (question?.rawScore === null || question?.rawScore === undefined) return;
     updateScore.mutate(
-      { questionId, rawScore: question.rawScore, note },
+      { questionId, rawScore: question.rawScore, note, suggestion: question.suggestion ?? undefined },
+      { onError: (err) => toast.error(extractErrorMessage(err)) }
+    );
+  };
+
+  const handleSuggestionChange = (questionId: number, suggestion: string) => {
+    const question = assessment.questions.find((q) => q.questionId === questionId);
+    if (question?.rawScore === null || question?.rawScore === undefined) return;
+    updateScore.mutate(
+      { questionId, rawScore: question.rawScore, note: question.note ?? undefined, suggestion },
       { onError: (err) => toast.error(extractErrorMessage(err)) }
     );
   };
@@ -217,6 +231,7 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
               isUploading={uploadEvidence.isPending}
               onScoreChange={handleScoreChange}
               onNoteChange={handleNoteChange}
+              onSuggestionChange={handleSuggestionChange}
               onUploadEvidence={handleUploadEvidence}
               onDeleteEvidence={handleDeleteEvidence}
               onSaveDraft={handleSaveDraft}

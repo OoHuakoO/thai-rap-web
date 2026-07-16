@@ -72,6 +72,8 @@ export const QUESTION_ROW_TEXT = {
   attachFile: 'แนบไฟล์',
   notePlaceholderLocked: 'ให้คะแนนก่อนเพื่อบันทึกหมายเหตุ',
   notePlaceholder: 'บันทึกผู้ประเมิน',
+  suggestionPlaceholderLocked: 'ให้คะแนนก่อนเพื่อบันทึกข้อเสนอแนะ',
+  suggestionPlaceholder: 'ข้อเสนอแนะเบื้องต้น',
   deleteFileAria: (fileName: string) => `ลบไฟล์ ${fileName}`,
 } as const;
 

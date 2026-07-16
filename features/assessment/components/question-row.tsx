@@ -33,6 +33,7 @@ interface QuestionRowProps {
   isUploading?: boolean;
   onScoreChange: (score: number) => void;
   onNoteChange: (note: string) => void;
+  onSuggestionChange: (suggestion: string) => void;
   onUploadEvidence: (file: File) => void;
   onDeleteEvidence: (evidenceId: string) => void;
 }
@@ -44,12 +45,16 @@ export function QuestionRow({
   isUploading,
   onScoreChange,
   onNoteChange,
+  onSuggestionChange,
   onUploadEvidence,
   onDeleteEvidence,
 }: QuestionRowProps) {
   const [note, setNote] = useState(question.note ?? '');
   const debouncedNote = useDebounce(note, 600);
   const lastSent = useRef(question.note ?? '');
+  const [suggestion, setSuggestion] = useState(question.suggestion ?? '');
+  const debouncedSuggestion = useDebounce(suggestion, 600);
+  const lastSentSuggestion = useRef(question.suggestion ?? '');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -59,6 +64,14 @@ export function QuestionRow({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedNote]);
+
+  useEffect(() => {
+    if (debouncedSuggestion !== lastSentSuggestion.current) {
+      lastSentSuggestion.current = debouncedSuggestion;
+      onSuggestionChange(debouncedSuggestion);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSuggestion]);
 
   const status = getStatus(question.rawScore);
   const canAttach = !locked && question.rawScore !== null;
@@ -162,8 +175,19 @@ export function QuestionRow({
           rows={2}
         />
       </td>
-      <td className="max-w-[160px] px-2 py-2.5 text-xs italic text-muted-foreground">
-        {question.suggestion ?? ''}
+      <td className="min-w-[160px] px-2 py-2.5">
+        <Textarea
+          placeholder={
+            question.rawScore === null
+              ? QUESTION_ROW_TEXT.suggestionPlaceholderLocked
+              : QUESTION_ROW_TEXT.suggestionPlaceholder
+          }
+          value={suggestion}
+          onChange={(e) => setSuggestion(e.target.value)}
+          disabled={locked || question.rawScore === null}
+          className="min-h-0 py-1.5 text-xs"
+          rows={2}
+        />
       </td>
       <td className="px-2 py-2.5">
         <StatusBadge status={status.variant} label={status.label} className="whitespace-nowrap" />

@@ -13,6 +13,7 @@ interface AssessTableProps {
   isUploading?: boolean;
   onScoreChange: (questionId: number, score: number) => void;
   onNoteChange: (questionId: number, note: string) => void;
+  onSuggestionChange: (questionId: number, suggestion: string) => void;
   onUploadEvidence: (questionId: number, file: File) => void;
   onDeleteEvidence: (evidenceId: string) => void;
   onSaveDraft: () => void;
@@ -27,6 +28,7 @@ export function AssessTable({
   isUploading,
   onScoreChange,
   onNoteChange,
+  onSuggestionChange,
   onUploadEvidence,
   onDeleteEvidence,
   onSaveDraft,
@@ -103,6 +105,7 @@ export function AssessTable({
                 isUploading={isUploading}
                 onScoreChange={(score) => onScoreChange(q.questionId, score)}
                 onNoteChange={(note) => onNoteChange(q.questionId, note)}
+                onSuggestionChange={(suggestion) => onSuggestionChange(q.questionId, suggestion)}
                 onUploadEvidence={(file) => onUploadEvidence(q.questionId, file)}
                 onDeleteEvidence={onDeleteEvidence}
               />

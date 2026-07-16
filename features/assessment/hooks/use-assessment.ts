@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { assessmentService, dimensionService } from '../services/assessment.service'
-import type { Round, UpdateScoreDto } from '../types/assessment.types'
+import type { Assessment, Round, UpdateScoreDto } from '../types/assessment.types'
 
 export const assessmentKeys = {
   all: ['assessments'] as const,
@@ -46,8 +46,19 @@ export function useUpdateScore(storeId: string, round: Round, assessmentId: stri
   return useMutation({
     mutationFn: ({ questionId, ...data }: UpdateScoreDto & { questionId: number }) =>
       assessmentService.updateScore(assessmentId, questionId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: assessmentKeys.byStoreRound(storeId, round) })
+    // The PUT response is the saved question — patch it into the cached
+    // assessment instead of refetching all 50 questions after every save.
+    onSuccess: (updated) => {
+      queryClient.setQueryData<Assessment>(
+        assessmentKeys.byStoreRound(storeId, round),
+        (prev) =>
+          prev && {
+            ...prev,
+            questions: prev.questions.map((q) =>
+              q.questionId === updated.questionId ? { ...q, ...updated } : q
+            ),
+          }
+      )
     },
   })
 }
