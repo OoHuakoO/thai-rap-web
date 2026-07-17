@@ -2,6 +2,7 @@
 
 import { QuestionRow } from './question-row';
 import { ASSESS_TABLE_TEXT } from '../constants/assessment-text.constants';
+import { sumQuestionScores } from '../utils/dimension-score';
 import type { AssessmentQuestion, Dimension } from '../types/assessment.types';
 
 interface AssessTableProps {
@@ -30,8 +31,7 @@ export function AssessTable({
   onDeleteEvidence,
 }: AssessTableProps) {
   const sorted = [...questions].sort((a, b) => a.questionNo - b.questionNo);
-  const max = sorted.length * 4;
-  const sum = sorted.reduce((acc, q) => acc + (q.rawScore ?? 0), 0);
+  const { sum, max } = sumQuestionScores(sorted);
   const pct = max === 0 ? 0 : Math.round((sum / max) * 100);
   const firstNo = sorted[0]?.questionNo;
   const lastNo = sorted[sorted.length - 1]?.questionNo;

@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { StatusBadge, type StatusVariant } from '@/components/shared/status-badge';
 import { cn } from '@/utils/cn';
 import { buildFileUrl } from '@/utils/build-file-url';
+import { formatFileSize } from '@/utils/format-file-size';
 import { isFileSizeValid, fileTooLargeMessage } from '@/utils/validate-file-size';
 import { ScoreButtonGroup } from './score-button-group';
 import { QUESTION_ROW_TEXT } from '../constants/assessment-text.constants';
@@ -17,12 +18,6 @@ function getStatus(score: number | null): { variant: StatusVariant; label: strin
   if (score === null) return { variant: 'inactive', label: QUESTION_ROW_TEXT.statusNotAssessed };
   if (score <= 1) return { variant: 'fail', label: QUESTION_ROW_TEXT.statusNeedsFix };
   return { variant: 'pass', label: QUESTION_ROW_TEXT.statusDone };
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 interface QuestionRowProps {
@@ -128,7 +123,7 @@ export function QuestionRow({
                 <button
                   type="button"
                   onClick={() => onDeleteEvidence(file.id)}
-                  className="text-orange/70 flex-shrink-0 hover:text-destructive"
+                  className="flex-shrink-0 text-orange/70 hover:text-destructive"
                   aria-label={QUESTION_ROW_TEXT.deleteFileAria(file.filename)}
                 >
                   <X className="h-2.5 w-2.5" />

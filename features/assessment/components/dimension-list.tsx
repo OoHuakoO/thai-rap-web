@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { DIMENSION_LIST_TEXT, SCORE_LABELS } from '../constants/assessment-text.constants';
+import { sumQuestionScores } from '../utils/dimension-score';
 import type { AssessmentQuestion, Dimension } from '../types/assessment.types';
 
 const SCORE_LEGEND = SCORE_LABELS.map((label, value) => ({ value, label }));
@@ -74,11 +75,11 @@ export function DimensionList({
       <div className="space-y-1.5 px-2 pb-2">
         {dimensions.map((dim) => {
           const dimQuestions = questions.filter((q) => q.dimensionId === dim.id);
-          const max = dimQuestions.length * 4;
-          const sum = dimQuestions.reduce((acc, q) => acc + (q.rawScore ?? 0), 0);
+          const { sum, max } = sumQuestionScores(dimQuestions);
           const pct = max === 0 ? 0 : Math.round((sum / max) * 100);
           const active = dim.id === selectedId;
-          const { icon: Icon, className: iconClassName } = DIMENSION_ICON[dim.id] ?? DIMENSION_ICON[1];
+          const { icon: Icon, className: iconClassName } =
+            DIMENSION_ICON[dim.id] ?? DIMENSION_ICON[1];
 
           return (
             <button

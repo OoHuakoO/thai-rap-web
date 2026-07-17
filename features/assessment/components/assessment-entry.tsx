@@ -16,7 +16,11 @@ export function AssessmentEntry() {
   const router = useRouter();
   const { data, isLoading, isError, error } = useStores({ limit: 1 });
   const firstStore = data?.items[0];
-  const { data: summaries } = useAssessmentSummaries(firstStore?.id ?? '');
+  const {
+    data: summaries,
+    isError: isSummariesError,
+    error: summariesError,
+  } = useAssessmentSummaries(firstStore?.id ?? '');
 
   useEffect(() => {
     if (!firstStore || !summaries) return;
@@ -28,6 +32,12 @@ export function AssessmentEntry() {
 
   if (isError) {
     return <p className="py-8 text-center text-destructive">{extractErrorMessage(error)}</p>;
+  }
+
+  if (isSummariesError) {
+    return (
+      <p className="py-8 text-center text-destructive">{extractErrorMessage(summariesError)}</p>
+    );
   }
 
   if (!isLoading && data && !firstStore) {

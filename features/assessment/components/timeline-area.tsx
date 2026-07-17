@@ -31,6 +31,7 @@ interface TimelineAreaProps {
   round: Round;
   assessmentId: string;
   notes: string | null;
+  canEdit: boolean;
   className?: string;
 }
 
@@ -39,6 +40,7 @@ export function TimelineArea({
   round,
   assessmentId,
   notes,
+  canEdit,
   className,
 }: TimelineAreaProps) {
   const { data: summaries } = useAssessmentSummaries(storeId);
@@ -90,7 +92,7 @@ export function TimelineArea({
                 className={cn(
                   'min-w-[170px] rounded-lg border-2 px-4 py-3',
                   item.status === 'current' && 'border-orange bg-cream',
-                  item.status === 'done' && 'bg-score-green/10 border-score-green',
+                  item.status === 'done' && 'border-score-green bg-score-green/10',
                   item.status === 'draft' && 'border-border bg-muted/30'
                 )}
               >
@@ -113,9 +115,7 @@ export function TimelineArea({
                       : TIMELINE_TEXT.statusDraft}
                 </span>
               </div>
-              {i < items.length - 1 && (
-                <ArrowRight className="h-5 w-5 flex-shrink-0 text-border" />
-              )}
+              {i < items.length - 1 && <ArrowRight className="h-5 w-5 flex-shrink-0 text-border" />}
             </div>
           ))}
         </div>
@@ -123,10 +123,11 @@ export function TimelineArea({
         <div className="min-w-[260px] max-w-[340px] rounded-lg border-l-4 border-l-orange bg-muted/30 p-4">
           <div className="mb-2 flex items-center justify-between">
             <p className="text-sm font-bold text-charcoal">{TIMELINE_TEXT.notesTitle}</p>
-            {!editingNotes && (
+            {!editingNotes && canEdit && (
               <button
                 type="button"
                 onClick={() => setEditingNotes(true)}
+                aria-label={TIMELINE_TEXT.editNotesAria}
                 className="text-muted-foreground hover:text-orange"
               >
                 <Pencil className="h-4 w-4" />

@@ -7,6 +7,8 @@ import { Loading } from '@/components/shared/loading';
 import { ProgressBar } from '@/components/shared/progress-bar';
 import { useAlert, useConfirm } from '@/components/shared/confirm-dialog';
 import { Button } from '@/components/ui/button';
+import { useAuthStore } from '@/stores/auth-store';
+import { PERMISSIONS } from '@/types/auth.types';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { useStore } from '@/features/store';
 import { AssessmentStorePicker } from './assessment-store-picker';
@@ -44,6 +46,7 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
   const [highlightedId, setHighlightedId] = useState<number | null>(null);
   const confirm = useConfirm();
   const alert = useAlert();
+  const can = useAuthStore((s) => s.can);
 
   const updateScore = useUpdateScore(effectiveStoreId, round, assessment?.id ?? '');
   const submitAssessment = useSubmitAssessment(effectiveStoreId, round, assessment?.id ?? '');
@@ -76,7 +79,12 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
 
   if (!assessment) return null;
 
+  const canWrite = can(PERMISSIONS.ASSESSMENT_WRITE);
   const locked = assessment.status === 'SUBMITTED';
+  // Mentors/entrepreneurs can reach this page (assessment:read) but can't
+  // score — fold both "already submitted" and "no write permission" into
+  // one read-only flag consumed by the table/inputs below.
+  const readOnly = locked || !canWrite;
   const scoredCount = assessment.questions.filter((q) => q.rawScore !== null).length;
   const progressPct = Math.round((scoredCount / TOTAL_QUESTIONS) * 100);
   const dimension = dimensions?.find((d) => d.id === selectedDim) ?? dimensions?.[0];
@@ -99,7 +107,12 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
     const question = assessment.questions.find((q) => q.questionId === questionId);
     if (question?.rawScore === null || question?.rawScore === undefined) return;
     updateScore.mutate(
-      { questionId, rawScore: question.rawScore, note, suggestion: question.suggestion ?? undefined },
+      {
+        questionId,
+        rawScore: question.rawScore,
+        note,
+        suggestion: question.suggestion ?? undefined,
+      },
       { onError: (err) => toast.error(extractErrorMessage(err)) }
     );
   };
@@ -207,32 +220,32 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
           onProvinceChange={() => setIsStoreCleared(true)}
         />
         <div>
-          <p className="mb-1 text-sm text-muted-foreground">
-            {ASSESSMENT_FORM_TEXT.roundLabel}
-          </p>
+          <p className="mb-1 text-sm text-muted-foreground">{ASSESSMENT_FORM_TEXT.roundLabel}</p>
           <RoundPills storeId={storeId} activeRound={round} />
         </div>
         <div className="min-w-[160px] flex-1">
-          <p className="mb-1 text-sm text-muted-foreground">
-            {ASSESSMENT_FORM_TEXT.progressLabel}
-          </p>
+          <p className="mb-1 text-sm text-muted-foreground">{ASSESSMENT_FORM_TEXT.progressLabel}</p>
           <div className="flex items-center gap-2">
             <ProgressBar value={progressPct} className="flex-1" />
             <span className="text-sm font-bold text-orange">{progressPct}%</span>
           </div>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <Button
-            variant="outline"
-            className="hover:bg-orange/10 gap-1.5 border-orange text-orange hover:text-orange"
-            onClick={handleSaveDraft}
-            disabled={locked}
-          >
-            {ASSESSMENT_FORM_TEXT.saveDraft}
-          </Button>
-          <Button onClick={handleSaveNext} disabled={locked || submitAssessment.isPending}>
-            {ASSESSMENT_FORM_TEXT.saveNext}
-          </Button>
+          {canWrite && (
+            <>
+              <Button
+                variant="outline"
+                className="gap-1.5 border-orange text-orange hover:bg-orange/10 hover:text-orange"
+                onClick={handleSaveDraft}
+                disabled={locked}
+              >
+                {ASSESSMENT_FORM_TEXT.saveDraft}
+              </Button>
+              <Button onClick={handleSaveNext} disabled={locked || submitAssessment.isPending}>
+                {ASSESSMENT_FORM_TEXT.saveNext}
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -250,7 +263,7 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
             <AssessTable
               dimension={dimension}
               questions={dimQuestions}
-              locked={locked}
+              locked={readOnly}
               highlightedId={highlightedId}
               isUploading={uploadEvidence.isPending}
               onScoreChange={handleScoreChange}
@@ -270,7 +283,7 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
             questions={assessment.questions}
             redFlags={assessment.redFlags}
             isSubmitted={locked}
-            className="lg:col-start-3 lg:row-start-1 lg:row-span-2"
+            className="lg:col-start-3 lg:row-span-2 lg:row-start-1"
           />
 
           <TimelineArea
@@ -278,7 +291,8 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
             round={round}
             assessmentId={assessment.id}
             notes={assessment.notes}
-            className="lg:col-start-1 lg:col-span-2 lg:row-start-2"
+            canEdit={canWrite}
+            className="lg:col-span-2 lg:col-start-1 lg:row-start-2"
           />
         </div>
       )}

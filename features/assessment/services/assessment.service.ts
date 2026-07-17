@@ -1,5 +1,5 @@
-import api from '@/services/api'
-import type { PaginatedResponse } from '@/types/api.types'
+import api from '@/services/api';
+import type { PaginatedResponse } from '@/types/api.types';
 import type {
   Assessment,
   AssessmentSummary,
@@ -10,11 +10,11 @@ import type {
   UpdateScoreDto,
   Dimension,
   Round,
-} from '../types/assessment.types'
+} from '../types/assessment.types';
 
 export const dimensionService = {
   getAll: () => api.get<Dimension[]>('/dimensions').then((res) => res.data),
-}
+};
 
 export const assessmentService = {
   findByStoreAndRound: (storeId: string, round: Round) =>
@@ -45,15 +45,15 @@ export const assessmentService = {
     api.post<Assessment>(`/assessments/${assessmentId}/submit`).then((res) => res.data),
 
   uploadEvidence: (assessmentId: string, questionId: number, file: File) => {
-    const form = new FormData()
-    form.append('file', file)
+    const form = new FormData();
+    form.append('file', file);
     // Explicit multipart header — the client default of application/json would
     // make axios serialize the FormData to JSON instead of a multipart body.
     return api
       .post<EvidenceFile>(`/assessments/${assessmentId}/scores/${questionId}/evidence`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
-      .then((res) => res.data)
+      .then((res) => res.data);
   },
 
   deleteEvidence: (assessmentId: string, evidenceId: string) =>
@@ -63,7 +63,7 @@ export const assessmentService = {
     api.patch<Assessment>(`/assessments/${assessmentId}/notes`, { notes }).then((res) => res.data),
 
   getRank: (storeId: string, round: Round) =>
-    api.get<AssessmentRank>('/assessments/rank', { params: { storeId, round } }).then((res) => res.data),
-
-  remove: (assessmentId: string) => api.delete(`/assessments/${assessmentId}`),
-}
+    api
+      .get<AssessmentRank>('/assessments/rank', { params: { storeId, round } })
+      .then((res) => res.data),
+};

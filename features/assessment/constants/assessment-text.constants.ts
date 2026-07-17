@@ -78,6 +78,7 @@ export const TIMELINE_TEXT = {
   title: 'บันทึกและประวัติการประเมิน',
   subtitle: 'บันทึกเพิ่มเติมเกี่ยวกับผู้ประเมิน',
   notesTitle: 'บันทึกเพิ่มเติม',
+  editNotesAria: 'แก้ไขบันทึกเพิ่มเติม',
   done: 'เสร็จสิ้น',
   emptyNotes: 'ยังไม่มีบันทึกเพิ่มเติม',
   statusCurrent: 'กำลังประเมิน',

@@ -2,28 +2,14 @@
 
 import { useRouter } from 'next/navigation';
 import { DataTable } from '@/components/shared/data-table';
-import { StatusBadge, type StatusVariant } from '@/components/shared/status-badge';
+import { StatusBadge } from '@/components/shared/status-badge';
 import { ROUTES } from '@/constants/routes';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { useStores, STORE_STATUS_LABELS } from '@/features/store';
-import type { Store, StoreStatus } from '@/features/store';
+import type { Store } from '@/features/store';
 import type { TableColumn } from '@/types';
 import { EMPTY_STORE_MESSAGE, STORE_LIST_TEXT } from '../constants/assessment-text.constants';
-
-const STATUS_VARIANT: Record<StoreStatus, StatusVariant> = {
-  REGISTERED: 'new',
-  T0_COMPLETED: 'pending',
-  CAMP_COMPLETED: 'pending',
-  T1_COMPLETED: 'pending',
-  PITCHING_COMPLETED: 'pending',
-  SELECTED: 'pass',
-  CONDITIONAL_SELECTED: 'warning',
-  WAITING_LIST: 'pending',
-  NOT_SELECTED: 'fail',
-  FIELD_AUDITED: 'pending',
-  IDP_CREATED: 'pending',
-  COMPLETED: 'active',
-};
+import { STORE_STATUS_VARIANT } from '../constants/store-status-variant.constants';
 
 export function AssessmentStoreList() {
   const router = useRouter();
@@ -56,7 +42,10 @@ export function AssessmentStoreList() {
       key: 'status',
       header: STORE_LIST_TEXT.columnStatus,
       cell: (row) => (
-        <StatusBadge status={STATUS_VARIANT[row.status]} label={STORE_STATUS_LABELS[row.status]} />
+        <StatusBadge
+          status={STORE_STATUS_VARIANT[row.status]}
+          label={STORE_STATUS_LABELS[row.status]}
+        />
       ),
     },
   ];

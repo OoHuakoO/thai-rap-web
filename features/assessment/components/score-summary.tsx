@@ -11,30 +11,17 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis } from 'recharts';
 import { ProgressBar } from '@/components/shared/progress-bar';
-import { StatusBadge, type StatusVariant } from '@/components/shared/status-badge';
+import { StatusBadge } from '@/components/shared/status-badge';
 import { cn } from '@/utils/cn';
 import { useDimensions, useAssessmentRank } from '../hooks/use-assessment';
 import { getZone, ZONE_DESCRIPTIONS, ZONE_COLORS, ZONE_BADGE_CLASSES } from '../utils/zone';
+import { sumQuestionScores } from '../utils/dimension-score';
 import { SCORE_SUMMARY_TEXT } from '../constants/assessment-text.constants';
+import { STORE_STATUS_VARIANT } from '../constants/store-status-variant.constants';
 import { RED_FLAG_LABELS } from '../types/assessment.types';
 import type { AssessmentQuestion, RedFlag, Round } from '../types/assessment.types';
 import { STORE_STATUS_LABELS } from '@/features/store';
-import type { Store, StoreStatus } from '@/features/store';
-
-const STATUS_VARIANT: Record<StoreStatus, StatusVariant> = {
-  REGISTERED: 'new',
-  T0_COMPLETED: 'pending',
-  CAMP_COMPLETED: 'pending',
-  T1_COMPLETED: 'pending',
-  PITCHING_COMPLETED: 'pending',
-  SELECTED: 'pass',
-  CONDITIONAL_SELECTED: 'warning',
-  WAITING_LIST: 'pending',
-  NOT_SELECTED: 'fail',
-  FIELD_AUDITED: 'pending',
-  IDP_CREATED: 'pending',
-  COMPLETED: 'active',
-};
+import type { Store } from '@/features/store';
 
 const radarChartConfig = {
   thisStore: { label: SCORE_SUMMARY_TEXT.radarThisStore, color: 'rgb(var(--color-orange))' },
@@ -77,8 +64,7 @@ export function ScoreSummary({
 
   const dimensionScores = (dimensions ?? []).map((dim) => {
     const dimQuestions = questions.filter((q) => q.dimensionId === dim.id);
-    const sum = dimQuestions.reduce((acc, q) => acc + (q.rawScore ?? 0), 0);
-    const max = dimQuestions.length * 4;
+    const { sum, max } = sumQuestionScores(dimQuestions);
     const pct = max === 0 ? 0 : Math.round((sum / max) * 1000) / 10;
     return { ...dim, pct };
   });
@@ -113,7 +99,7 @@ export function ScoreSummary({
               <p className="truncate text-[11.5px] text-muted-foreground">{store.province}</p>
             </div>
             <StatusBadge
-              status={STATUS_VARIANT[store.status]}
+              status={STORE_STATUS_VARIANT[store.status]}
               label={STORE_STATUS_LABELS[store.status]}
             />
           </div>

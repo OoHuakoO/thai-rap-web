@@ -28,9 +28,10 @@ export function ScoreButtonGroup({ value, disabled, onChange }: ScoreButtonGroup
             disabled={disabled}
             onClick={() => onChange(v)}
             title={`${v} - ${SCORE_LABELS[v]}`}
+            aria-pressed={value === v}
             className={cn(
               'flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md border-[1.5px] bg-muted/40 text-xs font-bold text-muted-foreground transition-all',
-              'hover:bg-orange/5 hover:border-orange hover:text-orange',
+              'hover:border-orange hover:bg-orange/5 hover:text-orange',
               'disabled:pointer-events-none disabled:opacity-50',
               value === v && SCORE_ACTIVE_CLASS[v]
             )}
