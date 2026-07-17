@@ -1,10 +1,22 @@
 'use client';
 
+import { ChefHat, ClipboardList, Landmark, Leaf, Rocket, TrendingUp, UserPlus, Users } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { DIMENSION_LIST_TEXT, SCORE_LABELS } from '../constants/assessment-text.constants';
 import type { AssessmentQuestion, Dimension } from '../types/assessment.types';
 
 const SCORE_LEGEND = SCORE_LABELS.map((label, value) => ({ value, label }));
+
+const DIMENSION_ICON: Record<number, { icon: typeof ChefHat; className: string }> = {
+  1: { icon: ChefHat, className: 'bg-violet-600' },
+  2: { icon: ClipboardList, className: 'bg-orange' },
+  3: { icon: TrendingUp, className: 'bg-emerald-600' },
+  4: { icon: Landmark, className: 'bg-blue-700' },
+  5: { icon: Users, className: 'bg-amber-500' },
+  6: { icon: UserPlus, className: 'bg-purple-600' },
+  7: { icon: Rocket, className: 'bg-teal-600' },
+  8: { icon: Leaf, className: 'bg-green-600' },
+};
 
 interface DimensionListProps {
   dimensions: Dimension[];
@@ -56,6 +68,7 @@ export function DimensionList({
           const sum = dimQuestions.reduce((acc, q) => acc + (q.rawScore ?? 0), 0);
           const pct = max === 0 ? 0 : Math.round((sum / max) * 100);
           const active = dim.id === selectedId;
+          const { icon: Icon, className: iconClassName } = DIMENSION_ICON[dim.id] ?? DIMENSION_ICON[1];
 
           return (
             <button
@@ -63,38 +76,27 @@ export function DimensionList({
               type="button"
               onClick={() => onSelect(dim.id)}
               className={cn(
-                'flex w-full items-center gap-2 border-b px-3 py-2 text-left transition-colors last:border-0 hover:bg-cream',
-                active && 'border-l-[3px] border-l-orange bg-cream pl-[9px]'
+                'flex w-full items-center gap-2.5 border-b px-3 py-2.5 text-left transition-colors last:border-0 hover:bg-cream',
+                active && 'bg-orange/10'
               )}
             >
               <span
                 className={cn(
-                  'flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground',
-                  active && 'bg-orange text-white'
+                  'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-white',
+                  iconClassName
                 )}
               >
-                {dim.id}
+                <Icon className="h-4 w-4" strokeWidth={2} />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-[11px] font-semibold leading-tight text-charcoal">
-                  {dim.name}
+                  {dim.id}. {dim.name}
                 </span>
                 <span className="block truncate text-[9px] leading-tight text-muted-foreground">
                   {dim.nameEn}
                 </span>
               </span>
-              <span className="flex-shrink-0 text-right">
-                <span className="block text-[11px] font-bold text-orange">{pct}%</span>
-                <span className="block text-[8.5px] text-muted-foreground">
-                  {DIMENSION_LIST_TEXT.weightLabel(dim.weight)}
-                </span>
-                <span className="mt-0.5 block h-[3px] w-11 rounded-full bg-muted">
-                  <span
-                    className="block h-full rounded-full bg-orange"
-                    style={{ width: `${pct}%` }}
-                  />
-                </span>
-              </span>
+              <span className="flex-shrink-0 text-[13px] font-bold text-charcoal">{pct}%</span>
             </button>
           );
         })}

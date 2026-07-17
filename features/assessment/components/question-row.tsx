@@ -16,7 +16,6 @@ import type { AssessmentQuestion } from '../types/assessment.types';
 function getStatus(score: number | null): { variant: StatusVariant; label: string } {
   if (score === null) return { variant: 'inactive', label: QUESTION_ROW_TEXT.statusNotAssessed };
   if (score <= 1) return { variant: 'fail', label: QUESTION_ROW_TEXT.statusNeedsFix };
-  if (score === 2) return { variant: 'warning', label: QUESTION_ROW_TEXT.statusInProgress };
   return { variant: 'pass', label: QUESTION_ROW_TEXT.statusDone };
 }
 

@@ -28,10 +28,10 @@ export function ProgressBar({
   return (
     <div className={cn('w-full space-y-1', className)}>
       {(label || showPercentage) && (
-        <div className="flex items-center justify-between text-sm">
-          {label && <span className="text-muted-foreground">{label}</span>}
+        <div className="flex items-center justify-between gap-2 text-sm">
+          {label && <span className="min-w-0 flex-1 truncate text-muted-foreground">{label}</span>}
           {showPercentage && (
-            <span className="font-medium tabular-nums">{clamped}%</span>
+            <span className="flex-shrink-0 font-medium tabular-nums">{clamped}%</span>
           )}
         </div>
       )}

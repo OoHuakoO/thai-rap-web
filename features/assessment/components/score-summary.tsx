@@ -1,6 +1,13 @@
 'use client';
 
+import { Binoculars, Box, MapPin, Trophy } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import {
   ChartContainer,
   ChartTooltip,
@@ -115,47 +122,71 @@ export function ScoreSummary({
         )}
 
         <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-lg bg-muted/40 p-2.5 text-center">
-            <p className="text-[9px] leading-tight text-muted-foreground">
-              {SCORE_SUMMARY_TEXT.selectedDimScore}
-            </p>
-            <p className="text-lg font-extrabold text-orange">
-              {selectedDim ? selectedDim.pct.toFixed(1) : '0.0'}
-              <span className="text-[10px] font-normal text-muted-foreground">/100</span>
-            </p>
+          <div className="flex items-center gap-2 rounded-lg bg-muted/40 p-2.5">
+            <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-violet-600 text-white">
+              <Box className="h-4 w-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-[9px] leading-tight text-muted-foreground">
+                {SCORE_SUMMARY_TEXT.selectedDimScore}
+              </p>
+              <p className="text-base font-extrabold text-orange">
+                {selectedDim ? selectedDim.pct.toFixed(1) : '0.0'}
+                <span className="text-[10px] font-normal text-muted-foreground">/100</span>
+              </p>
+            </div>
           </div>
-          <div className="rounded-lg bg-muted/40 p-2.5 text-center">
-            <p className="text-[9px] leading-tight text-muted-foreground">
-              {SCORE_SUMMARY_TEXT.weightedScore}
-            </p>
-            <p className="text-lg font-extrabold text-dark-nav">
-              {score.toFixed(2)}
-              <span className="text-[10px] font-normal text-muted-foreground">/100</span>
-            </p>
+          <div className="flex items-center gap-2 rounded-lg bg-muted/40 p-2.5">
+            <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-orange text-white">
+              <Binoculars className="h-4 w-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-[9px] leading-tight text-muted-foreground">
+                {SCORE_SUMMARY_TEXT.weightedScore}
+              </p>
+              <p className="text-base font-extrabold text-dark-nav">
+                {score.toFixed(2)}
+                <span className="text-[10px] font-normal text-muted-foreground">/100</span>
+              </p>
+            </div>
           </div>
         </div>
 
         {rank && (
           <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-lg bg-muted/40 p-2 text-center">
-              <p className="text-[9px] text-muted-foreground">{SCORE_SUMMARY_TEXT.provinceRank}</p>
-              <p className="text-sm font-extrabold text-dark-nav">
-                {rank.provinceRank ?? '—'}
-                <span className="text-[10px] font-normal text-muted-foreground">
-                  {' '}
-                  / {rank.provinceTotal}
-                </span>
-              </p>
+            <div className="flex items-center gap-2 rounded-lg bg-muted/40 p-2.5">
+              <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-700 text-white">
+                <MapPin className="h-4 w-4" />
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-[9px] text-muted-foreground">
+                  {SCORE_SUMMARY_TEXT.provinceRank}
+                </p>
+                <p className="text-sm font-extrabold text-dark-nav">
+                  {rank.provinceRank ?? '—'}
+                  <span className="text-[10px] font-normal text-muted-foreground">
+                    {' '}
+                    / {rank.provinceTotal}
+                  </span>
+                </p>
+              </div>
             </div>
-            <div className="rounded-lg bg-muted/40 p-2 text-center">
-              <p className="text-[9px] text-muted-foreground">{SCORE_SUMMARY_TEXT.overallRank}</p>
-              <p className="text-sm font-extrabold text-dark-nav">
-                {rank.overallRank ?? '—'}
-                <span className="text-[10px] font-normal text-muted-foreground">
-                  {' '}
-                  / {rank.overallTotal}
-                </span>
-              </p>
+            <div className="flex items-center gap-2 rounded-lg bg-muted/40 p-2.5">
+              <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-purple-600 text-white">
+                <Trophy className="h-4 w-4" />
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-[9px] text-muted-foreground">
+                  {SCORE_SUMMARY_TEXT.overallRank}
+                </p>
+                <p className="text-sm font-extrabold text-dark-nav">
+                  {rank.overallRank ?? '—'}
+                  <span className="text-[10px] font-normal text-muted-foreground">
+                    {' '}
+                    / {rank.overallTotal}
+                  </span>
+                </p>
+              </div>
             </div>
           </div>
         )}
@@ -220,36 +251,40 @@ export function ScoreSummary({
           </div>
         )}
 
-        <div className="border-t pt-2.5">
-          <p className="mb-1.5 text-[11px] font-bold text-charcoal">
-            {SCORE_SUMMARY_TEXT.compareTitle}
-          </p>
-          <ChartContainer config={radarChartConfig} style={{ height: 210 }}>
-            <RadarChart data={radarData}>
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <PolarGrid />
-              <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 8 }} />
-              <Radar
-                dataKey="thisStore"
-                stroke="var(--color-thisStore)"
-                fill="var(--color-thisStore)"
-                fillOpacity={0.25}
-              />
-              <Radar
-                dataKey="average"
-                stroke="var(--color-average)"
-                fill="var(--color-average)"
-                fillOpacity={0.08}
-                strokeDasharray="4 3"
-              />
-            </RadarChart>
-          </ChartContainer>
-          <div className="space-y-1.5">
-            {dimensionScores.map((dim) => (
-              <ProgressBar key={dim.id} value={dim.pct} label={dim.nameEn} showPercentage />
-            ))}
-          </div>
-        </div>
+        <Accordion type="single" collapsible className="border-t">
+          <AccordionItem value="compare" className="border-none">
+            <AccordionTrigger className="py-2.5 text-[11px] font-bold text-charcoal hover:no-underline">
+              {SCORE_SUMMARY_TEXT.compareTitle}
+            </AccordionTrigger>
+            <AccordionContent className="space-y-2 pb-0 pt-0">
+              <ChartContainer config={radarChartConfig} style={{ height: 180 }}>
+                <RadarChart data={radarData}>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <PolarGrid />
+                  <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 8 }} />
+                  <Radar
+                    dataKey="thisStore"
+                    stroke="var(--color-thisStore)"
+                    fill="var(--color-thisStore)"
+                    fillOpacity={0.25}
+                  />
+                  <Radar
+                    dataKey="average"
+                    stroke="var(--color-average)"
+                    fill="var(--color-average)"
+                    fillOpacity={0.08}
+                    strokeDasharray="4 3"
+                  />
+                </RadarChart>
+              </ChartContainer>
+              <div className="space-y-1.5">
+                {dimensionScores.map((dim) => (
+                  <ProgressBar key={dim.id} value={dim.pct} label={dim.nameEn} showPercentage />
+                ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </CardContent>
     </Card>
   );

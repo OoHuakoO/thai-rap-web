@@ -47,6 +47,25 @@ function conflict(): Response {
   );
 }
 
+// Mirrors ROUNDS_LOCKED_UNTIL_T1 in the API's AssessmentService.create().
+const LOCKED_UNTIL_T1: Round[] = ['T2', 'T3', 'T4'];
+
+function t1Lock(storeId: string, round: Round): Response | null {
+  if (!LOCKED_UNTIL_T1.includes(round)) return null;
+  const t1 = assessmentDb.findByStoreAndRound(storeId, 'T1');
+  if (t1?.status === 'SUBMITTED' || t1?.status === 'APPROVED') return null;
+  return HttpResponse.json<ApiErrorResponse>(
+    {
+      success: false,
+      error: {
+        code: 'ASSESS_003',
+        message: `ต้องส่งผลประเมินรอบ T1 ก่อน จึงจะเริ่มประเมินรอบ ${round} ได้`,
+      },
+    },
+    { status: HTTP_STATUS.BAD_REQUEST }
+  );
+}
+
 function guard(request: Request): Response | null {
   const scenario = getScenario(request);
   if (scenario === 'unauthorized') return unauthorized();
@@ -155,6 +174,9 @@ export const assessmentHandlers = [
       ]);
     }
     if (assessmentDb.findByStoreAndRound(body.storeId, body.round)) return conflict();
+
+    const locked = t1Lock(body.storeId, body.round);
+    if (locked) return locked;
 
     const assessorId = getMockUserId(request) ?? FALLBACK_ASSESSOR_ID;
     const created = assessmentDb.create(body.storeId, body.round, assessorId);

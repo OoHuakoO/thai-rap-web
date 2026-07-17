@@ -66,7 +66,6 @@ export const ASSESS_TABLE_TEXT = {
 export const QUESTION_ROW_TEXT = {
   statusNotAssessed: '⏸ ยังไม่ประเมิน',
   statusNeedsFix: '⚠ ต้องแก้ไข',
-  statusInProgress: '🔄 กำลังประเมิน',
   statusDone: '✅ เสร็จสิ้น',
   uploading: 'กำลังอัปโหลด...',
   attachFile: 'แนบไฟล์',
@@ -104,7 +103,6 @@ export const DIMENSION_LIST_TEXT = {
   scoreCriteria: 'เกณฑ์คะแนน 0–4',
   weightedScore: 'คะแนนรวมถ่วงน้ำหนัก',
   viewAll: 'ดูรูปภาพผลทั้งหมด →',
-  weightLabel: (weight: number) => `น้ำหนัก ${weight}%`,
 } as const;
 
 export const SUBMIT_BAR_TEXT = {

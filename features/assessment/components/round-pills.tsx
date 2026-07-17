@@ -31,7 +31,10 @@ export function RoundPills({ storeId, activeRound }: RoundPillsProps) {
   const { data: summaries } = useAssessmentSummaries(storeId);
   const [lockOpen, setLockOpen] = useState(false);
 
-  const t1Submitted = summaries?.find((s) => s.round === 'T1')?.status === 'SUBMITTED';
+  // Mirrors ROUNDS_LOCKED_UNTIL_T1 in the API's AssessmentService — the API
+  // accepts SUBMITTED or APPROVED, so the UI lock must too.
+  const t1Status = summaries?.find((s) => s.round === 'T1')?.status;
+  const t1Submitted = t1Status === 'SUBMITTED' || t1Status === 'APPROVED';
 
   return (
     <>
@@ -58,7 +61,7 @@ export function RoundPills({ storeId, activeRound }: RoundPillsProps) {
                 isLocked && 'cursor-not-allowed border-border text-muted-foreground/50',
                 !isLocked &&
                   isActive &&
-                  'border-dark-nav bg-dark-nav text-white',
+                  'border-purple-banner bg-purple-banner text-white',
                 !isLocked && !isActive && isSubmitted && 'border-score-green text-score-green',
                 !isLocked &&
                   !isActive &&
