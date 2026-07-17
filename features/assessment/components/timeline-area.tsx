@@ -31,9 +31,16 @@ interface TimelineAreaProps {
   round: Round;
   assessmentId: string;
   notes: string | null;
+  className?: string;
 }
 
-export function TimelineArea({ storeId, round, assessmentId, notes }: TimelineAreaProps) {
+export function TimelineArea({
+  storeId,
+  round,
+  assessmentId,
+  notes,
+  className,
+}: TimelineAreaProps) {
   const { data: summaries } = useAssessmentSummaries(storeId);
   const updateNotes = useUpdateNotes(storeId, round, assessmentId);
 
@@ -69,31 +76,31 @@ export function TimelineArea({ storeId, round, assessmentId, notes }: TimelineAr
   );
 
   return (
-    <div className="rounded-xl border bg-card p-3 shadow-sm">
-      <div className="mb-2 flex items-center justify-between">
-        <p className="text-xs font-bold text-charcoal">{TIMELINE_TEXT.title}</p>
-        <p className="text-[10px] text-muted-foreground">{TIMELINE_TEXT.subtitle}</p>
+    <div className={cn('rounded-xl border bg-card p-5 shadow-sm', className)}>
+      <div className="mb-4 flex items-center justify-between">
+        <p className="text-base font-bold text-charcoal">{TIMELINE_TEXT.title}</p>
+        <p className="text-sm text-muted-foreground">{TIMELINE_TEXT.subtitle}</p>
       </div>
 
-      <div className="flex flex-wrap items-start gap-2">
-        <div className="flex flex-1 flex-wrap items-start gap-2">
+      <div className="flex flex-wrap items-start gap-3">
+        <div className="flex flex-1 flex-wrap items-start gap-3">
           {items.map((item, i) => (
-            <div key={item.round} className="flex items-center gap-2">
+            <div key={item.round} className="flex items-center gap-3">
               <div
                 className={cn(
-                  'min-w-[130px] rounded-lg border-[1.5px] px-2.5 py-2',
+                  'min-w-[170px] rounded-lg border-2 px-4 py-3',
                   item.status === 'current' && 'border-orange bg-cream',
                   item.status === 'done' && 'bg-score-green/10 border-score-green',
                   item.status === 'draft' && 'border-border bg-muted/30'
                 )}
               >
-                <p className="text-[10.5px] font-bold text-charcoal">{item.title}</p>
+                <p className="text-sm font-bold text-charcoal">{item.title}</p>
                 {item.date && (
-                  <p className="mt-0.5 text-[9px] text-muted-foreground">{formatDate(item.date)}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{formatDate(item.date)}</p>
                 )}
                 <span
                   className={cn(
-                    'mt-1 inline-block rounded-full border px-1.5 py-0.5 text-[9px] font-semibold',
+                    'mt-2 inline-block rounded-full border px-2 py-1 text-xs font-semibold',
                     item.status === 'current' && 'border-orange text-orange',
                     item.status === 'done' && 'border-score-green text-score-green',
                     item.status === 'draft' && 'border-border text-muted-foreground'
@@ -107,40 +114,40 @@ export function TimelineArea({ storeId, round, assessmentId, notes }: TimelineAr
                 </span>
               </div>
               {i < items.length - 1 && (
-                <ArrowRight className="h-3.5 w-3.5 flex-shrink-0 text-border" />
+                <ArrowRight className="h-5 w-5 flex-shrink-0 text-border" />
               )}
             </div>
           ))}
         </div>
 
-        <div className="min-w-[190px] max-w-[260px] rounded-lg border-l-[3px] border-l-orange bg-muted/30 p-2.5">
-          <div className="mb-1 flex items-center justify-between">
-            <p className="text-[10.5px] font-bold text-charcoal">{TIMELINE_TEXT.notesTitle}</p>
+        <div className="min-w-[260px] max-w-[340px] rounded-lg border-l-4 border-l-orange bg-muted/30 p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-sm font-bold text-charcoal">{TIMELINE_TEXT.notesTitle}</p>
             {!editingNotes && (
               <button
                 type="button"
                 onClick={() => setEditingNotes(true)}
                 className="text-muted-foreground hover:text-orange"
               >
-                <Pencil className="h-3 w-3" />
+                <Pencil className="h-4 w-4" />
               </button>
             )}
           </div>
           {editingNotes ? (
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Textarea
                 value={notesValue}
                 onChange={(e) => setNotesValue(e.target.value)}
                 rows={3}
-                className="min-h-0 text-xs"
+                className="min-h-0 text-sm"
                 autoFocus
               />
-              <Button size="sm" className="h-6 text-[10px]" onClick={() => setEditingNotes(false)}>
+              <Button size="sm" className="h-8 text-xs" onClick={() => setEditingNotes(false)}>
                 {TIMELINE_TEXT.done}
               </Button>
             </div>
           ) : (
-            <p className="text-[10.5px] leading-relaxed text-muted-foreground">
+            <p className="text-sm leading-relaxed text-muted-foreground">
               {notesValue || TIMELINE_TEXT.emptyNotes}
             </p>
           )}

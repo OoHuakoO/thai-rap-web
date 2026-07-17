@@ -1,6 +1,5 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { QuestionRow } from './question-row';
 import { ASSESS_TABLE_TEXT } from '../constants/assessment-text.constants';
 import type { AssessmentQuestion, Dimension } from '../types/assessment.types';
@@ -16,8 +15,6 @@ interface AssessTableProps {
   onSuggestionChange: (questionId: number, suggestion: string) => void;
   onUploadEvidence: (questionId: number, file: File) => void;
   onDeleteEvidence: (evidenceId: string) => void;
-  onSaveDraft: () => void;
-  onSaveNext: () => void;
 }
 
 export function AssessTable({
@@ -31,8 +28,6 @@ export function AssessTable({
   onSuggestionChange,
   onUploadEvidence,
   onDeleteEvidence,
-  onSaveDraft,
-  onSaveNext,
 }: AssessTableProps) {
   const sorted = [...questions].sort((a, b) => a.questionNo - b.questionNo);
   const max = sorted.length * 4;
@@ -60,16 +55,16 @@ export function AssessTable({
           </div>
         </div>
         <div className="flex items-center gap-2.5">
-          <span className="rounded-full bg-muted px-2.5 py-1 text-[10.5px] font-medium text-muted-foreground">
+          <span className="rounded-full bg-muted px-2.5 py-1 text-[12px] font-medium text-muted-foreground">
             {ASSESS_TABLE_TEXT.weightBadge(dimension.weight)}
           </span>
           <div className="text-right">
-            <p className="text-[10px] text-muted-foreground">{ASSESS_TABLE_TEXT.rawScoreLabel}</p>
+            <p className="text-[11.5px] text-muted-foreground">{ASSESS_TABLE_TEXT.rawScoreLabel}</p>
             <p className="text-lg font-extrabold text-orange">
               {sum}
               <span className="text-xs font-normal text-muted-foreground"> / {max}</span>
             </p>
-            <p className="text-[10px] text-muted-foreground">({pct}%)</p>
+            <p className="text-[11.5px] text-muted-foreground">({pct}%)</p>
           </div>
         </div>
       </div>
@@ -77,7 +72,7 @@ export function AssessTable({
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b bg-muted/40 text-[11px] text-muted-foreground">
+            <tr className="border-b bg-muted/40 text-[12.5px] text-muted-foreground">
               <th className="px-2 py-2 text-left font-semibold">{ASSESS_TABLE_TEXT.columnNo}</th>
               <th className="px-2 py-2 text-left font-semibold">
                 {ASSESS_TABLE_TEXT.columnCriteria}
@@ -114,30 +109,14 @@ export function AssessTable({
         </table>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t bg-muted/20 px-4 py-2.5">
-        <div>
-          <p className="text-[10px] text-muted-foreground">{ASSESS_TABLE_TEXT.totalRawLabel}</p>
-          <p className="text-base font-extrabold text-orange">
-            {sum}{' '}
-            <span className="text-xs font-normal text-muted-foreground">
-              {ASSESS_TABLE_TEXT.scoreOutOf(max, pct)}
-            </span>
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="hover:bg-orange/10 gap-1.5 border-orange text-orange hover:text-orange"
-            onClick={onSaveDraft}
-            disabled={locked}
-          >
-            {ASSESS_TABLE_TEXT.saveDraft}
-          </Button>
-          <Button size="sm" onClick={onSaveNext} disabled={locked}>
-            {ASSESS_TABLE_TEXT.saveNext}
-          </Button>
-        </div>
+      <div className="border-t bg-muted/20 px-4 py-2.5">
+        <p className="text-[11.5px] text-muted-foreground">{ASSESS_TABLE_TEXT.totalRawLabel}</p>
+        <p className="text-base font-extrabold text-orange">
+          {sum}{' '}
+          <span className="text-xs font-normal text-muted-foreground">
+            {ASSESS_TABLE_TEXT.scoreOutOf(max, pct)}
+          </span>
+        </p>
       </div>
     </div>
   );

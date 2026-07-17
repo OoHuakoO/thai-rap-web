@@ -14,7 +14,6 @@ import { RoundPills } from './round-pills';
 import { DimensionList } from './dimension-list';
 import { AssessTable } from './assess-table';
 import { ScoreSummary } from './score-summary';
-import { SubmitBar } from './submit-bar';
 import { TimelineArea } from './timeline-area';
 import {
   assessmentKeys,
@@ -36,18 +35,38 @@ interface AssessmentFormProps {
 
 export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
   const queryClient = useQueryClient();
-  const { data: store } = useStore(storeId);
-  const { data: assessment, isLoading, isError, error } = useAssessment(storeId, round);
+  const [isStoreCleared, setIsStoreCleared] = useState(false);
+  const effectiveStoreId = isStoreCleared ? '' : storeId;
+  const { data: store } = useStore(effectiveStoreId);
+  const { data: assessment, isLoading, isError, error } = useAssessment(effectiveStoreId, round);
   const { data: dimensions } = useDimensions();
   const [selectedDim, setSelectedDim] = useState(1);
   const [highlightedId, setHighlightedId] = useState<number | null>(null);
   const confirm = useConfirm();
   const alert = useAlert();
 
-  const updateScore = useUpdateScore(storeId, round, assessment?.id ?? '');
-  const submitAssessment = useSubmitAssessment(storeId, round, assessment?.id ?? '');
-  const uploadEvidence = useUploadEvidence(storeId, round, assessment?.id ?? '');
-  const deleteEvidence = useDeleteEvidence(storeId, round, assessment?.id ?? '');
+  const updateScore = useUpdateScore(effectiveStoreId, round, assessment?.id ?? '');
+  const submitAssessment = useSubmitAssessment(effectiveStoreId, round, assessment?.id ?? '');
+  const uploadEvidence = useUploadEvidence(effectiveStoreId, round, assessment?.id ?? '');
+  const deleteEvidence = useDeleteEvidence(effectiveStoreId, round, assessment?.id ?? '');
+
+  if (isStoreCleared) {
+    return (
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-end gap-4 rounded-xl border bg-card p-3 shadow-sm">
+          <AssessmentStorePicker
+            storeId=""
+            round={round}
+            onProvinceChange={() => setIsStoreCleared(true)}
+            onStoreSelect={() => setIsStoreCleared(false)}
+          />
+        </div>
+        <div className="rounded-xl border bg-card py-16 text-center text-sm text-muted-foreground shadow-sm">
+          {ASSESSMENT_FORM_TEXT.noStoreSelectedMessage}
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) return <Loading className="py-16" />;
 
@@ -125,24 +144,6 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
 
   const maxDim = dimensions?.length ?? 8;
 
-  const handleSaveNext = () => {
-    queryClient.invalidateQueries({ queryKey: assessmentKeys.byStoreRound(storeId, round) });
-    if (selectedDim < maxDim) {
-      setSelectedDim(selectedDim + 1);
-      requestAnimationFrame(() => {
-        document
-          .getElementById('assess-card')
-          ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-      toast.success(ASSESSMENT_FORM_TEXT.savedNextDim(selectedDim + 1));
-    } else {
-      document
-        .getElementById('submit-bar')
-        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      toast.success(ASSESSMENT_FORM_TEXT.submitAllDone);
-    }
-  };
-
   const handleSubmit = async () => {
     const firstUnscored = [...assessment.questions]
       .sort((a, b) => a.questionNo - b.questionNo)
@@ -178,18 +179,41 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
     });
   };
 
+  // Last dimension's "save & next" has nowhere left to go, so it submits
+  // instead — the dedicated Submit button was removed in favor of this.
+  const handleSaveNext = () => {
+    queryClient.invalidateQueries({ queryKey: assessmentKeys.byStoreRound(storeId, round) });
+    if (selectedDim < maxDim) {
+      setSelectedDim(selectedDim + 1);
+      requestAnimationFrame(() => {
+        document
+          .getElementById('assess-card')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      toast.success(ASSESSMENT_FORM_TEXT.savedNextDim(selectedDim + 1));
+      return;
+    }
+    handleSubmit();
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end gap-4 rounded-xl border bg-card p-3 shadow-sm">
-        <AssessmentStorePicker storeId={storeId} storeName={store?.name} round={round} />
+        <AssessmentStorePicker
+          storeId={storeId}
+          storeName={store?.name}
+          storeCoverUrl={store?.coverUrl}
+          round={round}
+          onProvinceChange={() => setIsStoreCleared(true)}
+        />
         <div>
-          <p className="mb-1 text-[10px] text-muted-foreground">
+          <p className="mb-1 text-sm text-muted-foreground">
             {ASSESSMENT_FORM_TEXT.roundLabel}
           </p>
           <RoundPills storeId={storeId} activeRound={round} />
         </div>
         <div className="min-w-[160px] flex-1">
-          <p className="mb-1 text-[10px] text-muted-foreground">
+          <p className="mb-1 text-sm text-muted-foreground">
             {ASSESSMENT_FORM_TEXT.progressLabel}
           </p>
           <div className="flex items-center gap-2">
@@ -206,14 +230,14 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
           >
             {ASSESSMENT_FORM_TEXT.saveDraft}
           </Button>
-          <Button onClick={handleSaveNext} disabled={locked}>
+          <Button onClick={handleSaveNext} disabled={locked || submitAssessment.isPending}>
             {ASSESSMENT_FORM_TEXT.saveNext}
           </Button>
         </div>
       </div>
 
       {dimensions && (
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[205px_minmax(0,1fr)_270px] lg:items-start">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[280px_minmax(0,1fr)_340px]">
           <DimensionList
             dimensions={dimensions}
             questions={assessment.questions}
@@ -234,8 +258,6 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
               onSuggestionChange={handleSuggestionChange}
               onUploadEvidence={handleUploadEvidence}
               onDeleteEvidence={handleDeleteEvidence}
-              onSaveDraft={handleSaveDraft}
-              onSaveNext={handleSaveNext}
             />
           )}
 
@@ -248,25 +270,18 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
             questions={assessment.questions}
             redFlags={assessment.redFlags}
             isSubmitted={locked}
+            className="lg:col-start-3 lg:row-start-1 lg:row-span-2"
+          />
+
+          <TimelineArea
+            storeId={storeId}
+            round={round}
+            assessmentId={assessment.id}
+            notes={assessment.notes}
+            className="lg:col-start-1 lg:col-span-2 lg:row-start-2"
           />
         </div>
       )}
-
-      <div id="submit-bar" className="rounded-xl border bg-card px-4 py-3 shadow-sm">
-        <SubmitBar
-          scored={scoredCount}
-          isSubmitted={locked}
-          isPending={submitAssessment.isPending}
-          onSubmit={handleSubmit}
-        />
-      </div>
-
-      <TimelineArea
-        storeId={storeId}
-        round={round}
-        assessmentId={assessment.id}
-        notes={assessment.notes}
-      />
     </div>
   );
 }

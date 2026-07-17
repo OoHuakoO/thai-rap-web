@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { PaginationBar } from '@/components/shared/pagination-bar';
 import { ROUTES } from '@/constants/routes';
+import { useProvinces } from '@/features/province';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useAuthStore } from '@/stores/auth-store';
 import { PERMISSIONS } from '@/types/auth.types';
@@ -53,6 +54,7 @@ export function StoreExplorer() {
 
   const { data } = useStores(query);
   const { data: stats } = useStoreStats();
+  const { data: provinces } = useProvinces();
 
   const handleProvinceChange = (value: string) => {
     setProvince(value);
@@ -104,9 +106,9 @@ export function StoreExplorer() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">{STORE_EXPLORER_TEXT.allOptionLabel}</SelectItem>
-              {(stats?.byProvince ?? []).map((p) => (
-                <SelectItem key={p.province} value={p.province}>
-                  {p.province}
+              {(provinces ?? []).map((p) => (
+                <SelectItem key={p.id} value={p.nameTh}>
+                  {p.nameTh}
                 </SelectItem>
               ))}
             </SelectContent>

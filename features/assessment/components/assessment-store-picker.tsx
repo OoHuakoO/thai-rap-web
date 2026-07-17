@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Store as StoreIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import {
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/utils/cn';
 import { ROUTES } from '@/constants/routes';
+import { buildFileUrl } from '@/utils/build-file-url';
 import { useStores } from '@/features/store';
 import { useProvinces } from '@/features/province';
 import { STORE_PICKER_TEXT } from '../constants/assessment-text.constants';
@@ -22,10 +23,20 @@ import type { Round } from '../types/assessment.types';
 interface AssessmentStorePickerProps {
   storeId: string;
   storeName?: string;
+  storeCoverUrl?: string | null;
   round: Round;
+  onProvinceChange?: () => void;
+  onStoreSelect?: () => void;
 }
 
-export function AssessmentStorePicker({ storeId, storeName, round }: AssessmentStorePickerProps) {
+export function AssessmentStorePicker({
+  storeId,
+  storeName,
+  storeCoverUrl,
+  round,
+  onProvinceChange,
+  onStoreSelect,
+}: AssessmentStorePickerProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -40,16 +51,48 @@ export function AssessmentStorePicker({ storeId, storeName, round }: AssessmentS
 
   return (
     <div className="flex items-end gap-2">
+      <div className="w-32">
+        <p className="mb-1 text-sm text-muted-foreground">{STORE_PICKER_TEXT.province}</p>
+        <Select
+          value={province}
+          onValueChange={(value) => {
+            setProvince(value);
+            onProvinceChange?.();
+          }}
+        >
+          <SelectTrigger className="h-[34px] text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">{STORE_PICKER_TEXT.allProvinces}</SelectItem>
+            {(provinces ?? []).map((p) => (
+              <SelectItem key={p.id} value={p.nameTh}>
+                {p.nameTh}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <div>
-        <p className="mb-1 text-[10px] text-muted-foreground">{STORE_PICKER_TEXT.selectStore}</p>
+        <p className="mb-1 text-sm text-muted-foreground">{STORE_PICKER_TEXT.selectStore}</p>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <button
               type="button"
               className="flex min-w-[165px] items-center gap-1.5 rounded-lg border-[1.5px] border-border bg-card px-2.5 py-[5px] text-left"
             >
-              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md bg-cream text-xs">
-                🍜
+              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center overflow-hidden rounded-md bg-cream text-xs">
+                {storeCoverUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={buildFileUrl(storeCoverUrl)}
+                    alt={storeName ?? ''}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <StoreIcon className="h-3.5 w-3.5 text-muted-foreground/60" />
+                )}
               </span>
               <span className="flex-1 truncate text-xs font-medium text-charcoal">
                 {storeName ?? '—'}
@@ -71,15 +114,30 @@ export function AssessmentStorePicker({ storeId, storeName, round }: AssessmentS
                   type="button"
                   onClick={() => {
                     setOpen(false);
+                    onStoreSelect?.();
                     router.push(ROUTES.ASSESSMENT_DETAIL(s.id, round));
                   }}
                   className={cn(
-                    'block w-full truncate rounded-md px-2 py-1.5 text-left text-xs hover:bg-cream',
+                    'flex w-full items-center gap-1.5 truncate rounded-md px-2 py-1.5 text-left text-xs hover:bg-cream',
                     s.id === storeId && 'bg-cream font-semibold text-orange'
                   )}
                 >
-                  {s.name}
-                  <span className="ml-1 text-[10px] text-muted-foreground">· {s.province}</span>
+                  <span className="flex h-4 w-4 flex-shrink-0 items-center justify-center overflow-hidden rounded bg-cream">
+                    {s.coverUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={buildFileUrl(s.coverUrl)}
+                        alt={s.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <StoreIcon className="h-2.5 w-2.5 text-muted-foreground/60" />
+                    )}
+                  </span>
+                  <span className="truncate">
+                    {s.name}
+                    <span className="ml-1 text-[10px] text-muted-foreground">· {s.province}</span>
+                  </span>
                 </button>
               ))}
               {data?.items.length === 0 && (
@@ -90,23 +148,6 @@ export function AssessmentStorePicker({ storeId, storeName, round }: AssessmentS
             </div>
           </PopoverContent>
         </Popover>
-      </div>
-
-      <div className="w-32">
-        <p className="mb-1 text-[10px] text-muted-foreground">{STORE_PICKER_TEXT.province}</p>
-        <Select value={province} onValueChange={setProvince}>
-          <SelectTrigger className="h-[34px] text-xs">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">{STORE_PICKER_TEXT.allProvinces}</SelectItem>
-            {(provinces ?? []).map((p) => (
-              <SelectItem key={p.id} value={p.nameTh}>
-                {p.nameTh}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
     </div>
   );

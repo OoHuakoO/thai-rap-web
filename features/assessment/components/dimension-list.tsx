@@ -1,6 +1,16 @@
 'use client';
 
-import { ChefHat, ClipboardList, Landmark, Leaf, Rocket, TrendingUp, UserPlus, Users } from 'lucide-react';
+import {
+  ChefHat,
+  ChevronRight,
+  ClipboardList,
+  Landmark,
+  Leaf,
+  Rocket,
+  TrendingUp,
+  UserPlus,
+  Users,
+} from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { DIMENSION_LIST_TEXT, SCORE_LABELS } from '../constants/assessment-text.constants';
 import type { AssessmentQuestion, Dimension } from '../types/assessment.types';
@@ -38,21 +48,21 @@ export function DimensionList({
       <div className="border-b px-3 py-2.5">
         <p className="text-sm font-bold text-charcoal">
           {DIMENSION_LIST_TEXT.title}{' '}
-          <span className="ml-1 text-[10px] font-normal text-muted-foreground">
+          <span className="ml-1 text-[11.5px] font-normal text-muted-foreground">
             {DIMENSION_LIST_TEXT.titleEn}
           </span>
         </p>
       </div>
 
       <div className="mx-2.5 my-2 rounded-lg bg-cream p-2">
-        <p className="mb-1 text-[10px] font-bold text-orange">
+        <p className="mb-1 text-[11.5px] font-bold text-orange">
           {DIMENSION_LIST_TEXT.scoreCriteria}
         </p>
         <div className="flex flex-wrap gap-1">
           {SCORE_LEGEND.map((s) => (
             <span
               key={s.value}
-              className="flex items-center gap-1 rounded border bg-white px-1.5 py-0.5 text-[9px] text-muted-foreground"
+              className="flex items-center gap-1 rounded border bg-white px-1.5 py-0.5 text-[10.5px] text-muted-foreground"
             >
               <b className="text-orange">{s.value}</b>
               {s.label}
@@ -61,7 +71,7 @@ export function DimensionList({
         </div>
       </div>
 
-      <div>
+      <div className="space-y-1.5 px-2 pb-2">
         {dimensions.map((dim) => {
           const dimQuestions = questions.filter((q) => q.dimensionId === dim.id);
           const max = dimQuestions.length * 4;
@@ -76,8 +86,8 @@ export function DimensionList({
               type="button"
               onClick={() => onSelect(dim.id)}
               className={cn(
-                'flex w-full items-center gap-2.5 border-b px-3 py-2.5 text-left transition-colors last:border-0 hover:bg-cream',
-                active && 'bg-orange/10'
+                'flex w-full items-center gap-2.5 rounded-lg border border-transparent px-2.5 py-2.5 text-left transition-colors hover:bg-cream',
+                active && 'border-orange/40 bg-orange/10'
               )}
             >
               <span
@@ -89,14 +99,26 @@ export function DimensionList({
                 <Icon className="h-4 w-4" strokeWidth={2} />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[11px] font-semibold leading-tight text-charcoal">
+                <span
+                  className={cn(
+                    'block text-[12px] font-semibold leading-tight',
+                    active ? 'text-orange' : 'text-charcoal'
+                  )}
+                >
                   {dim.id}. {dim.name}
                 </span>
-                <span className="block truncate text-[9px] leading-tight text-muted-foreground">
+                <span className="block text-[11.5px] leading-tight text-muted-foreground">
                   {dim.nameEn}
                 </span>
               </span>
-              <span className="flex-shrink-0 text-[13px] font-bold text-charcoal">{pct}%</span>
+              <span
+                className={cn(
+                  'flex flex-shrink-0 items-center gap-0.5 text-[13px] font-bold',
+                  active ? 'text-orange' : 'text-charcoal'
+                )}
+              >
+                {pct}%{active && <ChevronRight className="h-3.5 w-3.5" />}
+              </span>
             </button>
           );
         })}
@@ -104,16 +126,13 @@ export function DimensionList({
 
       <div className="flex items-center justify-between border-t bg-muted/20 px-3 py-2.5">
         <div>
-          <span className="block text-[10px] text-muted-foreground">
+          <span className="block text-[11.5px] text-muted-foreground">
             {DIMENSION_LIST_TEXT.weightedScore}
-          </span>
-          <span className="cursor-default text-[9px] text-orange underline">
-            {DIMENSION_LIST_TEXT.viewAll}
           </span>
         </div>
         <span className="text-base font-extrabold text-orange">
           {(totalScore ?? 0).toFixed(2)}
-          <span className="text-[10px] font-normal text-muted-foreground">/100</span>
+          <span className="text-[11.5px] font-normal text-muted-foreground">/100</span>
         </span>
       </div>
     </div>

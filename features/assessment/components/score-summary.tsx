@@ -3,17 +3,12 @@
 import { Binoculars, Box, MapPin, Trophy } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
 } from '@/components/ui/chart';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis } from 'recharts';
 import { ProgressBar } from '@/components/shared/progress-bar';
 import { StatusBadge, type StatusVariant } from '@/components/shared/status-badge';
@@ -55,6 +50,7 @@ interface ScoreSummaryProps {
   questions: AssessmentQuestion[];
   redFlags: RedFlag[];
   isSubmitted: boolean;
+  className?: string;
 }
 
 export function ScoreSummary({
@@ -66,9 +62,14 @@ export function ScoreSummary({
   questions,
   redFlags,
   isSubmitted,
+  className,
 }: ScoreSummaryProps) {
   const { data: dimensions } = useDimensions();
-  const { data: rank } = useAssessmentRank(storeId, round);
+  const {
+    data: rank,
+    isLoading: isRankLoading,
+    isError: isRankError,
+  } = useAssessmentRank(storeId, round);
 
   const score = totalScore ?? 0;
   const zone = getZone(score);
@@ -96,13 +97,10 @@ export function ScoreSummary({
   });
 
   return (
-    <Card>
+    <Card className={cn('h-full', className)}>
       <CardContent className="space-y-3 pt-5">
         <div className="flex items-center justify-between">
           <p className="text-sm font-bold text-charcoal">{SCORE_SUMMARY_TEXT.title}</p>
-          <span className="cursor-default text-[9.5px] text-orange underline">
-            {SCORE_SUMMARY_TEXT.fullReport}
-          </span>
         </div>
 
         {store && (
@@ -112,7 +110,7 @@ export function ScoreSummary({
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-bold text-charcoal">{store.name}</p>
-              <p className="truncate text-[10px] text-muted-foreground">{store.province}</p>
+              <p className="truncate text-[11.5px] text-muted-foreground">{store.province}</p>
             </div>
             <StatusBadge
               status={STATUS_VARIANT[store.status]}
@@ -127,12 +125,12 @@ export function ScoreSummary({
               <Box className="h-4 w-4" />
             </span>
             <div className="min-w-0">
-              <p className="truncate text-[9px] leading-tight text-muted-foreground">
+              <p className="truncate text-[10.5px] leading-tight text-muted-foreground">
                 {SCORE_SUMMARY_TEXT.selectedDimScore}
               </p>
               <p className="text-base font-extrabold text-orange">
                 {selectedDim ? selectedDim.pct.toFixed(1) : '0.0'}
-                <span className="text-[10px] font-normal text-muted-foreground">/100</span>
+                <span className="text-[11.5px] font-normal text-muted-foreground">/100</span>
               </p>
             </div>
           </div>
@@ -141,16 +139,41 @@ export function ScoreSummary({
               <Binoculars className="h-4 w-4" />
             </span>
             <div className="min-w-0">
-              <p className="truncate text-[9px] leading-tight text-muted-foreground">
+              <p className="truncate text-[10.5px] leading-tight text-muted-foreground">
                 {SCORE_SUMMARY_TEXT.weightedScore}
               </p>
               <p className="text-base font-extrabold text-dark-nav">
                 {score.toFixed(2)}
-                <span className="text-[10px] font-normal text-muted-foreground">/100</span>
+                <span className="text-[11.5px] font-normal text-muted-foreground">/100</span>
               </p>
             </div>
           </div>
         </div>
+
+        {isRankLoading && (
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-center gap-2 rounded-lg bg-muted/40 p-2.5">
+              <Skeleton className="h-8 w-8 flex-shrink-0 rounded-lg" />
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <Skeleton className="h-2.5 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            </div>
+            <div className="flex items-center gap-2 rounded-lg bg-muted/40 p-2.5">
+              <Skeleton className="h-8 w-8 flex-shrink-0 rounded-lg" />
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <Skeleton className="h-2.5 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isRankError && (
+          <p className="rounded-lg bg-muted/40 p-2.5 text-center text-[11.5px] text-muted-foreground">
+            {SCORE_SUMMARY_TEXT.rankUnavailable}
+          </p>
+        )}
 
         {rank && (
           <div className="grid grid-cols-2 gap-2">
@@ -159,12 +182,12 @@ export function ScoreSummary({
                 <MapPin className="h-4 w-4" />
               </span>
               <div className="min-w-0">
-                <p className="truncate text-[9px] text-muted-foreground">
+                <p className="truncate text-[10.5px] text-muted-foreground">
                   {SCORE_SUMMARY_TEXT.provinceRank}
                 </p>
                 <p className="text-sm font-extrabold text-dark-nav">
                   {rank.provinceRank ?? '—'}
-                  <span className="text-[10px] font-normal text-muted-foreground">
+                  <span className="text-[11.5px] font-normal text-muted-foreground">
                     {' '}
                     / {rank.provinceTotal}
                   </span>
@@ -176,12 +199,12 @@ export function ScoreSummary({
                 <Trophy className="h-4 w-4" />
               </span>
               <div className="min-w-0">
-                <p className="truncate text-[9px] text-muted-foreground">
+                <p className="truncate text-[10.5px] text-muted-foreground">
                   {SCORE_SUMMARY_TEXT.overallRank}
                 </p>
                 <p className="text-sm font-extrabold text-dark-nav">
                   {rank.overallRank ?? '—'}
-                  <span className="text-[10px] font-normal text-muted-foreground">
+                  <span className="text-[11.5px] font-normal text-muted-foreground">
                     {' '}
                     / {rank.overallTotal}
                   </span>
@@ -199,18 +222,18 @@ export function ScoreSummary({
         >
           <span>{totalScore !== null ? zone : SCORE_SUMMARY_TEXT.noScore}</span>
           {isSubmitted && (
-            <span className="text-[10px] font-semibold">{SCORE_SUMMARY_TEXT.submitted}</span>
+            <span className="text-[11.5px] font-semibold">{SCORE_SUMMARY_TEXT.submitted}</span>
           )}
         </div>
-        <p className="text-[11px] leading-relaxed text-muted-foreground">
+        <p className="text-[12.5px] leading-relaxed text-muted-foreground">
           {totalScore !== null ? ZONE_DESCRIPTIONS[zone] : SCORE_SUMMARY_TEXT.noScoreDescription}
         </p>
 
         {redFlags.length > 0 && (
           <div className="border-t pt-2.5">
-            <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold text-destructive">
+            <p className="mb-1.5 flex items-center gap-1.5 text-[12.5px] font-bold text-destructive">
               {SCORE_SUMMARY_TEXT.redFlagsTitle}
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-white">
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10.5px] font-bold text-white">
                 {redFlags.length}
               </span>
             </p>
@@ -218,7 +241,7 @@ export function ScoreSummary({
               {redFlags.map((flag) => (
                 <li
                   key={flag.id}
-                  className="flex items-start gap-1.5 text-[11px] leading-tight text-charcoal"
+                  className="flex items-start gap-1.5 text-[12.5px] leading-tight text-charcoal"
                 >
                   <span className="mt-1 h-1 w-1 flex-shrink-0 rounded-full bg-destructive" />
                   {RED_FLAG_LABELS[flag.type]}
@@ -231,9 +254,9 @@ export function ScoreSummary({
 
         {improvementPoints.length > 0 && (
           <div className="border-t pt-2.5">
-            <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold text-orange">
+            <p className="mb-1.5 flex items-center gap-1.5 text-[12.5px] font-bold text-orange">
               {SCORE_SUMMARY_TEXT.improvementTitle}
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange text-[9px] font-bold text-white">
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange text-[10.5px] font-bold text-white">
                 {improvementPoints.length}
               </span>
             </p>
@@ -241,7 +264,7 @@ export function ScoreSummary({
               {improvementPoints.map((dim) => (
                 <li
                   key={dim.id}
-                  className="flex items-start gap-1.5 text-[11px] leading-tight text-charcoal"
+                  className="flex items-start gap-1.5 text-[12.5px] leading-tight text-charcoal"
                 >
                   <span className="mt-1 h-1 w-1 flex-shrink-0 rounded-full bg-orange" />
                   {dim.name} ({SCORE_SUMMARY_TEXT.dimensionAxisLabel(dim.id)})
@@ -251,40 +274,34 @@ export function ScoreSummary({
           </div>
         )}
 
-        <Accordion type="single" collapsible className="border-t">
-          <AccordionItem value="compare" className="border-none">
-            <AccordionTrigger className="py-2.5 text-[11px] font-bold text-charcoal hover:no-underline">
-              {SCORE_SUMMARY_TEXT.compareTitle}
-            </AccordionTrigger>
-            <AccordionContent className="space-y-2 pb-0 pt-0">
-              <ChartContainer config={radarChartConfig} style={{ height: 180 }}>
-                <RadarChart data={radarData}>
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <PolarGrid />
-                  <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 8 }} />
-                  <Radar
-                    dataKey="thisStore"
-                    stroke="var(--color-thisStore)"
-                    fill="var(--color-thisStore)"
-                    fillOpacity={0.25}
-                  />
-                  <Radar
-                    dataKey="average"
-                    stroke="var(--color-average)"
-                    fill="var(--color-average)"
-                    fillOpacity={0.08}
-                    strokeDasharray="4 3"
-                  />
-                </RadarChart>
-              </ChartContainer>
-              <div className="space-y-1.5">
-                {dimensionScores.map((dim) => (
-                  <ProgressBar key={dim.id} value={dim.pct} label={dim.nameEn} showPercentage />
-                ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+        <div className="space-y-2 border-t pt-2.5">
+          <p className="text-[12.5px] font-bold text-charcoal">{SCORE_SUMMARY_TEXT.compareTitle}</p>
+          <ChartContainer config={radarChartConfig} style={{ height: 180 }}>
+            <RadarChart data={radarData}>
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <PolarGrid />
+              <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 8 }} />
+              <Radar
+                dataKey="thisStore"
+                stroke="var(--color-thisStore)"
+                fill="var(--color-thisStore)"
+                fillOpacity={0.25}
+              />
+              <Radar
+                dataKey="average"
+                stroke="var(--color-average)"
+                fill="var(--color-average)"
+                fillOpacity={0.08}
+                strokeDasharray="4 3"
+              />
+            </RadarChart>
+          </ChartContainer>
+          <div className="space-y-1.5">
+            {dimensionScores.map((dim) => (
+              <ProgressBar key={dim.id} value={dim.pct} label={dim.nameEn} showPercentage />
+            ))}
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
