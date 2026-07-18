@@ -7,6 +7,7 @@ export { RoundPicker } from './components/round-picker'
 export {
   useDimensions,
   useAssessmentSummaries,
+  useAssessmentHistory,
   useAssessment,
   useUpdateScore,
   useSubmitAssessment,
@@ -22,6 +23,7 @@ export type {
   Assessment,
   AssessmentQuestion,
   AssessmentSummary,
+  AssessmentHistoryItem,
   AssessmentRank,
   DimensionAverage,
   RedFlag,

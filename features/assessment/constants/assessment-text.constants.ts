@@ -85,6 +85,7 @@ export const TIMELINE_TEXT = {
   statusDone: 'เสร็จสิ้น',
   statusDraft: 'บันทึกร่าง',
   currentRound: (round: string) => `รอบปัจจุบัน ${round}`,
+  assessorByLabel: (name: string) => `โดย ${name}`,
 } as const;
 
 export const ROUND_PILLS_TEXT = {

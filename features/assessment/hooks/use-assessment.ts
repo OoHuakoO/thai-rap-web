@@ -9,6 +9,7 @@ export const assessmentKeys = {
   all: ['assessments'] as const,
   byStore: (storeId: string) => ['assessments', 'by-store', storeId] as const,
   byStoreRound: (storeId: string, round: Round) => ['assessments', storeId, round] as const,
+  history: (storeId: string) => ['assessments', 'history', storeId] as const,
   rank: (storeId: string, round: Round) => ['assessments', 'rank', storeId, round] as const,
 };
 
@@ -28,6 +29,14 @@ export function useAssessmentSummaries(storeId: string) {
   return useQuery({
     queryKey: assessmentKeys.byStore(storeId),
     queryFn: () => assessmentService.findAllByStore(storeId),
+    enabled: !!storeId,
+  });
+}
+
+export function useAssessmentHistory(storeId: string) {
+  return useQuery({
+    queryKey: assessmentKeys.history(storeId),
+    queryFn: () => assessmentService.getHistory(storeId),
     enabled: !!storeId,
   });
 }

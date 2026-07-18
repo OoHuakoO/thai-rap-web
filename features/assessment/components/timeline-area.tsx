@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/utils/cn';
 import { useDebounce } from '@/hooks/use-debounce';
 import { extractErrorMessage } from '@/utils/extract-error-message';
-import { useAssessmentSummaries, useUpdateNotes } from '../hooks/use-assessment';
+import { useAssessmentHistory, useUpdateNotes } from '../hooks/use-assessment';
 import { TIMELINE_TEXT } from '../constants/assessment-text.constants';
 import { ROUND_LABELS } from '../types/assessment.types';
 import type { Round } from '../types/assessment.types';
@@ -43,7 +43,7 @@ export function TimelineArea({
   canEdit,
   className,
 }: TimelineAreaProps) {
-  const { data: summaries } = useAssessmentSummaries(storeId);
+  const { data: history } = useAssessmentHistory(storeId);
   const updateNotes = useUpdateNotes(storeId, round, assessmentId);
 
   const [notesValue, setNotesValue] = useState(notes ?? '');
@@ -63,16 +63,17 @@ export function TimelineArea({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedNotes]);
 
-  const items = ROUNDS.filter((r) => r === round || summaries?.some((s) => s.round === r)).map(
+  const items = ROUNDS.filter((r) => r === round || history?.some((h) => h.round === r)).map(
     (r) => {
-      const summary = summaries?.find((s) => s.round === r);
+      const historyItem = history?.find((h) => h.round === r);
       const isCurrent = r === round;
-      const isDone = summary?.status === 'SUBMITTED';
+      const isDone = historyItem?.status === 'SUBMITTED';
       return {
         round: r,
         title: isCurrent ? TIMELINE_TEXT.currentRound(r) : ROUND_LABELS[r],
-        date: isDone ? (summary?.submittedAt ?? null) : (summary?.updatedAt ?? null),
+        date: isDone ? (historyItem?.submittedAt ?? null) : (historyItem?.updatedAt ?? null),
         status: isCurrent ? 'current' : isDone ? 'done' : 'draft',
+        assessorName: historyItem?.assessorName ?? null,
       } as const;
     }
   );
@@ -99,6 +100,11 @@ export function TimelineArea({
                 <p className="text-sm font-bold text-charcoal">{item.title}</p>
                 {item.date && (
                   <p className="mt-1 text-xs text-muted-foreground">{formatDate(item.date)}</p>
+                )}
+                {item.assessorName && (
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {TIMELINE_TEXT.assessorByLabel(item.assessorName)}
+                  </p>
                 )}
                 <span
                   className={cn(
@@ -143,7 +149,18 @@ export function TimelineArea({
                 className="min-h-0 text-sm"
                 autoFocus
               />
-              <Button size="sm" className="h-8 text-xs" onClick={() => setEditingNotes(false)}>
+              <Button
+                size="sm"
+                className="h-8 text-xs"
+                onClick={() => {
+                  setEditingNotes(false);
+                  if (notesValue !== (notes ?? '')) {
+                    updateNotes.mutate(notesValue, {
+                      onError: (err) => toast.error(extractErrorMessage(err)),
+                    });
+                  }
+                }}
+              >
                 {TIMELINE_TEXT.done}
               </Button>
             </div>

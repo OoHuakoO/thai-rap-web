@@ -1,5 +1,6 @@
 'use client';
 
+import { Separator } from '@/components/ui/separator';
 import { QuestionRow } from './question-row';
 import { ASSESS_TABLE_TEXT } from '../constants/assessment-text.constants';
 import { sumQuestionScores } from '../utils/dimension-score';
@@ -58,13 +59,12 @@ export function AssessTable({
           <span className="rounded-full bg-muted px-2.5 py-1 text-[12px] font-medium text-muted-foreground">
             {ASSESS_TABLE_TEXT.weightBadge(dimension.weight)}
           </span>
-          <div className="text-right">
-            <p className="text-[11.5px] text-muted-foreground">{ASSESS_TABLE_TEXT.rawScoreLabel}</p>
-            <p className="text-lg font-extrabold text-orange">
-              {sum}
-              <span className="text-xs font-normal text-muted-foreground"> / {max}</span>
-            </p>
-            <p className="text-[11.5px] text-muted-foreground">({pct}%)</p>
+          <Separator orientation="vertical" className="h-4" />
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[11.5px] text-muted-foreground">{ASSESS_TABLE_TEXT.rawScoreLabel}</span>
+            <span className="text-lg font-extrabold text-orange">{sum}</span>
+            <span className="text-xs font-normal text-muted-foreground">/ {max}</span>
+            <span className="text-[11.5px] text-muted-foreground">({pct}%)</span>
           </div>
         </div>
       </div>

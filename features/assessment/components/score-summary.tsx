@@ -105,7 +105,7 @@ export function ScoreSummary({
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-[1fr_1.3fr] gap-2">
           <div className="flex items-center gap-2 rounded-lg bg-muted/40 p-2.5">
             <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-violet-600 text-white">
               <Box className="h-4 w-4" />

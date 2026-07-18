@@ -109,6 +109,16 @@ export interface AssessmentSummary {
   submittedAt: string | null
 }
 
+/** Shape returned by GET /assessment/{storeId}/history — includes the assessor's display name. */
+export interface AssessmentHistoryItem {
+  round: Round
+  status: AssessmentStatus
+  totalScore: number | null
+  assessorName: string
+  updatedAt: string
+  submittedAt: string | null
+}
+
 export interface CreateAssessmentDto {
   storeId: string
   round: Round

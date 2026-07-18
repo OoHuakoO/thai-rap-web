@@ -3,6 +3,7 @@ import type { PaginatedResponse } from '@/types/api.types';
 import type {
   Assessment,
   AssessmentSummary,
+  AssessmentHistoryItem,
   AssessmentQuestion,
   AssessmentRank,
   CreateAssessmentDto,
@@ -32,6 +33,11 @@ export const assessmentService = {
       .then((res) => res.data.items),
 
   getById: (id: string) => api.get<Assessment>(`/assessments/${id}`).then((res) => res.data),
+
+  getHistory: (storeId: string) =>
+    api
+      .get<AssessmentHistoryItem[]>(`/assessment/${storeId}/history`)
+      .then((res) => res.data),
 
   create: (data: CreateAssessmentDto) =>
     api.post<Assessment>('/assessments', data).then((res) => res.data),

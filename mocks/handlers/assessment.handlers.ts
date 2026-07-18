@@ -6,6 +6,7 @@ import {
   getDimensionAverages,
 } from '../fixtures/assessment.fixtures';
 import { storeDb } from '../fixtures/store.fixtures';
+import { userDb } from '../fixtures/user.fixtures';
 import {
   getScenario,
   unauthorized,
@@ -19,6 +20,7 @@ import { HTTP_STATUS } from '@/constants/http-status';
 import type {
   Assessment,
   AssessmentSummary,
+  AssessmentHistoryItem,
   AssessmentQuestion,
   AssessmentRank,
   CreateAssessmentDto,
@@ -104,6 +106,21 @@ export const assessmentHandlers = [
       items,
       meta: { page: 1, limit: items.length || 1, total: items.length, totalPages: 1 },
     });
+  }),
+
+  http.get(`${BASE_URL}/assessment/:storeId/history`, ({ request, params }) => {
+    const blocked = guard(request);
+    if (blocked) return blocked;
+    const summaries = assessmentDb.findAllByStore(params.storeId as string);
+    const items: AssessmentHistoryItem[] = summaries.map((s) => ({
+      round: s.round,
+      status: s.status,
+      totalScore: s.totalScore,
+      assessorName: userDb.findById(s.assessorId)?.name ?? s.assessorId,
+      updatedAt: s.updatedAt,
+      submittedAt: s.submittedAt,
+    }));
+    return HttpResponse.json<AssessmentHistoryItem[]>(items);
   }),
 
   http.get(`${BASE_URL}/assessments/rank`, ({ request }) => {
