@@ -10,6 +10,7 @@ import { cn } from '@/utils/cn';
 import { buildFileUrl } from '@/utils/build-file-url';
 import { formatFileSize } from '@/utils/format-file-size';
 import { isFileSizeValid, fileTooLargeMessage } from '@/utils/validate-file-size';
+import { splitFilename } from '@/utils/split-filename';
 import { ScoreButtonGroup } from './score-button-group';
 import { QUESTION_ROW_TEXT } from '../constants/assessment-text.constants';
 import type { AssessmentQuestion } from '../types/assessment.types';
@@ -99,38 +100,42 @@ export function QuestionRow({
       <td className="min-w-[120px] px-2 py-2.5">
         <ScoreButtonGroup value={question.rawScore} disabled={locked} onChange={onScoreChange} />
       </td>
-      <td className="min-w-[120px] px-2 py-2.5">
+      <td className="min-w-[120px] max-w-[200px] px-2 py-2.5">
         <div className="flex flex-col gap-1">
-          {evidence.map((file) => (
-            <div
-              key={file.id}
-              className="flex items-center gap-1 rounded border border-orange bg-cream px-1.5 py-0.5 text-[9.5px] text-orange"
-            >
-              <Paperclip className="h-2.5 w-2.5 flex-shrink-0" />
-              <a
-                href={buildFileUrl(file.url)}
-                target="_blank"
-                rel="noreferrer"
-                className="truncate hover:underline"
-                title={`${file.filename} (${formatFileSize(file.fileSize)})`}
+          {evidence.map((file) => {
+            const { base, ext } = splitFilename(file.filename);
+            return (
+              <div
+                key={file.id}
+                className="flex items-center gap-1 rounded border border-orange bg-cream px-1.5 py-0.5 text-[9.5px] text-orange"
               >
-                {file.filename}
-              </a>
-              <span className="flex-shrink-0 text-[8.5px] text-muted-foreground">
-                {formatFileSize(file.fileSize)}
-              </span>
-              {!locked && (
-                <button
-                  type="button"
-                  onClick={() => onDeleteEvidence(file.id)}
-                  className="flex-shrink-0 text-orange/70 hover:text-destructive"
-                  aria-label={QUESTION_ROW_TEXT.deleteFileAria(file.filename)}
+                <Paperclip className="h-2.5 w-2.5 flex-shrink-0" />
+                <a
+                  href={buildFileUrl(file.url)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex min-w-0 flex-1 items-center hover:underline"
+                  title={`${file.filename} (${formatFileSize(file.fileSize)})`}
                 >
-                  <X className="h-2.5 w-2.5" />
-                </button>
-              )}
-            </div>
-          ))}
+                  <span className="min-w-0 truncate">{base}</span>
+                  <span className="flex-shrink-0">{ext}</span>
+                </a>
+                <span className="flex-shrink-0 text-[8.5px] text-muted-foreground">
+                  {formatFileSize(file.fileSize)}
+                </span>
+                {!locked && (
+                  <button
+                    type="button"
+                    onClick={() => onDeleteEvidence(file.id)}
+                    className="flex-shrink-0 text-orange/70 hover:text-destructive"
+                    aria-label={QUESTION_ROW_TEXT.deleteFileAria(file.filename)}
+                  >
+                    <X className="h-2.5 w-2.5" />
+                  </button>
+                )}
+              </div>
+            );
+          })}
           {canAttach && (
             <button
               type="button"
@@ -146,7 +151,7 @@ export function QuestionRow({
             ref={fileInputRef}
             type="file"
             multiple
-            accept="image/jpeg,image/png,image/webp,application/pdf,.xlsx"
+            accept="image/jpeg,image/png,image/webp,application/pdf,.xlsx,.docx,.csv"
             className="hidden"
             onChange={(e) => {
               handleFileSelected(e.target.files);

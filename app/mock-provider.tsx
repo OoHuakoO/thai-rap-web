@@ -16,7 +16,16 @@ export function MockProvider({ children }: MockProviderProps) {
   const [ready, setReady] = useState(!mocksEnabled);
 
   useEffect(() => {
-    if (!mocksEnabled) return;
+    if (!mocksEnabled) {
+      // A service worker registered during an earlier NEXT_PUBLIC_ENABLE_MOCKS=true
+      // session survives in the browser indefinitely and keeps intercepting
+      // requests with its own stale in-memory mock data after mocks are turned
+      // back off — looks like "real" data randomly going missing on reload.
+      navigator.serviceWorker?.getRegistrations().then((registrations) => {
+        registrations.forEach((registration) => registration.unregister());
+      });
+      return;
+    }
     import('@/mocks')
       .then(({ initMocks }) => initMocks())
       .then(() => setReady(true));
