@@ -69,4 +69,26 @@ describe('TimelineArea', () => {
 
     expect(screen.getByText('โดย นางสาวศิริวรรณ จันทร์ดี')).toBeInTheDocument();
   });
+
+  it('shows the done status on the current round once it has been submitted', () => {
+    vi.mocked(useAssessmentHistory).mockReturnValue({
+      data: [
+        {
+          round: 'T0',
+          status: 'SUBMITTED',
+          totalScore: 82,
+          assessorName: 'นางสาวศิริวรรณ จันทร์ดี',
+          updatedAt: '2026-05-20T14:35:00Z',
+          submittedAt: '2026-05-20T15:00:00Z',
+        },
+      ],
+    } as unknown as ReturnType<typeof useAssessmentHistory>);
+
+    render(
+      <TimelineArea storeId="store-1" round="T0" assessmentId="a1" notes={null} canEdit={true} />
+    );
+
+    expect(screen.getByText('เสร็จสิ้น')).toBeInTheDocument();
+    expect(screen.queryByText('กำลังประเมิน')).not.toBeInTheDocument();
+  });
 });

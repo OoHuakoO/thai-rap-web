@@ -16,25 +16,25 @@ import {
 } from '@/components/ui/dialog';
 import { useAssessmentSummaries } from '../hooks/use-assessment';
 import { ROUND_PILLS_TEXT } from '../constants/assessment-text.constants';
+import { REQUIRED_PRIOR_ROUND, isRoundCompleted } from '../utils/round';
 import type { Round } from '../types/assessment.types';
 
 const ROUNDS: Round[] = ['T0', 'T1', 'T2', 'T3', 'T4'];
-const LOCKED_UNTIL_T1: Round[] = ['T2', 'T3', 'T4'];
 
 interface RoundPillsProps {
   storeId: string;
   activeRound?: Round;
 }
 
+interface LockInfo {
+  round: Round;
+  requiredRound: Round;
+}
+
 export function RoundPills({ storeId, activeRound }: RoundPillsProps) {
   const router = useRouter();
   const { data: summaries } = useAssessmentSummaries(storeId);
-  const [lockOpen, setLockOpen] = useState(false);
-
-  // Mirrors ROUNDS_LOCKED_UNTIL_T1 in the API's AssessmentService — the API
-  // accepts SUBMITTED or APPROVED, so the UI lock must too.
-  const t1Status = summaries?.find((s) => s.round === 'T1')?.status;
-  const t1Submitted = t1Status === 'SUBMITTED' || t1Status === 'APPROVED';
+  const [lockInfo, setLockInfo] = useState<LockInfo | null>(null);
 
   return (
     <>
@@ -43,7 +43,8 @@ export function RoundPills({ storeId, activeRound }: RoundPillsProps) {
           const summary = summaries?.find((s) => s.round === round);
           const isSubmitted = summary?.status === 'SUBMITTED';
           const isActive = round === activeRound;
-          const isLocked = LOCKED_UNTIL_T1.includes(round) && !t1Submitted;
+          const requiredRound = REQUIRED_PRIOR_ROUND[round];
+          const isLocked = requiredRound !== undefined && !isRoundCompleted(summaries, requiredRound);
 
           return (
             <button
@@ -51,7 +52,7 @@ export function RoundPills({ storeId, activeRound }: RoundPillsProps) {
               type="button"
               onClick={() => {
                 if (isLocked) {
-                  setLockOpen(true);
+                  setLockInfo({ round, requiredRound: requiredRound as Round });
                   return;
                 }
                 router.push(ROUTES.ASSESSMENT_DETAIL(storeId, round));
@@ -83,22 +84,27 @@ export function RoundPills({ storeId, activeRound }: RoundPillsProps) {
         })}
       </div>
 
-      <Dialog open={lockOpen} onOpenChange={setLockOpen}>
+      <Dialog open={lockInfo !== null} onOpenChange={(open) => !open && setLockInfo(null)}>
         <DialogContent className="max-w-sm text-center">
           <DialogHeader className="items-center">
             <span className="text-4xl">🔒</span>
-            <DialogTitle>{ROUND_PILLS_TEXT.lockTitle}</DialogTitle>
+            <DialogTitle>
+              {lockInfo && ROUND_PILLS_TEXT.lockTitle(lockInfo.requiredRound)}
+            </DialogTitle>
             <DialogDescription>
               {ROUND_PILLS_TEXT.lockLine1}
               <br />
-              {ROUND_PILLS_TEXT.lockLine2Prefix} <b className="text-charcoal">T1</b>{' '}
-              {ROUND_PILLS_TEXT.lockLine2Suffix}
-              <br />
-              {ROUND_PILLS_TEXT.lockLine3}
+              {lockInfo && (
+                <>
+                  {ROUND_PILLS_TEXT.lockLine2Prefix}{' '}
+                  <b className="text-charcoal">{lockInfo.requiredRound}</b>{' '}
+                  {ROUND_PILLS_TEXT.lockLine2Suffix(lockInfo.round)}
+                </>
+              )}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="sm:justify-center">
-            <Button onClick={() => setLockOpen(false)}>{ROUND_PILLS_TEXT.lockConfirm}</Button>
+            <Button onClick={() => setLockInfo(null)}>{ROUND_PILLS_TEXT.lockConfirm}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -11,6 +11,7 @@ export { StoreEditPage } from './components/store-edit-page';
 export { StoreListBackLink } from './components/store-list-back-link';
 export { StoreFormHeader } from './components/store-form-header';
 export {
+  storeKeys,
   useStores,
   useStore,
   useStoreStats,

@@ -39,8 +39,14 @@ export function AssessTable({
   const rangeText = firstNo && lastNo ? ASSESS_TABLE_TEXT.questionRange(firstNo, lastNo) : '';
 
   return (
-    <div id="assess-card" className="rounded-xl border bg-card shadow-sm">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b px-4 py-3">
+    // h-full fills the fixed 700px row (see assessment-form.tsx's
+    // lg:h-[700px] wrapper) so this and DimensionList bottom out at the same
+    // line — the table scrolls internally instead of growing past that height.
+    <div
+      id="assess-card"
+      className="flex h-full flex-col overflow-hidden rounded-xl border bg-card shadow-sm"
+    >
+      <div className="flex flex-shrink-0 flex-wrap items-start justify-between gap-3 border-b px-4 py-3">
         <div className="flex items-start gap-2.5">
           <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-orange to-orange-light text-lg">
             🍽
@@ -69,10 +75,10 @@ export function AssessTable({
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="flex-1 overflow-auto">
         <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b bg-muted/40 text-[12.5px] text-muted-foreground">
+          <thead className="sticky top-0 z-10 bg-muted">
+            <tr className="border-b text-[12.5px] text-muted-foreground">
               <th className="px-2 py-2 text-left font-semibold">{ASSESS_TABLE_TEXT.columnNo}</th>
               <th className="px-2 py-2 text-left font-semibold">
                 {ASSESS_TABLE_TEXT.columnCriteria}
@@ -109,7 +115,7 @@ export function AssessTable({
         </table>
       </div>
 
-      <div className="border-t bg-muted/20 px-4 py-2.5">
+      <div className="flex-shrink-0 border-t bg-muted/20 px-4 py-2.5">
         <p className="text-[11.5px] text-muted-foreground">{ASSESS_TABLE_TEXT.totalRawLabel}</p>
         <p className="text-base font-extrabold text-orange">
           {sum}{' '}

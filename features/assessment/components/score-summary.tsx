@@ -83,7 +83,7 @@ export function ScoreSummary({
   });
 
   return (
-    <Card className={cn('h-full', className)}>
+    <Card className={cn('h-full overflow-y-auto', className)}>
       <CardContent className="space-y-3 pt-5">
         <div className="flex items-center justify-between">
           <p className="text-sm font-bold text-charcoal">{SCORE_SUMMARY_TEXT.title}</p>

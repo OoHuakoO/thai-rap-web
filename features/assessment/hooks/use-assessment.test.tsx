@@ -149,6 +149,20 @@ describe('useAssessment', () => {
     expect(assessmentService.create).toHaveBeenCalledTimes(1);
   });
 
+  // A locked round (prior round not yet completed) passes enabled: false so
+  // the caller never fires a doomed fetch/create against a round it already
+  // knows it can't work on.
+  it('does not fetch or create when enabled is false', () => {
+    const { result } = renderHook(
+      () => useAssessment('store-1', 'T1', { enabled: false }),
+      { wrapper }
+    );
+
+    expect(result.current.data).toBeUndefined();
+    expect(assessmentService.findByStoreAndRound).not.toHaveBeenCalled();
+    expect(assessmentService.create).not.toHaveBeenCalled();
+  });
+
   // Regression: switching rounds (e.g. via RoundPills) re-renders the same
   // component instance with a new round instead of unmounting it, so the
   // create mutation is a single long-lived instance shared across rounds.

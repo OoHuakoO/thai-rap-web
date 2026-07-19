@@ -49,19 +49,25 @@ function conflict(): Response {
   );
 }
 
-// Mirrors ROUNDS_LOCKED_UNTIL_T1 in the API's AssessmentService.create().
-const LOCKED_UNTIL_T1: Round[] = ['T2', 'T3', 'T4'];
+// Mirrors REQUIRED_PRIOR_ROUND in the API's AssessmentService.create().
+const REQUIRED_PRIOR_ROUND: Partial<Record<Round, Round>> = {
+  T1: 'T0',
+  T2: 'T1',
+  T3: 'T1',
+  T4: 'T1',
+};
 
-function t1Lock(storeId: string, round: Round): Response | null {
-  if (!LOCKED_UNTIL_T1.includes(round)) return null;
-  const t1 = assessmentDb.findByStoreAndRound(storeId, 'T1');
-  if (t1?.status === 'SUBMITTED' || t1?.status === 'APPROVED') return null;
+function priorRoundLock(storeId: string, round: Round): Response | null {
+  const requiredPriorRound = REQUIRED_PRIOR_ROUND[round];
+  if (!requiredPriorRound) return null;
+  const prior = assessmentDb.findByStoreAndRound(storeId, requiredPriorRound);
+  if (prior?.status === 'SUBMITTED' || prior?.status === 'APPROVED') return null;
   return HttpResponse.json<ApiErrorResponse>(
     {
       success: false,
       error: {
         code: 'ASSESS_003',
-        message: `ต้องส่งผลประเมินรอบ T1 ก่อน จึงจะเริ่มประเมินรอบ ${round} ได้`,
+        message: `ต้องส่งผลประเมินรอบ ${requiredPriorRound} ก่อน จึงจะเริ่มประเมินรอบ ${round} ได้`,
       },
     },
     { status: HTTP_STATUS.BAD_REQUEST }
@@ -192,7 +198,7 @@ export const assessmentHandlers = [
     }
     if (assessmentDb.findByStoreAndRound(body.storeId, body.round)) return conflict();
 
-    const locked = t1Lock(body.storeId, body.round);
+    const locked = priorRoundLock(body.storeId, body.round);
     if (locked) return locked;
 
     const assessorId = getMockUserId(request) ?? FALLBACK_ASSESSOR_ID;

@@ -40,7 +40,7 @@ export function ScoreButtonGroup({ value, disabled, onChange }: ScoreButtonGroup
           </button>
         ))}
       </div>
-      <span className="whitespace-nowrap text-[9px] text-muted-foreground">
+      <span className="whitespace-nowrap text-xs text-muted-foreground">
         {value !== null ? SCORE_LABELS[value] : '—'}
       </span>
     </div>

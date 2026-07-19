@@ -39,7 +39,7 @@ export const SCORE_SUMMARY_TEXT = {
   improvementTitle: 'จุดที่ควรเร่งพัฒนา',
   compareTitle: 'เปรียบเทียบ 8 มิติ',
   radarThisStore: 'ร้านนี้',
-  radarAverage: 'ค่าเฉลี่ย',
+  radarAverage: 'ค่าเฉลี่ยจังหวัด',
   dimensionAxisLabel: (id: number) => `มิติ ${id}`,
 } as const;
 
@@ -89,11 +89,10 @@ export const TIMELINE_TEXT = {
 } as const;
 
 export const ROUND_PILLS_TEXT = {
-  lockTitle: 'ต้องทำรอบ T1 ก่อน',
+  lockTitle: (requiredRound: string) => `ต้องทำรอบ ${requiredRound} ก่อน`,
   lockLine1: 'ไม่สามารถเข้าถึงรอบนี้ได้',
   lockLine2Prefix: 'กรุณาทำการประเมินรอบ',
-  lockLine2Suffix: 'ให้เสร็จก่อน',
-  lockLine3: 'จึงจะสามารถเข้าถึง T2, T3, T4 ได้',
+  lockLine2Suffix: (round: string) => `ให้เสร็จก่อน จึงจะสามารถเข้าถึง ${round} ได้`,
   lockConfirm: 'เข้าใจแล้ว',
 } as const;
 

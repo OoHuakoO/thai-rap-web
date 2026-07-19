@@ -72,7 +72,9 @@ export function TimelineArea({
         round: r,
         title: isCurrent ? TIMELINE_TEXT.currentRound(r) : ROUND_LABELS[r],
         date: isDone ? (historyItem?.submittedAt ?? null) : (historyItem?.updatedAt ?? null),
-        status: isCurrent ? 'current' : isDone ? 'done' : 'draft',
+        // isDone must win over isCurrent — otherwise the round you're viewing
+        // stays badged "กำลังประเมิน" forever, even right after you submit it.
+        status: isDone ? 'done' : isCurrent ? 'current' : 'draft',
         assessorName: historyItem?.assessorName ?? null,
       } as const;
     }

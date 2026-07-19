@@ -20,13 +20,15 @@ import { TimelineArea } from './timeline-area';
 import {
   assessmentKeys,
   useAssessment,
+  useAssessmentSummaries,
   useDeleteEvidence,
   useDimensions,
   useSubmitAssessment,
   useUpdateScore,
   useUploadEvidence,
 } from '../hooks/use-assessment';
-import { ASSESSMENT_FORM_TEXT } from '../constants/assessment-text.constants';
+import { ASSESSMENT_FORM_TEXT, ROUND_PILLS_TEXT } from '../constants/assessment-text.constants';
+import { getMissingPriorRound } from '../utils/round';
 import { TOTAL_QUESTIONS } from '../types/assessment.types';
 import type { Round } from '../types/assessment.types';
 
@@ -40,7 +42,14 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
   const [isStoreCleared, setIsStoreCleared] = useState(false);
   const effectiveStoreId = isStoreCleared ? '' : storeId;
   const { data: store } = useStore(effectiveStoreId);
-  const { data: assessment, isLoading, isError, error } = useAssessment(effectiveStoreId, round);
+  const { data: summaries, isLoading: isSummariesLoading } =
+    useAssessmentSummaries(effectiveStoreId);
+  // Unknown while summaries are still loading, so we don't flash the locked
+  // notice for a round that turns out to be unlocked once summaries arrive.
+  const missingPriorRound = isSummariesLoading ? null : getMissingPriorRound(summaries, round);
+  const { data: assessment, isLoading, isError, error } = useAssessment(effectiveStoreId, round, {
+    enabled: !isSummariesLoading && !missingPriorRound,
+  });
   const { data: dimensions } = useDimensions();
   const [selectedDim, setSelectedDim] = useState(1);
   const [highlightedId, setHighlightedId] = useState<number | null>(null);
@@ -71,7 +80,38 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
     );
   }
 
-  if (isLoading) return <Loading className="py-16" />;
+  if (isSummariesLoading || isLoading) return <Loading className="py-16" />;
+
+  if (missingPriorRound) {
+    return (
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-end gap-4 rounded-xl border bg-card p-3 shadow-sm">
+          <AssessmentStorePicker
+            storeId={storeId}
+            storeName={store?.name}
+            storeCoverUrl={store?.coverUrl}
+            round={round}
+            onProvinceChange={() => setIsStoreCleared(true)}
+          />
+          <div>
+            <p className="mb-1 text-sm text-muted-foreground">{ASSESSMENT_FORM_TEXT.roundLabel}</p>
+            <RoundPills storeId={storeId} activeRound={round} />
+          </div>
+        </div>
+        <div className="rounded-xl border bg-card py-16 text-center shadow-sm">
+          <p className="text-4xl">🔒</p>
+          <p className="mt-2 text-base font-bold text-charcoal">
+            {ROUND_PILLS_TEXT.lockTitle(missingPriorRound)}
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {ROUND_PILLS_TEXT.lockLine2Prefix}{' '}
+            <b className="text-charcoal">{missingPriorRound}</b>{' '}
+            {ROUND_PILLS_TEXT.lockLine2Suffix(round)}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (isError) {
     return <p className="py-8 text-center text-destructive">{extractErrorMessage(error)}</p>;
@@ -250,29 +290,56 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
       </div>
 
       {dimensions && (
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[280px_minmax(0,1fr)_340px]">
-          <DimensionList
-            dimensions={dimensions}
-            questions={assessment.questions}
-            selectedId={selectedDim}
-            totalScore={assessment.totalScore}
-            onSelect={setSelectedDim}
-          />
+        // Left column (fixed-height dim/table row + natural-height
+        // TimelineArea right under it, flush, no gap) is normal flow and is
+        // what sizes this container. ScoreSummary is pinned absolute
+        // (inset-y-0) instead of living in the flow, so it takes its height
+        // from the container — i.e. from the left column — rather than the
+        // other way around, and scrolls internally if its own content (8
+        // dimension scores + chart) runs longer than that. That's the only
+        // way to keep TimelineArea's bottom edge flush with ScoreSummary's
+        // bottom edge AND keep TimelineArea sitting flush under dim/table at
+        // the same time: those two things can only both be true if
+        // ScoreSummary's height is derived from the left column, since
+        // dim/table (fixed) + TimelineArea (natural) is a fixed sum that
+        // won't ever coincidentally match ScoreSummary's own content height.
+        // pr-[352px] reserves ScoreSummary's 340px width + the 12px (gap-3)
+        // gutter beside it.
+        <div className="relative lg:pr-[352px]">
+          <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-1 gap-3 lg:h-[700px] lg:grid-cols-[280px_minmax(0,1fr)]">
+              <DimensionList
+                dimensions={dimensions}
+                questions={assessment.questions}
+                selectedId={selectedDim}
+                totalScore={assessment.totalScore}
+                onSelect={setSelectedDim}
+              />
 
-          {dimension && (
-            <AssessTable
-              dimension={dimension}
-              questions={dimQuestions}
-              locked={readOnly}
-              highlightedId={highlightedId}
-              isUploading={uploadEvidence.isPending}
-              onScoreChange={handleScoreChange}
-              onNoteChange={handleNoteChange}
-              onSuggestionChange={handleSuggestionChange}
-              onUploadEvidence={handleUploadEvidence}
-              onDeleteEvidence={handleDeleteEvidence}
+              {dimension && (
+                <AssessTable
+                  dimension={dimension}
+                  questions={dimQuestions}
+                  locked={readOnly}
+                  highlightedId={highlightedId}
+                  isUploading={uploadEvidence.isPending}
+                  onScoreChange={handleScoreChange}
+                  onNoteChange={handleNoteChange}
+                  onSuggestionChange={handleSuggestionChange}
+                  onUploadEvidence={handleUploadEvidence}
+                  onDeleteEvidence={handleDeleteEvidence}
+                />
+              )}
+            </div>
+
+            <TimelineArea
+              storeId={storeId}
+              round={round}
+              assessmentId={assessment.id}
+              notes={assessment.notes}
+              canEdit={canWrite}
             />
-          )}
+          </div>
 
           <ScoreSummary
             storeId={storeId}
@@ -283,16 +350,7 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
             questions={assessment.questions}
             redFlags={assessment.redFlags}
             isSubmitted={locked}
-            className="lg:col-start-3 lg:row-span-2 lg:row-start-1"
-          />
-
-          <TimelineArea
-            storeId={storeId}
-            round={round}
-            assessmentId={assessment.id}
-            notes={assessment.notes}
-            canEdit={canWrite}
-            className="lg:col-span-2 lg:col-start-1 lg:row-start-2"
+            className="mt-3 lg:absolute lg:inset-y-0 lg:right-0 lg:mt-0 lg:w-[340px]"
           />
         </div>
       )}

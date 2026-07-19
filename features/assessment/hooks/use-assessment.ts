@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { storeKeys } from '@/features/store';
 import { assessmentService, dimensionService } from '../services/assessment.service';
 import type { Assessment, Round, UpdateScoreDto } from '../types/assessment.types';
 
@@ -41,7 +42,8 @@ export function useAssessmentHistory(storeId: string) {
   });
 }
 
-export function useAssessment(storeId: string, round: Round) {
+export function useAssessment(storeId: string, round: Round, options?: { enabled?: boolean }) {
+  const enabled = options?.enabled ?? true;
   const queryClient = useQueryClient();
 
   // Read-only: finds the existing assessment, or null if none exists yet.
@@ -51,7 +53,7 @@ export function useAssessment(storeId: string, round: Round) {
       const existing = await assessmentService.findByStoreAndRound(storeId, round);
       return existing ? assessmentService.getById(existing.id) : null;
     },
-    enabled: !!storeId && !!round,
+    enabled: !!storeId && !!round && enabled,
   });
 
   // Creating a missing assessment is a write — it belongs in its own
@@ -77,13 +79,14 @@ export function useAssessment(storeId: string, round: Round) {
   const triedKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
+    if (!enabled) return;
     const key = `${storeId}:${round}`;
     if (query.data === null && triedKeyRef.current !== key) {
       triedKeyRef.current = key;
       createMutation.mutate({ storeId, round });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query.data, storeId, round]);
+  }, [query.data, storeId, round, enabled]);
 
   const isCreating = query.data === null && !createMutation.isError;
 
@@ -113,6 +116,9 @@ export function useUpdateScore(storeId: string, round: Round, assessmentId: stri
             ),
           }
       );
+      // Score save also reassigns the assessor on the backend — history
+      // (assessorName/updatedAt on the timeline card) must refetch too.
+      queryClient.invalidateQueries({ queryKey: assessmentKeys.history(storeId) });
     },
   });
 }
@@ -145,6 +151,14 @@ export function useSubmitAssessment(storeId: string, round: Round, assessmentId:
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: assessmentKeys.byStoreRound(storeId, round) });
       queryClient.invalidateQueries({ queryKey: assessmentKeys.byStore(storeId) });
+      // Submission can advance Store.status (e.g. T0_COMPLETED) and shifts
+      // this store's rank among others — both live in caches this mutation
+      // doesn't otherwise touch.
+      queryClient.invalidateQueries({ queryKey: storeKeys.detail(storeId) });
+      queryClient.invalidateQueries({ queryKey: assessmentKeys.rank(storeId, round) });
+      // TimelineArea's round-history card reads this key — without it, the
+      // just-submitted round keeps showing its pre-submit status/timestamp.
+      queryClient.invalidateQueries({ queryKey: assessmentKeys.history(storeId) });
     },
   });
 }
