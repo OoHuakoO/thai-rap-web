@@ -14,3 +14,11 @@ export function sumQuestionScores(questions: AssessmentQuestion[]): QuestionScor
     max: questions.reduce((acc, q) => acc + q.maxScore, 0),
   };
 }
+
+// Guards the div-by-zero case (no questions scored yet) shared by every
+// sum/max → percentage display in this feature.
+export function calcScorePercent(sum: number, max: number, decimals = 0): number {
+  if (max === 0) return 0;
+  const factor = 10 ** decimals;
+  return Math.round((sum / max) * 100 * factor) / factor;
+}

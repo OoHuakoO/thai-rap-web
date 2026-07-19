@@ -23,6 +23,7 @@ export const ASSESSMENT_FORM_TEXT = {
   submitConfirmLabel: 'Submit',
   deleteEvidenceTitle: 'ลบไฟล์',
   deleteEvidenceDescription: 'ต้องการลบไฟล์หลักฐานนี้ใช่หรือไม่?',
+  retry: 'ลองใหม่',
 } as const;
 
 export const SCORE_SUMMARY_TEXT = {
@@ -113,6 +114,7 @@ export const STORE_PICKER_TEXT = {
 
 export const ROUND_PICKER_TEXT = {
   title: 'ประเมินร้าน',
+  titleWithStore: (name: string) => `ประเมินร้าน: ${name}`,
   subtitle: 'เลือกรอบประเมินที่ต้องการให้คะแนน',
 } as const;
 

@@ -8,9 +8,7 @@ import { extractErrorMessage } from '@/utils/extract-error-message';
 import { useStores } from '@/features/store';
 import { EMPTY_STORE_MESSAGE } from '../constants/assessment-text.constants';
 import { useAssessmentSummaries } from '../hooks/use-assessment';
-import type { Round } from '../types/assessment.types';
-
-const ROUNDS: Round[] = ['T0', 'T1', 'T2', 'T3', 'T4'];
+import { ROUNDS } from '../types/assessment.types';
 
 export function AssessmentEntry() {
   const router = useRouter();

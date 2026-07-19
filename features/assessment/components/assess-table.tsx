@@ -3,7 +3,7 @@
 import { Separator } from '@/components/ui/separator';
 import { QuestionRow } from './question-row';
 import { ASSESS_TABLE_TEXT } from '../constants/assessment-text.constants';
-import { sumQuestionScores } from '../utils/dimension-score';
+import { calcScorePercent, sumQuestionScores } from '../utils/dimension-score';
 import type { AssessmentQuestion, Dimension } from '../types/assessment.types';
 
 interface AssessTableProps {
@@ -33,7 +33,7 @@ export function AssessTable({
 }: AssessTableProps) {
   const sorted = [...questions].sort((a, b) => a.questionNo - b.questionNo);
   const { sum, max } = sumQuestionScores(sorted);
-  const pct = max === 0 ? 0 : Math.round((sum / max) * 100);
+  const pct = calcScorePercent(sum, max);
   const firstNo = sorted[0]?.questionNo;
   const lastNo = sorted[sorted.length - 1]?.questionNo;
   const rangeText = firstNo && lastNo ? ASSESS_TABLE_TEXT.questionRange(firstNo, lastNo) : '';

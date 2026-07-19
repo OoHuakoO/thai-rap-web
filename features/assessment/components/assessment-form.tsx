@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { Loading } from '@/components/shared/loading';
@@ -11,8 +11,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { PERMISSIONS } from '@/types/auth.types';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { useStore } from '@/features/store';
-import { AssessmentStorePicker } from './assessment-store-picker';
-import { RoundPills } from './round-pills';
+import { AssessmentFormHeader } from './assessment-form-header';
 import { DimensionList } from './dimension-list';
 import { AssessTable } from './assess-table';
 import { ScoreSummary } from './score-summary';
@@ -29,8 +28,7 @@ import {
 } from '../hooks/use-assessment';
 import { ASSESSMENT_FORM_TEXT, ROUND_PILLS_TEXT } from '../constants/assessment-text.constants';
 import { getMissingPriorRound } from '../utils/round';
-import { TOTAL_QUESTIONS } from '../types/assessment.types';
-import type { Round } from '../types/assessment.types';
+import type { Round, UpdateScoreDto } from '../types/assessment.types';
 
 interface AssessmentFormProps {
   storeId: string;
@@ -40,6 +38,15 @@ interface AssessmentFormProps {
 export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
   const queryClient = useQueryClient();
   const [isStoreCleared, setIsStoreCleared] = useState(false);
+
+  // storeId can change from outside the picker (browser back/forward, a
+  // direct link) — without this, a stale isStoreCleared=true left over from
+  // a prior province-change would keep showing the empty picker state
+  // forever instead of loading the new store.
+  useEffect(() => {
+    setIsStoreCleared(false);
+  }, [storeId]);
+
   const effectiveStoreId = isStoreCleared ? '' : storeId;
   const { data: store } = useStore(effectiveStoreId);
   const { data: summaries, isLoading: isSummariesLoading } =
@@ -47,7 +54,13 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
   // Unknown while summaries are still loading, so we don't flash the locked
   // notice for a round that turns out to be unlocked once summaries arrive.
   const missingPriorRound = isSummariesLoading ? null : getMissingPriorRound(summaries, round);
-  const { data: assessment, isLoading, isError, error } = useAssessment(effectiveStoreId, round, {
+  const {
+    data: assessment,
+    isLoading,
+    isError,
+    error,
+    retry,
+  } = useAssessment(effectiveStoreId, round, {
     enabled: !isSummariesLoading && !missingPriorRound,
   });
   const { data: dimensions } = useDimensions();
@@ -65,14 +78,12 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
   if (isStoreCleared) {
     return (
       <div className="space-y-4">
-        <div className="flex flex-wrap items-end gap-4 rounded-xl border bg-card p-3 shadow-sm">
-          <AssessmentStorePicker
-            storeId=""
-            round={round}
-            onProvinceChange={() => setIsStoreCleared(true)}
-            onStoreSelect={() => setIsStoreCleared(false)}
-          />
-        </div>
+        <AssessmentFormHeader
+          storeId=""
+          round={round}
+          onProvinceChange={() => setIsStoreCleared(true)}
+          onStoreSelect={() => setIsStoreCleared(false)}
+        />
         <div className="rounded-xl border bg-card py-16 text-center text-sm text-muted-foreground shadow-sm">
           {ASSESSMENT_FORM_TEXT.noStoreSelectedMessage}
         </div>
@@ -85,27 +96,20 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
   if (missingPriorRound) {
     return (
       <div className="space-y-4">
-        <div className="flex flex-wrap items-end gap-4 rounded-xl border bg-card p-3 shadow-sm">
-          <AssessmentStorePicker
-            storeId={storeId}
-            storeName={store?.name}
-            storeCoverUrl={store?.coverUrl}
-            round={round}
-            onProvinceChange={() => setIsStoreCleared(true)}
-          />
-          <div>
-            <p className="mb-1 text-sm text-muted-foreground">{ASSESSMENT_FORM_TEXT.roundLabel}</p>
-            <RoundPills storeId={storeId} activeRound={round} />
-          </div>
-        </div>
+        <AssessmentFormHeader
+          storeId={storeId}
+          storeName={store?.name}
+          storeCoverUrl={store?.coverUrl}
+          round={round}
+          onProvinceChange={() => setIsStoreCleared(true)}
+        />
         <div className="rounded-xl border bg-card py-16 text-center shadow-sm">
           <p className="text-4xl">🔒</p>
           <p className="mt-2 text-base font-bold text-charcoal">
             {ROUND_PILLS_TEXT.lockTitle(missingPriorRound)}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {ROUND_PILLS_TEXT.lockLine2Prefix}{' '}
-            <b className="text-charcoal">{missingPriorRound}</b>{' '}
+            {ROUND_PILLS_TEXT.lockLine2Prefix} <b className="text-charcoal">{missingPriorRound}</b>{' '}
             {ROUND_PILLS_TEXT.lockLine2Suffix(round)}
           </p>
         </div>
@@ -114,7 +118,14 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
   }
 
   if (isError) {
-    return <p className="py-8 text-center text-destructive">{extractErrorMessage(error)}</p>;
+    return (
+      <div className="space-y-3 py-8 text-center">
+        <p className="text-destructive">{extractErrorMessage(error)}</p>
+        <Button variant="outline" onClick={retry}>
+          {ASSESSMENT_FORM_TEXT.retry}
+        </Button>
+      </div>
+    );
   }
 
   if (!assessment) return null;
@@ -126,45 +137,37 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
   // one read-only flag consumed by the table/inputs below.
   const readOnly = locked || !canWrite;
   const scoredCount = assessment.questions.filter((q) => q.rawScore !== null).length;
-  const progressPct = Math.round((scoredCount / TOTAL_QUESTIONS) * 100);
+  const progressPct = Math.round((scoredCount / assessment.questions.length) * 100);
   const dimension = dimensions?.find((d) => d.id === selectedDim) ?? dimensions?.[0];
   const dimQuestions = assessment.questions.filter((q) => q.dimensionId === dimension?.id);
 
-  const handleScoreChange = (questionId: number, score: number) => {
+  // Shared by score/note/suggestion changes: find the question, fall back to
+  // its existing fields for whatever the caller didn't change, and skip the
+  // write if there's no score yet (note/suggestion inputs are disabled in
+  // that state, but this guard covers the call site too).
+  const saveScore = (
+    questionId: number,
+    patch: Partial<Pick<UpdateScoreDto, 'rawScore' | 'note' | 'suggestion'>>
+  ) => {
     const question = assessment.questions.find((q) => q.questionId === questionId);
+    const rawScore = patch.rawScore ?? question?.rawScore;
+    if (rawScore === null || rawScore === undefined) return;
     updateScore.mutate(
       {
         questionId,
-        rawScore: score,
-        note: question?.note ?? undefined,
-        suggestion: question?.suggestion ?? undefined,
+        rawScore,
+        note: patch.note ?? question?.note ?? undefined,
+        suggestion: patch.suggestion ?? question?.suggestion ?? undefined,
       },
       { onError: (err) => toast.error(extractErrorMessage(err)) }
     );
   };
 
-  const handleNoteChange = (questionId: number, note: string) => {
-    const question = assessment.questions.find((q) => q.questionId === questionId);
-    if (question?.rawScore === null || question?.rawScore === undefined) return;
-    updateScore.mutate(
-      {
-        questionId,
-        rawScore: question.rawScore,
-        note,
-        suggestion: question.suggestion ?? undefined,
-      },
-      { onError: (err) => toast.error(extractErrorMessage(err)) }
-    );
-  };
-
-  const handleSuggestionChange = (questionId: number, suggestion: string) => {
-    const question = assessment.questions.find((q) => q.questionId === questionId);
-    if (question?.rawScore === null || question?.rawScore === undefined) return;
-    updateScore.mutate(
-      { questionId, rawScore: question.rawScore, note: question.note ?? undefined, suggestion },
-      { onError: (err) => toast.error(extractErrorMessage(err)) }
-    );
-  };
+  const handleScoreChange = (questionId: number, score: number) =>
+    saveScore(questionId, { rawScore: score });
+  const handleNoteChange = (questionId: number, note: string) => saveScore(questionId, { note });
+  const handleSuggestionChange = (questionId: number, suggestion: string) =>
+    saveScore(questionId, { suggestion });
 
   const handleUploadEvidence = (questionId: number, file: File) => {
     uploadEvidence.mutate(
@@ -251,18 +254,13 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end gap-4 rounded-xl border bg-card p-3 shadow-sm">
-        <AssessmentStorePicker
-          storeId={storeId}
-          storeName={store?.name}
-          storeCoverUrl={store?.coverUrl}
-          round={round}
-          onProvinceChange={() => setIsStoreCleared(true)}
-        />
-        <div>
-          <p className="mb-1 text-sm text-muted-foreground">{ASSESSMENT_FORM_TEXT.roundLabel}</p>
-          <RoundPills storeId={storeId} activeRound={round} />
-        </div>
+      <AssessmentFormHeader
+        storeId={storeId}
+        storeName={store?.name}
+        storeCoverUrl={store?.coverUrl}
+        round={round}
+        onProvinceChange={() => setIsStoreCleared(true)}
+      >
         <div className="min-w-[160px] flex-1">
           <p className="mb-1 text-sm text-muted-foreground">{ASSESSMENT_FORM_TEXT.progressLabel}</p>
           <div className="flex items-center gap-2">
@@ -287,7 +285,7 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
             </>
           )}
         </div>
-      </div>
+      </AssessmentFormHeader>
 
       {dimensions && (
         // Left column (fixed-height dim/table row + natural-height

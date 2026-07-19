@@ -1,5 +1,7 @@
 export type Round = 'T0' | 'T1' | 'T2' | 'T3' | 'T4'
 
+export const ROUNDS: Round[] = ['T0', 'T1', 'T2', 'T3', 'T4']
+
 export const ROUND_LABELS: Record<Round, string> = {
   T0: 'T0 — ก่อนเข้าค่าย',
   T1: 'T1 — หลังค่าย',
@@ -151,5 +153,3 @@ export interface AssessmentRank {
   provinceTotal: number
   dimensionAverages: DimensionAverage[]
 }
-
-export const TOTAL_QUESTIONS = 50

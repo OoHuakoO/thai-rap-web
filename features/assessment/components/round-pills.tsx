@@ -17,9 +17,8 @@ import {
 import { useAssessmentSummaries } from '../hooks/use-assessment';
 import { ROUND_PILLS_TEXT } from '../constants/assessment-text.constants';
 import { REQUIRED_PRIOR_ROUND, isRoundCompleted } from '../utils/round';
+import { ROUNDS } from '../types/assessment.types';
 import type { Round } from '../types/assessment.types';
-
-const ROUNDS: Round[] = ['T0', 'T1', 'T2', 'T3', 'T4'];
 
 interface RoundPillsProps {
   storeId: string;

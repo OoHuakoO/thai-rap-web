@@ -10,10 +10,8 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { useAssessmentHistory, useUpdateNotes } from '../hooks/use-assessment';
 import { TIMELINE_TEXT } from '../constants/assessment-text.constants';
-import { ROUND_LABELS } from '../types/assessment.types';
+import { ROUND_LABELS, ROUNDS } from '../types/assessment.types';
 import type { Round } from '../types/assessment.types';
-
-const ROUNDS: Round[] = ['T0', 'T1', 'T2', 'T3', 'T4'];
 
 function formatDate(iso: string | null): string {
   if (!iso) return '';

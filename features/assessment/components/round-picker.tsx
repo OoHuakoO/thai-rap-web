@@ -19,8 +19,7 @@ export function RoundPicker({ storeId }: RoundPickerProps) {
     <Card>
       <CardHeader>
         <CardTitle>
-          {ROUND_PICKER_TEXT.title}
-          {store ? `: ${store.name}` : ''}
+          {store ? ROUND_PICKER_TEXT.titleWithStore(store.name) : ROUND_PICKER_TEXT.title}
         </CardTitle>
         <p className="text-sm text-muted-foreground">{ROUND_PICKER_TEXT.subtitle}</p>
       </CardHeader>

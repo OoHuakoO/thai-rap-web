@@ -25,14 +25,6 @@ export const ZONE_COLORS: Record<Zone, ZoneColor> = {
   'Model Zone': 'green',
 };
 
-export const ZONE_COLOR_HEX: Record<ZoneColor, string> = {
-  red: '#dc2626',
-  orange: '#ea580c',
-  yellow: '#d97706',
-  blue: '#2563eb',
-  green: '#16a34a',
-};
-
 export const ZONE_BADGE_CLASSES: Record<ZoneColor, string> = {
   red: 'border-red-200 bg-red-50 text-red-700',
   orange: 'border-orange-200 bg-orange-50 text-orange-700',

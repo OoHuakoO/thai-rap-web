@@ -14,7 +14,7 @@ export {
   useUpdateNotes,
   useAssessmentRank,
 } from './hooks/use-assessment'
-export { ROUND_LABELS, TOTAL_QUESTIONS } from './types/assessment.types'
+export { ROUND_LABELS, ROUNDS } from './types/assessment.types'
 export { isValidRound } from './utils/round'
 export type {
   Round,

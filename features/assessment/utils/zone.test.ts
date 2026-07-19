@@ -1,11 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  getZone,
-  ZONE_DESCRIPTIONS,
-  ZONE_COLORS,
-  ZONE_COLOR_HEX,
-  ZONE_BADGE_CLASSES,
-} from './zone';
+import { getZone, ZONE_DESCRIPTIONS, ZONE_COLORS, ZONE_BADGE_CLASSES } from './zone';
 
 describe('getZone', () => {
   it('returns Red Zone below 40', () => {
@@ -35,13 +29,12 @@ describe('getZone', () => {
 });
 
 describe('zone lookup tables', () => {
-  it('has a description, color, hex, and badge class for every zone getZone can return', () => {
+  it('has a description, color, and badge class for every zone getZone can return', () => {
     const zones = [0, 40, 60, 75, 85].map(getZone);
     for (const zone of zones) {
       expect(ZONE_DESCRIPTIONS[zone]).toBeTruthy();
       const color = ZONE_COLORS[zone];
       expect(color).toBeTruthy();
-      expect(ZONE_COLOR_HEX[color]).toBeTruthy();
       expect(ZONE_BADGE_CLASSES[color]).toBeTruthy();
     }
   });

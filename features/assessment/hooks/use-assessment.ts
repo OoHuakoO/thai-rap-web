@@ -90,11 +90,24 @@ export function useAssessment(storeId: string, round: Round, options?: { enabled
 
   const isCreating = query.data === null && !createMutation.isError;
 
+  // Lets the caller recover from a failed auto-create without a full page
+  // reload — triedKeyRef would otherwise permanently block a retry for this
+  // (storeId, round) pair since the effect above only fires on a data change.
+  const retry = () => {
+    if (createMutation.isError) {
+      triedKeyRef.current = `${storeId}:${round}`;
+      createMutation.mutate({ storeId, round });
+    } else {
+      query.refetch();
+    }
+  };
+
   return {
     data: query.data ?? undefined,
     isLoading: query.isLoading || isCreating,
     isError: query.isError || createMutation.isError,
     error: query.error ?? createMutation.error,
+    retry,
   };
 }
 
