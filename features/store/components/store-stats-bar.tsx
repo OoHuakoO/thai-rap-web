@@ -6,7 +6,7 @@ import { MaskIcon } from '@/components/shared/mask-icon';
 import { useStoreStats } from '../hooks/use-stores';
 import { STORE_STATS_ICONS, STORE_STATS_TEXT } from '../constants/store-stats-bar.constants';
 
-const ICON_CLASS = 'h-6 w-6 text-white sm:h-7 sm:w-7';
+const ICON_CLASS = 'h-9 w-9 text-white sm:h-11 sm:w-11';
 
 function toPercent(part: number, whole: number): number {
   return whole === 0 ? 0 : Math.round((part / whole) * 1000) / 10;
@@ -23,7 +23,7 @@ interface StatItemProps {
 function StatItem({ icon, title, count, percent, subLabel }: StatItemProps) {
   return (
     <div className="flex h-full items-start gap-3 rounded-xl border bg-card p-3 shadow-sm">
-      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-orange sm:h-14 sm:w-14">
+      <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-orange sm:h-20 sm:w-20">
         {icon}
       </div>
       <div className="flex min-w-0 flex-1 flex-col">

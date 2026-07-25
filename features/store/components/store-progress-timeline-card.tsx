@@ -1,3 +1,4 @@
+import { Check } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { formatThaiDate } from '@/utils/format-thai-date';
 import { STORE_DETAIL_TEXT } from '../constants/store-detail.constants';
@@ -28,7 +29,7 @@ export function StoreProgressTimelineCard({
             <div key={t.label} className="flex gap-2">
               <div className="flex flex-col items-center">
                 <span
-                  className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white ${
+                  className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${
                     isCurrent
                       ? 'bg-purple-banner'
                       : t.done
@@ -36,14 +37,14 @@ export function StoreProgressTimelineCard({
                         : 'border-2 border-border bg-muted'
                   }`}
                 >
-                  {t.done ? '✓' : ''}
+                  {(isCurrent || t.done) && <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />}
                 </span>
                 {!isLast && (
                   <span className={`w-px flex-1 ${t.done ? 'bg-score-green' : 'bg-border'}`} />
                 )}
               </div>
               <div
-                className={`flex flex-1 items-center justify-between gap-2 ${isLast ? '' : 'pb-2'}`}
+                className={`flex flex-1 items-center justify-between gap-2 ${isLast ? '' : 'pb-3'}`}
               >
                 <p
                   className={`text-sm font-medium ${

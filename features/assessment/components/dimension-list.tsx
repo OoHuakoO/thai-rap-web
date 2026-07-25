@@ -1,32 +1,30 @@
 'use client';
 
-import {
-  ChefHat,
-  ChevronRight,
-  ClipboardList,
-  Landmark,
-  Leaf,
-  Rocket,
-  TrendingUp,
-  UserPlus,
-  Users,
-} from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
+import { MaskIcon } from '@/components/shared/mask-icon';
 import { cn } from '@/utils/cn';
-import { DIMENSION_LIST_TEXT, SCORE_LABELS } from '../constants/assessment-text.constants';
+import {
+  DIMENSION_ICON_SRC,
+  DIMENSION_LIST_TEXT,
+  SCORE_LABELS,
+} from '../constants/assessment-text.constants';
 import { calcScorePercent, sumQuestionScores } from '../utils/dimension-score';
 import type { AssessmentQuestion, Dimension } from '../types/assessment.types';
 
 const SCORE_LEGEND = SCORE_LABELS.map((label, value) => ({ value, label }));
 
-const DIMENSION_ICON: Record<number, { icon: typeof ChefHat; className: string }> = {
-  1: { icon: ChefHat, className: 'bg-violet-600' },
-  2: { icon: ClipboardList, className: 'bg-orange' },
-  3: { icon: TrendingUp, className: 'bg-emerald-600' },
-  4: { icon: Landmark, className: 'bg-blue-700' },
-  5: { icon: Users, className: 'bg-amber-500' },
-  6: { icon: UserPlus, className: 'bg-purple-600' },
-  7: { icon: Rocket, className: 'bg-teal-600' },
-  8: { icon: Leaf, className: 'bg-green-600' },
+// Tile colour per dimension. The illustrated artwork (DIMENSION_ICON_SRC) is
+// dense line art — it only reads clearly around 48px, so the tile is sized
+// well above lucide's usual 16px inline icon to keep it legible.
+const DIMENSION_TILE_CLASS: Record<number, string> = {
+  1: 'bg-violet-600',
+  2: 'bg-orange',
+  3: 'bg-emerald-600',
+  4: 'bg-blue-700',
+  5: 'bg-amber-500',
+  6: 'bg-purple-600',
+  7: 'bg-teal-600',
+  8: 'bg-green-600',
 };
 
 interface DimensionListProps {
@@ -82,8 +80,8 @@ export function DimensionList({
             const { sum, max } = sumQuestionScores(dimQuestions);
             const pct = calcScorePercent(sum, max);
             const active = dim.id === selectedId;
-            const { icon: Icon, className: iconClassName } =
-              DIMENSION_ICON[dim.id] ?? DIMENSION_ICON[1];
+            const tileClassName = DIMENSION_TILE_CLASS[dim.id] ?? DIMENSION_TILE_CLASS[1];
+            const iconSrc = DIMENSION_ICON_SRC[dim.id] ?? DIMENSION_ICON_SRC[1];
 
             return (
               <button
@@ -97,11 +95,11 @@ export function DimensionList({
               >
                 <span
                   className={cn(
-                    'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-white',
-                    iconClassName
+                    'flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-white',
+                    tileClassName
                   )}
                 >
-                  <Icon className="h-4 w-4" strokeWidth={2} />
+                  <MaskIcon src={iconSrc} className="h-9 w-9" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span

@@ -54,10 +54,26 @@ export function StoreDetail({ storeId, variant = 'compact' }: StoreDetailProps) 
   const decided = DECIDED_STORE_STATUSES.includes(store.status);
 
   const timeline: TimelineStep[] = [
-    { label: STORE_DETAIL_TEXT.timelineRegistered, date: store.createdAt, done: true },
-    { label: STORE_DETAIL_TEXT.timelineT0, date: t0SubmittedAt, done: !!t0SubmittedAt },
-    { label: STORE_DETAIL_TEXT.timelineT1, date: t1SubmittedAt, done: !!t1SubmittedAt },
-    { label: STORE_DETAIL_TEXT.timelinePendingResult, date: null, done: decided },
+    {
+      label: STORE_DETAIL_TEXT.timelineRegistered,
+      date: store.createdAt,
+      done: true,
+    },
+    {
+      label: STORE_DETAIL_TEXT.timelineT0,
+      date: t0SubmittedAt,
+      done: !!t0SubmittedAt,
+    },
+    {
+      label: STORE_DETAIL_TEXT.timelineT1,
+      date: t1SubmittedAt,
+      done: !!t1SubmittedAt,
+    },
+    {
+      label: STORE_DETAIL_TEXT.timelinePendingResult,
+      date: null,
+      done: decided,
+    },
   ];
   // The most recently completed step is highlighted (violet) as the current stage.
   const currentStepIndex = timeline.reduce((acc, t, i) => (t.done ? i : acc), -1);
@@ -149,8 +165,8 @@ export function StoreDetail({ storeId, variant = 'compact' }: StoreDetailProps) 
               : STORE_DETAIL_TEXT.mainProblemsEmpty}
           </p>
         </Card>
-        <Card className="space-y-1 border-purple-banner/20 bg-purple-banner/5 p-2.5 shadow-none">
-          <p className="text-sm font-bold text-purple-banner">{STORE_DETAIL_TEXT.goalsTitle}</p>
+        <Card className="space-y-1 border-orange/20 bg-orange/5 p-2.5 shadow-none">
+          <p className="text-sm font-bold text-orange">{STORE_DETAIL_TEXT.goalsTitle}</p>
           <p className="text-[13px] leading-relaxed text-charcoal">
             {(store.goals?.length ?? 0) > 0 ? store.goals.join(', ') : STORE_DETAIL_TEXT.goalsEmpty}
           </p>

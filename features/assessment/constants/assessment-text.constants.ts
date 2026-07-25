@@ -104,6 +104,20 @@ export const DIMENSION_LIST_TEXT = {
   weightedScore: 'คะแนนรวมถ่วงน้ำหนัก',
 } as const;
 
+// Line-art artwork for each of the 8 dimensions, keyed by Dimension.id.
+// Rendered through MaskIcon, so it takes its colour from the tile — not
+// baked-in white. Order matches dimensionSeed in mocks/fixtures/assessment.fixtures.ts.
+export const DIMENSION_ICON_SRC: Record<number, string> = {
+  1: '/icons/dimensions/1.png',
+  2: '/icons/dimensions/2.png',
+  3: '/icons/dimensions/3.png',
+  4: '/icons/dimensions/4.png',
+  5: '/icons/dimensions/5.png',
+  6: '/icons/dimensions/6.png',
+  7: '/icons/dimensions/7.png',
+  8: '/icons/dimensions/8.png',
+};
+
 export const STORE_PICKER_TEXT = {
   selectStore: 'เลือกร้านอาหาร',
   province: 'จังหวัด',
