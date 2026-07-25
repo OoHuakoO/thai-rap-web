@@ -20,8 +20,8 @@ const ICON_META: Record<DocumentKind, { icon: string; className: string }> = {
   pdf: { icon: '📄', className: 'bg-destructive/10' },
   spreadsheet: { icon: '📊', className: 'bg-score-green/10' },
   word: { icon: '📝', className: 'bg-blue-100' },
-  image: { icon: '🖼', className: 'bg-blue-100' },
-  other: { icon: '📝', className: 'bg-blue-100' },
+  image: { icon: '🖼', className: 'bg-purple-banner/10' },
+  other: { icon: '📎', className: 'bg-slate-100' },
 };
 
 // Used by store-detail-documents-card.tsx (compact badge with a 3-letter label).

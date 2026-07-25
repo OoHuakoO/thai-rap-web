@@ -9,7 +9,7 @@ interface StoreContactCardProps {
 
 export function StoreContactCard({ store }: StoreContactCardProps) {
   const hasSocialLinks =
-    store.socialLinks.facebook || store.socialLinks.line || store.socialLinks.instagram;
+    store.socialLinks?.facebook || store.socialLinks?.line || store.socialLinks?.instagram;
 
   return (
     <Card className="mt-2 space-y-2 p-2.5 shadow-none">
@@ -33,7 +33,7 @@ export function StoreContactCard({ store }: StoreContactCardProps) {
         </span>
         {hasSocialLinks ? (
           <div className="mt-1 flex items-center gap-1.5">
-            {store.socialLinks.facebook && (
+            {store.socialLinks?.facebook && (
               <a
                 href={store.socialLinks.facebook}
                 target="_blank"
@@ -43,7 +43,7 @@ export function StoreContactCard({ store }: StoreContactCardProps) {
                 <FacebookIcon className="h-7 w-7" />
               </a>
             )}
-            {store.socialLinks.line && (
+            {store.socialLinks?.line && (
               <a
                 href={store.socialLinks.line}
                 target="_blank"
@@ -53,7 +53,7 @@ export function StoreContactCard({ store }: StoreContactCardProps) {
                 <LineIcon className="h-7 w-7" />
               </a>
             )}
-            {store.socialLinks.instagram && (
+            {store.socialLinks?.instagram && (
               <a
                 href={store.socialLinks.instagram}
                 target="_blank"

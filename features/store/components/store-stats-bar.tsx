@@ -1,10 +1,53 @@
 'use client';
 
-import { Store, ClipboardList, ClipboardCheck, Trophy } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { Loading } from '@/components/shared/loading';
-import { provinceChartColors } from '@/styles/tokens';
+import { MaskIcon } from '@/components/shared/mask-icon';
 import { useStoreStats } from '../hooks/use-stores';
-import { STORE_STATS_TEXT } from '../constants/store-stats-bar.constants';
+import { STORE_STATS_ICONS, STORE_STATS_TEXT } from '../constants/store-stats-bar.constants';
+
+const ICON_CLASS = 'h-6 w-6 text-white sm:h-7 sm:w-7';
+
+function toPercent(part: number, whole: number): number {
+  return whole === 0 ? 0 : Math.round((part / whole) * 1000) / 10;
+}
+
+interface StatItemProps {
+  icon: ReactNode;
+  title: string;
+  count: number;
+  percent: number;
+  subLabel?: string;
+}
+
+function StatItem({ icon, title, count, percent, subLabel }: StatItemProps) {
+  return (
+    <div className="flex h-full items-start gap-3 rounded-xl border bg-card p-3 shadow-sm">
+      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-orange sm:h-14 sm:w-14">
+        {icon}
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <p className="truncate text-sm font-semibold text-charcoal">{title}</p>
+        <p className="mt-1 leading-tight text-charcoal">
+          <span className="text-2xl font-extrabold">{count}</span>{' '}
+          <span className="text-xs text-muted-foreground">{STORE_STATS_TEXT.storeUnit}</span>
+        </p>
+        {subLabel ? (
+          <p className="mt-1 truncate text-xs text-muted-foreground">{subLabel}</p>
+        ) : null}
+        <div className="mt-auto flex items-center gap-1.5 pt-1.5">
+          <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+            <span
+              className="block h-full rounded-full bg-orange"
+              style={{ width: `${Math.min(percent, 100)}%` }}
+            />
+          </span>
+          <span className="text-xs font-medium text-muted-foreground">{percent}%</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function StoreStatsBar() {
   const { data: stats, isLoading } = useStoreStats();
@@ -12,112 +55,45 @@ export function StoreStatsBar() {
   if (isLoading) return <Loading className="py-6" />;
   if (!stats) return null;
 
-  const targetPct = Math.round((stats.total / stats.targetTotal) * 1000) / 10;
-  const t0Pct =
-    stats.total === 0 ? 0 : Math.round((stats.t0CompletedCount / stats.total) * 1000) / 10;
-  const t1Pct =
-    stats.total === 0 ? 0 : Math.round((stats.t1CompletedCount / stats.total) * 1000) / 10;
-  const passedPct =
-    stats.total === 0 ? 0 : Math.round((stats.passedCount / stats.total) * 1000) / 10;
+  const items: StatItemProps[] = [
+    {
+      icon: <MaskIcon src={STORE_STATS_ICONS.participation} className={ICON_CLASS} />,
+      title: STORE_STATS_TEXT.participationTitle,
+      count: stats.total,
+      percent: toPercent(stats.total, stats.targetTotal),
+      subLabel: STORE_STATS_TEXT.targetLabel(stats.targetTotal),
+    },
+    {
+      icon: <MaskIcon src={STORE_STATS_ICONS.t0Completed} className={ICON_CLASS} />,
+      title: STORE_STATS_TEXT.t0CompletedTitle,
+      count: stats.t0CompletedCount,
+      percent: toPercent(stats.t0CompletedCount, stats.total),
+    },
+    {
+      icon: <MaskIcon src={STORE_STATS_ICONS.t1Completed} className={ICON_CLASS} />,
+      title: STORE_STATS_TEXT.t1CompletedTitle,
+      count: stats.t1CompletedCount,
+      percent: toPercent(stats.t1CompletedCount, stats.total),
+    },
+    {
+      icon: <MaskIcon src={STORE_STATS_ICONS.t2Completed} className={ICON_CLASS} />,
+      title: STORE_STATS_TEXT.t2CompletedTitle,
+      count: stats.t2CompletedCount,
+      percent: toPercent(stats.t2CompletedCount, stats.total),
+    },
+    {
+      icon: <MaskIcon src={STORE_STATS_ICONS.t3Completed} className={ICON_CLASS} />,
+      title: STORE_STATS_TEXT.t3CompletedTitle,
+      count: stats.t3CompletedCount,
+      percent: toPercent(stats.t3CompletedCount, stats.total),
+    },
+  ];
 
   return (
-    <div className="flex flex-col items-stretch gap-3 xl:flex-row">
-      <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="flex h-full items-start gap-3 rounded-xl border bg-card p-3 shadow-sm">
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-orange sm:h-16 sm:w-16">
-            <Store className="h-7 w-7 text-white sm:h-9 sm:w-9" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-charcoal">
-              {STORE_STATS_TEXT.totalStoresTitle}
-            </p>
-            <p className="mt-1 leading-tight text-charcoal">
-              <span className="text-2xl font-extrabold">{stats.total}</span>{' '}
-              <span className="text-xs text-muted-foreground">{STORE_STATS_TEXT.storeUnit}</span>
-            </p>
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              {STORE_STATS_TEXT.targetLabel(stats.targetTotal)}
-            </p>
-            <div className="mt-1 flex items-center gap-1.5">
-              <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                <span
-                  className="block h-full rounded-full bg-orange"
-                  style={{ width: `${targetPct}%` }}
-                />
-              </span>
-              <span className="text-xs text-muted-foreground">{targetPct}%</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex h-full items-start gap-3 rounded-xl border bg-card p-3 shadow-sm">
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-orange sm:h-16 sm:w-16">
-            <ClipboardList className="h-7 w-7 text-white sm:h-9 sm:w-9" />
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-charcoal">
-              {STORE_STATS_TEXT.t0CompletedTitle}
-            </p>
-            <p className="mt-1 leading-tight text-charcoal">
-              <span className="text-2xl font-extrabold">{stats.t0CompletedCount}</span>{' '}
-              <span className="text-xs text-muted-foreground">{STORE_STATS_TEXT.storeUnit}</span>
-            </p>
-            <p className="mt-1.5 text-2xl font-bold text-orange">{t0Pct}%</p>
-          </div>
-        </div>
-
-        <div className="flex h-full items-start gap-3 rounded-xl border bg-card p-3 shadow-sm">
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-purple-banner sm:h-16 sm:w-16">
-            <ClipboardCheck className="h-7 w-7 text-white sm:h-9 sm:w-9" />
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-charcoal">
-              {STORE_STATS_TEXT.t1CompletedTitle}
-            </p>
-            <p className="mt-1 leading-tight text-charcoal">
-              <span className="text-2xl font-extrabold">{stats.t1CompletedCount}</span>{' '}
-              <span className="text-xs text-muted-foreground">{STORE_STATS_TEXT.storeUnit}</span>
-            </p>
-            <p className="mt-1.5 text-2xl font-bold text-purple-banner">{t1Pct}%</p>
-          </div>
-        </div>
-
-        <div className="flex h-full items-start gap-3 rounded-xl border bg-card p-3 shadow-sm">
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-score-green sm:h-16 sm:w-16">
-            <Trophy className="h-7 w-7 text-white sm:h-9 sm:w-9" />
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-charcoal">
-              {STORE_STATS_TEXT.passedTitle}
-            </p>
-            <p className="mt-1 leading-tight text-charcoal">
-              <span className="text-2xl font-extrabold">{stats.passedCount}</span>{' '}
-              <span className="text-xs text-muted-foreground">{STORE_STATS_TEXT.storeUnit}</span>
-            </p>
-            <p className="mt-1.5 text-2xl font-bold text-score-green">{passedPct}%</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="rounded-xl border bg-card p-3 shadow-sm xl:w-72 xl:flex-shrink-0">
-        <p className="mb-2 text-sm font-bold text-charcoal">
-          {STORE_STATS_TEXT.provinceDistributionTitle}
-        </p>
-        <div className="flex flex-col gap-1.5">
-          {stats.byProvince.map((p, i) => (
-            <div key={p.province} className="flex items-center gap-2 text-sm">
-              <span
-                className="h-2.5 w-2.5 flex-shrink-0 rounded-sm"
-                style={{ background: provinceChartColors[i % provinceChartColors.length] }}
-              />
-              <span className="min-w-[72px] text-charcoal">{p.province}</span>
-              <span className="text-muted-foreground">
-                {STORE_STATS_TEXT.provinceCountLabel(p.count, p.pct)}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      {items.map((item) => (
+        <StatItem key={item.title} {...item} />
+      ))}
     </div>
   );
 }

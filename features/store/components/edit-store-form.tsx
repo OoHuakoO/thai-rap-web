@@ -55,9 +55,9 @@ export function EditStoreForm({ store, onSuccess }: EditStoreFormProps) {
       avgRevenueMax: store.avgRevenueMax !== null ? String(store.avgRevenueMax) : '',
       mainProblems: store.mainProblems,
       goals: store.goals,
-      facebook: store.socialLinks.facebook ?? '',
-      line: store.socialLinks.line ?? '',
-      instagram: store.socialLinks.instagram ?? '',
+      facebook: store.socialLinks?.facebook ?? '',
+      line: store.socialLinks?.line ?? '',
+      instagram: store.socialLinks?.instagram ?? '',
     },
   });
 

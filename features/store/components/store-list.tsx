@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Eye, Pencil, Trash2, Store as StoreIcon } from 'lucide-react';
@@ -30,8 +31,9 @@ interface StoreListProps {
 export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
   const can = useAuthStore((s) => s.can);
   const { data, isLoading, isError, error } = useStores(query);
-  const { mutate: deleteStore, isPending: isDeleting } = useDeleteStore();
+  const { mutate: deleteStore } = useDeleteStore();
   const confirm = useConfirm();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   if (isError) {
     return <p className="py-8 text-center text-destructive">{extractErrorMessage(error)}</p>;
@@ -45,8 +47,10 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
       variant: 'destructive',
     });
     if (!confirmed) return;
+    setDeletingId(id);
     deleteStore(id, {
       onError: (err) => toast.error(extractErrorMessage(err)),
+      onSettled: () => setDeletingId(null),
     });
   };
 
@@ -152,7 +156,7 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
               variant="outline"
               size="icon"
               className="h-7 w-7 border-destructive/30 text-destructive hover:bg-destructive/10"
-              disabled={isDeleting}
+              disabled={deletingId === row.id}
               title={STORE_LIST_TEXT.deleteStoreTitle}
               onClick={(e) => {
                 e.stopPropagation();

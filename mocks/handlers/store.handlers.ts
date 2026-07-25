@@ -21,7 +21,6 @@ import type {
   StoreStatus,
   StoreStats,
   StoreDocument,
-  ProvinceDistribution,
 } from '@/features/store/types/store.types';
 import type { ApiErrorResponse, PaginatedResponse } from '@/types/api.types';
 import { API_URL } from '@/constants';
@@ -93,30 +92,22 @@ export const storeHandlers = [
 
     const stores = storeDb.getAll();
     const total = stores.length;
-    // Both counts use the same "has this store reached stage X" rule, so a
-    // store that has since moved past T1_COMPLETED (e.g. SELECTED) still
-    // counts toward t1CompletedCount instead of only exact status matches.
+    // The real API counts a store as "assessed Tn" when it has a submitted Tn
+    // assessment. The mock's assessmentDb starts empty, so we proxy each round
+    // off the store's incubation status milestone instead: T0/T1 by their own
+    // *_COMPLETED status, T2 by FIELD_AUDITED (Field Audit), T3 by IDP_CREATED
+    // (post-audit follow-up). hasReachedStatus is inclusive, so later stages
+    // still count toward earlier rounds.
     const t0CompletedCount = stores.filter((s) =>
       hasReachedStatus(s.status, 'T0_COMPLETED')
     ).length;
     const t1CompletedCount = stores.filter((s) =>
       hasReachedStatus(s.status, 'T1_COMPLETED')
     ).length;
-    const passedCount = stores.filter((s) =>
-      ['SELECTED', 'CONDITIONAL_SELECTED'].includes(s.status)
+    const t2CompletedCount = stores.filter((s) =>
+      hasReachedStatus(s.status, 'FIELD_AUDITED')
     ).length;
-
-    const provinceCounts = new Map<string, number>();
-    for (const s of stores) {
-      provinceCounts.set(s.province, (provinceCounts.get(s.province) ?? 0) + 1);
-    }
-    const byProvince: ProvinceDistribution[] = Array.from(provinceCounts.entries())
-      .map(([province, count]) => ({
-        province,
-        count,
-        pct: total === 0 ? 0 : Math.round((count / total) * 1000) / 10,
-      }))
-      .sort((a, b) => b.count - a.count);
+    const t3CompletedCount = stores.filter((s) => hasReachedStatus(s.status, 'IDP_CREATED')).length;
 
     const storeTypes = Array.from(new Set(stores.map((s) => s.storeType))).sort((a, b) =>
       a.localeCompare(b, 'th')
@@ -127,8 +118,8 @@ export const storeHandlers = [
       targetTotal: STORE_TARGET_TOTAL,
       t0CompletedCount,
       t1CompletedCount,
-      passedCount,
-      byProvince,
+      t2CompletedCount,
+      t3CompletedCount,
       storeTypes,
     });
   }),

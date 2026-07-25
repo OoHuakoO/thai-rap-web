@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { MapPin, HandPlatter } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Card } from '@/components/ui/card';
 import { Loading } from '@/components/shared/loading';
@@ -87,11 +88,13 @@ export function StoreDetail({ storeId, variant = 'compact' }: StoreDetailProps) 
         <div className="rounded-xl border bg-gradient-to-br from-orange to-orange-light px-4 py-3 text-white shadow-sm">
           <h2 className="text-2xl font-extrabold">{store.name}</h2>
           <div className="mt-1.5 flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-sm font-semibold">
-              📍 {store.province}
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-0.5 text-sm font-semibold">
+              <MapPin className="h-3.5 w-3.5" />
+              {store.province}
             </span>
-            <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-sm font-semibold">
-              🍽 {store.storeType}
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-0.5 text-sm font-semibold">
+              <HandPlatter className="h-3.5 w-3.5" />
+              {store.storeType}
             </span>
           </div>
         </div>

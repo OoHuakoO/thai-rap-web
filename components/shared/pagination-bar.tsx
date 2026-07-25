@@ -57,7 +57,7 @@ export function PaginationBar({
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 border-t px-3 py-2.5">
-      <p className="text-[10.5px] text-muted-foreground">
+      <p className="text-sm text-muted-foreground">
         แสดง {start} – {end} จาก {total} {itemLabel}
       </p>
 
@@ -120,10 +120,10 @@ export function PaginationBar({
           </PaginationContent>
         </Pagination>
 
-        <div className="flex items-center gap-1.5 text-[10.5px] text-muted-foreground">
+        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
           แสดง
           <Select value={String(limit)} onValueChange={(v) => onLimitChange(Number(v))}>
-            <SelectTrigger className="h-7 w-[64px] text-[10.5px]">
+            <SelectTrigger className="h-8 w-[70px] text-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

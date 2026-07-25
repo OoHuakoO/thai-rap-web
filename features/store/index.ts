@@ -34,7 +34,6 @@ export type {
   StoreStatus,
   StoreDocument,
   StoreStats,
-  ProvinceDistribution,
   CreateStoreDto,
   UpdateStoreDto,
   StoreQueryParams,
