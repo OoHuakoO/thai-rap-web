@@ -12,6 +12,8 @@ import {
   useSubmitAssessment,
   useUpdateNotes,
   useAssessmentRank,
+  assessmentKeys,
+  dimensionKeys,
 } from './use-assessment';
 import { assessmentService, dimensionService } from '../services/assessment.service';
 import type { Assessment, AssessmentSummary, Round } from '../types/assessment.types';
@@ -42,6 +44,7 @@ function makeAssessment(overrides: Partial<Assessment> = {}): Assessment {
     assessorId: 'assessor-1',
     status: 'DRAFT',
     totalScore: null,
+    currentScore: 0,
     zone: null,
     notes: null,
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -218,6 +221,71 @@ describe('useUpdateScore', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(assessmentService.updateScore).toHaveBeenCalledWith('a1', 1, { rawScore: 3 });
+  });
+
+  it('recomputes the running total in the cache so it tracks each saved score', async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    });
+    queryClient.setQueryData(dimensionKeys.all, [
+      { id: 1, name: 'มิติ 1', nameEn: 'Dimension 1', weight: 30, questionCount: 1 },
+      { id: 2, name: 'มิติ 2', nameEn: 'Dimension 2', weight: 70, questionCount: 1 },
+    ]);
+    queryClient.setQueryData(
+      assessmentKeys.byStoreRound('store-1', 'T0'),
+      makeAssessment({
+        questions: [
+          {
+            questionId: 1,
+            questionNo: 1,
+            dimensionId: 1,
+            questionText: 'q1',
+            maxScore: 4,
+            rawScore: null,
+            note: null,
+            suggestion: null,
+            evidence: [],
+          },
+          {
+            questionId: 2,
+            questionNo: 2,
+            dimensionId: 2,
+            questionText: 'q2',
+            maxScore: 4,
+            rawScore: null,
+            note: null,
+            suggestion: null,
+            evidence: [],
+          },
+        ],
+      })
+    );
+    vi.mocked(assessmentService.updateScore).mockResolvedValue({
+      questionId: 1,
+      questionNo: 1,
+      dimensionId: 1,
+      questionText: 'q1',
+      maxScore: 4,
+      rawScore: 4,
+      note: null,
+      suggestion: null,
+      evidence: [],
+    });
+
+    const { result } = renderHook(() => useUpdateScore('store-1', 'T0', 'a1'), {
+      wrapper: ({ children }: { children: ReactNode }) => (
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      ),
+    });
+    result.current.mutate({ questionId: 1, rawScore: 4 });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // Dimension 1 full marks at weight 30, dimension 2 still unscored.
+    const cached = queryClient.getQueryData<Assessment>(
+      assessmentKeys.byStoreRound('store-1', 'T0')
+    );
+    expect(cached?.currentScore).toBe(30);
   });
 });
 

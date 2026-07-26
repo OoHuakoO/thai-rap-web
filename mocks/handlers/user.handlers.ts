@@ -35,10 +35,12 @@ export const userHandlers = [
 
     const url = new URL(request.url);
     const role = url.searchParams.get('role') as User['role'] | null;
+    const status = url.searchParams.get('status') as User['status'] | null;
     const search = url.searchParams.get('search')?.toLowerCase();
 
     let users = userDb.getAll();
     if (role) users = users.filter((u) => u.role === role);
+    if (status) users = users.filter((u) => u.status === status);
     if (search) {
       users = users.filter(
         (u) => u.name.toLowerCase().includes(search) || u.email.toLowerCase().includes(search)

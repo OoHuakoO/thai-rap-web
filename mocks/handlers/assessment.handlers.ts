@@ -54,7 +54,6 @@ const REQUIRED_PRIOR_ROUND: Partial<Record<Round, Round>> = {
   T1: 'T0',
   T2: 'T1',
   T3: 'T1',
-  T4: 'T1',
 };
 
 function priorRoundLock(storeId: string, round: Round): Response | null {
@@ -248,6 +247,14 @@ export const assessmentHandlers = [
     const removed = assessmentDb.removeEvidence(params.id as string, params.evidenceId as string);
     if (!removed) return notFound('FILE_003', 'ไม่พบไฟล์หลักฐาน');
     return new HttpResponse(null, { status: HTTP_STATUS.NO_CONTENT });
+  }),
+
+  http.patch(`${BASE_URL}/assessments/:id/draft`, ({ request, params }) => {
+    const blocked = guard(request);
+    if (blocked) return blocked;
+    const updated = assessmentDb.saveDraft(params.id as string);
+    if (!updated) return notFound('ASSESS_001', 'ไม่พบการประเมิน');
+    return HttpResponse.json<Assessment>(updated);
   }),
 
   http.post(`${BASE_URL}/assessments/:id/submit`, ({ request, params }) => {

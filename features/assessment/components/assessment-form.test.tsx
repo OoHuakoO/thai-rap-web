@@ -12,6 +12,7 @@ import {
   useAssessmentSummaries,
   useDimensions,
   useUpdateScore,
+  useSaveDraft,
   useSubmitAssessment,
   useUploadEvidence,
   useDeleteEvidence,
@@ -39,6 +40,7 @@ vi.mock('../hooks/use-assessment', () => ({
   useAssessmentSummaries: vi.fn(),
   useDimensions: vi.fn(),
   useUpdateScore: vi.fn(),
+  useSaveDraft: vi.fn(),
   useSubmitAssessment: vi.fn(),
   useUploadEvidence: vi.fn(),
   useDeleteEvidence: vi.fn(),
@@ -105,6 +107,7 @@ function makeAssessment(overrides: Partial<Assessment> = {}): Assessment {
     assessorId: 'assessor-1',
     status: 'DRAFT',
     totalScore: null,
+    currentScore: 0,
     zone: null,
     notes: null,
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -152,6 +155,10 @@ beforeEach(() => {
   vi.mocked(useUpdateScore).mockReturnValue({
     mutate: vi.fn(),
   } as unknown as ReturnType<typeof useUpdateScore>);
+  vi.mocked(useSaveDraft).mockReturnValue({
+    mutate: vi.fn(),
+    isPending: false,
+  } as unknown as ReturnType<typeof useSaveDraft>);
   vi.mocked(useSubmitAssessment).mockReturnValue({
     mutate: vi.fn(),
     isPending: false,
@@ -228,6 +235,47 @@ describe('AssessmentForm', () => {
       { questionId: 1, rawScore: 3, note: undefined, suggestion: undefined },
       expect.any(Object)
     );
+  });
+
+  it('saves an incomplete assessment as a draft without submitting it', async () => {
+    const saveDraftMutate = vi.fn();
+    const submitMutate = vi.fn();
+    vi.mocked(useSaveDraft).mockReturnValue({
+      mutate: saveDraftMutate,
+      isPending: false,
+    } as unknown as ReturnType<typeof useSaveDraft>);
+    vi.mocked(useSubmitAssessment).mockReturnValue({
+      mutate: submitMutate,
+      isPending: false,
+    } as unknown as ReturnType<typeof useSubmitAssessment>);
+
+    render(<AssessmentForm storeId="store-1" round="T0" />, { wrapper: Wrapper });
+    await userEvent.click(screen.getByRole('button', { name: '💾 บันทึกร่าง' }));
+
+    expect(saveDraftMutate).toHaveBeenCalledTimes(1);
+    expect(submitMutate).not.toHaveBeenCalled();
+  });
+
+  it('offers the submit action instead of next-dimension once every question is scored', async () => {
+    vi.mocked(useAssessment).mockReturnValue({
+      data: makeAssessment({ questions: [makeQuestion({ rawScore: 3 })] }),
+      isLoading: false,
+      isError: false,
+      error: null,
+      retry: vi.fn(),
+    } as unknown as ReturnType<typeof useAssessment>);
+    const submitMutate = vi.fn();
+    vi.mocked(useSubmitAssessment).mockReturnValue({
+      mutate: submitMutate,
+      isPending: false,
+    } as unknown as ReturnType<typeof useSubmitAssessment>);
+
+    render(<AssessmentForm storeId="store-1" round="T0" />, { wrapper: Wrapper });
+
+    expect(screen.queryByRole('button', { name: 'บันทึกและถัดไป →' })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'บันทึกและส่งผล ✓' }));
+
+    expect(submitMutate).toHaveBeenCalledTimes(1);
   });
 
   it('hides the save buttons when the user lacks assessment:write permission', () => {

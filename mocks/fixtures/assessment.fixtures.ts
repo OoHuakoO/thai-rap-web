@@ -134,6 +134,18 @@ export const questionSeed: Question[] = QUESTION_TEXTS.map(([id, dimensionId, qu
 let assessments: Assessment[] = [];
 let idCounter = 0;
 
+// Mirrors computeDimensionScores/computeTotalScore in the API's
+// assessment-scoring.util.ts — unscored questions count as 0, so the running
+// value converges on the submitted total instead of jumping at submit.
+function weightedScore(questions: Assessment['questions']): number {
+  return dimensionSeed.reduce((total, dim) => {
+    const dimQuestions = questions.filter((q) => q.dimensionId === dim.id);
+    const sum = dimQuestions.reduce((acc, q) => acc + (q.rawScore ?? 0), 0);
+    const pct = (sum / (dim.questionCount * 4)) * 100;
+    return total + (pct * dim.weight) / 100;
+  }, 0);
+}
+
 function summarize(a: Assessment): AssessmentSummary {
   return {
     id: a.id,
@@ -174,6 +186,7 @@ export const assessmentDb = {
       assessorId,
       status: 'DRAFT',
       totalScore: null,
+      currentScore: 0,
       zone: null,
       notes: null,
       createdAt: now,
@@ -213,6 +226,7 @@ export const assessmentDb = {
           }
         : q
     );
+    assessment.currentScore = weightedScore(assessment.questions);
     assessment.updatedAt = new Date().toISOString();
     return assessment;
   },
@@ -261,23 +275,20 @@ export const assessmentDb = {
     return assessment;
   },
 
+  saveDraft: (assessmentId: string): Assessment | null => {
+    const assessment = assessments.find((a) => a.id === assessmentId);
+    if (!assessment) return null;
+    assessment.status = 'IN_PROGRESS';
+    assessment.updatedAt = new Date().toISOString();
+    return assessment;
+  },
+
   submit: (assessmentId: string): Assessment | null => {
     const assessment = assessments.find((a) => a.id === assessmentId);
     if (!assessment) return null;
 
-    const dimensionScores = new Map<number, number>();
-    for (const dim of dimensionSeed) {
-      const dimQuestions = assessment.questions.filter((q) => q.dimensionId === dim.id);
-      const sum = dimQuestions.reduce((acc, q) => acc + (q.rawScore ?? 0), 0);
-      dimensionScores.set(dim.id, (sum / (dim.questionCount * 4)) * 100);
-    }
-    const totalScore = dimensionSeed.reduce(
-      (sum, dim) => sum + ((dimensionScores.get(dim.id) ?? 0) * dim.weight) / 100,
-      0
-    );
-
     assessment.status = 'SUBMITTED';
-    assessment.totalScore = totalScore;
+    assessment.totalScore = weightedScore(assessment.questions);
     assessment.submittedAt = new Date().toISOString();
     assessment.updatedAt = assessment.submittedAt;
     return assessment;

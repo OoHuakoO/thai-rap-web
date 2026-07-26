@@ -33,6 +33,8 @@ interface BarChartProps {
 }
 
 const DEFAULT_COLORS = [colors.orange, colors.charcoal, colors.orangeLight, colors.scoreGreen]
+const BAR_CATEGORY_GAP = '12%'
+const BAR_GAP = 4
 
 export function BarChart({
   data,
@@ -52,7 +54,7 @@ export function BarChart({
 
   return (
     <ChartContainer config={chartConfig} style={{ height }}>
-      <RechartsBarChart data={data} barCategoryGap="30%" barGap={2}>
+      <RechartsBarChart data={data} barCategoryGap={BAR_CATEGORY_GAP} barGap={BAR_GAP}>
         {showGrid && <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />}
         <XAxis
           dataKey={xKey}

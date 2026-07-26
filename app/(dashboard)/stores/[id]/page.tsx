@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { StoreReportSection } from '@/features/report'
 import { StoreDetail, StoreListBackLink } from '@/features/store'
 
 export const metadata: Metadata = {
@@ -16,6 +17,7 @@ export default async function StoreDetailPage({ params }: StoreDetailPageProps) 
     <section className="space-y-4">
       <StoreListBackLink />
       <StoreDetail storeId={id} variant="full" />
+      <StoreReportSection storeId={id} />
     </section>
   )
 }

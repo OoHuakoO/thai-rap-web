@@ -4,7 +4,8 @@ import { useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { storeKeys } from '@/features/store';
 import { assessmentService, dimensionService } from '../services/assessment.service';
-import type { Assessment, Round, UpdateScoreDto } from '../types/assessment.types';
+import { calcWeightedTotal } from '../utils/dimension-score';
+import type { Assessment, Dimension, Round, UpdateScoreDto } from '../types/assessment.types';
 
 export const assessmentKeys = {
   all: ['assessments'] as const,
@@ -39,6 +40,27 @@ export function useAssessmentHistory(storeId: string) {
     queryKey: assessmentKeys.history(storeId),
     queryFn: () => assessmentService.getHistory(storeId),
     enabled: !!storeId,
+  });
+}
+
+/**
+ * Read-only counterpart to useAssessment: reads an existing assessment for a
+ * round and resolves to null when there is none, instead of creating one. Uses
+ * the same cache key, so reading the round that's already open in the form
+ * costs no extra request.
+ */
+export function useAssessmentByRound(
+  storeId: string,
+  round: Round,
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: assessmentKeys.byStoreRound(storeId, round),
+    queryFn: async () => {
+      const existing = await assessmentService.findByStoreAndRound(storeId, round);
+      return existing ? assessmentService.getById(existing.id) : null;
+    },
+    enabled: !!storeId && !!round && (options?.enabled ?? true),
   });
 }
 
@@ -119,16 +141,22 @@ export function useUpdateScore(storeId: string, round: Round, assessmentId: stri
     // The PUT response is the saved question — patch it into the cached
     // assessment instead of refetching all 50 questions after every save.
     onSuccess: (updated) => {
-      queryClient.setQueryData<Assessment>(
-        assessmentKeys.byStoreRound(storeId, round),
-        (prev) =>
-          prev && {
-            ...prev,
-            questions: prev.questions.map((q) =>
-              q.questionId === updated.questionId ? { ...q, ...updated } : q
-            ),
-          }
-      );
+      queryClient.setQueryData<Assessment>(assessmentKeys.byStoreRound(storeId, round), (prev) => {
+        if (!prev) return prev;
+        const questions = prev.questions.map((q) =>
+          q.questionId === updated.questionId ? { ...q, ...updated } : q
+        );
+        // The response carries no score roll-up, so the running total is
+        // recomputed here. Dimensions are cached for the session once the form
+        // loads; on the off chance they aren't, the stored value simply stands
+        // until this assessment is fetched again.
+        const dimensions = queryClient.getQueryData<Dimension[]>(dimensionKeys.all);
+        return {
+          ...prev,
+          questions,
+          currentScore: dimensions ? calcWeightedTotal(questions, dimensions) : prev.currentScore,
+        };
+      });
       // Score save also reassigns the assessor on the backend — history
       // (assessorName/updatedAt on the timeline card) must refetch too.
       queryClient.invalidateQueries({ queryKey: assessmentKeys.history(storeId) });
@@ -153,6 +181,20 @@ export function useDeleteEvidence(storeId: string, round: Round, assessmentId: s
     mutationFn: (evidenceId: string) => assessmentService.deleteEvidence(assessmentId, evidenceId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: assessmentKeys.byStoreRound(storeId, round) });
+    },
+  });
+}
+
+export function useSaveDraft(storeId: string, round: Round, assessmentId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => assessmentService.saveDraft(assessmentId),
+    onSuccess: (updated) => {
+      queryClient.setQueryData<Assessment>(assessmentKeys.byStoreRound(storeId, round), updated);
+      // The round card in TimelineArea and the round pills both read status
+      // off their own caches — a draft save flips DRAFT → IN_PROGRESS.
+      queryClient.invalidateQueries({ queryKey: assessmentKeys.byStore(storeId) });
+      queryClient.invalidateQueries({ queryKey: assessmentKeys.history(storeId) });
     },
   });
 }

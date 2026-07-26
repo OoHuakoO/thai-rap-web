@@ -1,32 +1,48 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import type { ReactNode } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { cn } from '@/utils/cn'
-import { getInitials } from '@/utils/get-initials'
-import { ROUTES } from '@/constants/routes'
-import { getNavItemsForRole, getBottomNavItemsForRole } from '@/constants/nav-config'
-import { useAuthStore } from '@/stores/auth-store'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Separator } from '@/components/ui/separator'
-import { ROLE_LABELS } from '@/types/auth.types'
+import { useState } from 'react';
+import type { ReactNode } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { cn } from '@/utils/cn';
+import { getInitials } from '@/utils/get-initials';
+import { ROUTES } from '@/constants/routes';
+import { getNavItemsForRole, getBottomNavItemsForRole } from '@/constants/nav-config';
+import type { NavIcon as NavIconType } from '@/constants/nav-config';
+import { useAuthStore } from '@/stores/auth-store';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
+import { ROLE_LABELS } from '@/types/auth.types';
 
 interface SidebarProps {
-  className?: string
+  className?: string;
+}
+
+interface NavIconProps {
+  icon: NavIconType;
+  size: number;
+  className: string;
+}
+
+function NavIcon({ icon, size, className }: NavIconProps) {
+  if (typeof icon === 'string') {
+    return <Image src={icon} alt="" width={size} height={size} className={className} aria-hidden />;
+  }
+
+  const LucideNavIcon = icon;
+  return <LucideNavIcon className={className} />;
 }
 
 interface SidebarNavLinkProps {
-  href: string
-  disabled?: boolean
-  collapsed: boolean
-  labelTh: string
-  padding: string
-  linkClassName: string
-  children: ReactNode
+  href: string;
+  disabled?: boolean;
+  collapsed: boolean;
+  labelTh: string;
+  padding: string;
+  linkClassName: string;
+  children: ReactNode;
 }
 
 function SidebarNavLink({
@@ -44,36 +60,40 @@ function SidebarNavLink({
       : 'ยังไม่เปิดใช้งาน'
     : collapsed
       ? labelTh
-      : undefined
+      : undefined;
 
   const base = cn(
     'flex items-center gap-2.5 rounded-md transition-colors',
     padding,
     collapsed ? 'justify-center px-0' : 'px-2'
-  )
+  );
 
   if (disabled) {
     return (
-      <span aria-disabled="true" title={title} className={cn(base, 'cursor-not-allowed text-gray-500 opacity-50')}>
+      <span
+        aria-disabled="true"
+        title={title}
+        className={cn(base, 'cursor-not-allowed text-gray-500 opacity-50')}
+      >
         {children}
       </span>
-    )
+    );
   }
 
   return (
     <Link href={href} title={title} className={cn(base, linkClassName)}>
       {children}
     </Link>
-  )
+  );
 }
 
 export function Sidebar({ className }: SidebarProps) {
-  const pathname = usePathname()
-  const user = useAuthStore((s) => s.user)
-  const [collapsed, setCollapsed] = useState(false)
+  const pathname = usePathname();
+  const user = useAuthStore((s) => s.user);
+  const [collapsed, setCollapsed] = useState(false);
 
-  const navItems = user ? getNavItemsForRole(user.role) : []
-  const bottomItems = user ? getBottomNavItemsForRole(user.role) : []
+  const navItems = user ? getNavItemsForRole(user.role) : [];
+  const bottomItems = user ? getBottomNavItemsForRole(user.role) : [];
 
   return (
     <aside
@@ -97,33 +117,31 @@ export function Sidebar({ className }: SidebarProps) {
           height={collapsed ? 25 : 64}
           className="shrink-0"
         />
-        {!collapsed && (
-          <p className="text-xl font-extrabold tracking-wider text-white">THAI-RAP</p>
-        )}
+        {!collapsed && <p className="text-xl font-extrabold tracking-wider text-white">THAI-RAP</p>}
       </div>
 
       {/* Main nav */}
       <nav aria-label="Main navigation" className="flex flex-1 flex-col gap-0.5 overflow-y-auto">
-        {navItems.map(({ label, labelTh, href, icon: Icon, disabled }) => {
-          const isActive = href === ROUTES.HOME ? pathname === href : pathname.startsWith(href)
+        {navItems.map(({ label, labelTh, href, icon, disabled }) => {
+          const isActive = href === ROUTES.HOME ? pathname === href : pathname.startsWith(href);
 
           const iconBox = (
             <span
               className={cn(
-                'flex h-7 w-7 shrink-0 items-center justify-center rounded-md',
+                'flex h-10 w-10 shrink-0 items-center justify-center rounded-md',
                 isActive && !disabled ? 'bg-white/20' : 'bg-white/10'
               )}
             >
-              <Icon className="h-4 w-4" />
+              <NavIcon icon={icon} size={28} className="h-7 w-7" />
             </span>
-          )
+          );
 
           const labels = !collapsed && (
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-medium leading-tight">{labelTh}</span>
               <span className="block truncate text-[9px] leading-tight opacity-60">{label}</span>
             </span>
-          )
+          );
 
           return (
             <SidebarNavLink
@@ -134,13 +152,15 @@ export function Sidebar({ className }: SidebarProps) {
               labelTh={labelTh}
               padding="py-1.5"
               linkClassName={
-                isActive ? 'bg-orange text-white' : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                isActive
+                  ? 'bg-orange text-white'
+                  : 'text-gray-300 hover:bg-white/10 hover:text-white'
               }
             >
               {iconBox}
               {labels}
             </SidebarNavLink>
-          )
+          );
         })}
       </nav>
 
@@ -154,7 +174,11 @@ export function Sidebar({ className }: SidebarProps) {
           collapsed ? 'justify-center px-0' : 'px-2'
         )}
       >
-        {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+        {collapsed ? (
+          <ChevronRight className="h-3.5 w-3.5" />
+        ) : (
+          <ChevronLeft className="h-3.5 w-3.5" />
+        )}
         {!collapsed && <span>ย่อแถบเมนู</span>}
       </button>
 
@@ -163,7 +187,7 @@ export function Sidebar({ className }: SidebarProps) {
         <>
           <Separator className="my-1.5 bg-white/10" />
           <nav aria-label="Help navigation" className="flex flex-col gap-0.5">
-            {bottomItems.map(({ label, labelTh, href, icon: Icon, disabled }) => (
+            {bottomItems.map(({ label, labelTh, href, icon, disabled }) => (
               <SidebarNavLink
                 key={href}
                 href={href}
@@ -173,7 +197,7 @@ export function Sidebar({ className }: SidebarProps) {
                 padding="py-2"
                 linkClassName="text-gray-300 hover:bg-white/10 hover:text-white"
               >
-                <Icon className="h-4 w-4 shrink-0" />
+                <NavIcon icon={icon} size={22} className="h-[22px] w-[22px] shrink-0" />
                 {!collapsed && (
                   <span className="truncate text-xs font-medium">
                     {labelTh} / {label}
@@ -210,5 +234,5 @@ export function Sidebar({ className }: SidebarProps) {
         </>
       )}
     </aside>
-  )
+  );
 }

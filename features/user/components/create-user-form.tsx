@@ -12,7 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { FieldError } from '@/components/shared/field-error';
 import { ROLES } from '@/types/auth.types';
+import { extractErrorMessage } from '@/utils/extract-error-message';
 import {
   CREATE_USER_FORM_TEXT,
   CREATE_USER_ROLE_OPTIONS,
@@ -21,7 +23,11 @@ import { createUserSchema } from '../schemas/create-user.schema';
 import type { CreateUserFormValues } from '../schemas/create-user.schema';
 import { useCreateUser } from '../hooks/use-users';
 
-export function CreateUserForm() {
+interface CreateUserFormProps {
+  onCreated?: () => void;
+}
+
+export function CreateUserForm({ onCreated }: CreateUserFormProps) {
   const { mutate: createUser, isPending, isError, error } = useCreateUser();
 
   const {
@@ -37,14 +43,30 @@ export function CreateUserForm() {
   });
 
   const onSubmit = (data: CreateUserFormValues) => {
-    createUser(data, { onSuccess: () => reset() });
+    createUser(
+      {
+        name: data.name,
+        email: data.email,
+        role: data.role,
+        // Empty optional fields are omitted rather than sent as '' — the API
+        // stores null for "not provided".
+        ...(data.phone ? { phone: data.phone } : {}),
+        ...(data.organization ? { organization: data.organization } : {}),
+      },
+      {
+        onSuccess: () => {
+          reset();
+          onCreated?.();
+        },
+      }
+    );
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {isError && (
         <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-          {error instanceof Error ? error.message : CREATE_USER_FORM_TEXT.errorFallback}
+          {error ? extractErrorMessage(error) : CREATE_USER_FORM_TEXT.errorFallback}
         </p>
       )}
 
@@ -55,7 +77,7 @@ export function CreateUserForm() {
           {...register('name')}
           placeholder={CREATE_USER_FORM_TEXT.namePlaceholder}
         />
-        {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+        <FieldError message={errors.name?.message} />
       </div>
 
       <div className="space-y-1.5">
@@ -66,7 +88,30 @@ export function CreateUserForm() {
           type="email"
           placeholder={CREATE_USER_FORM_TEXT.emailPlaceholder}
         />
-        {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+        <FieldError message={errors.email?.message} />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label htmlFor="phone">{CREATE_USER_FORM_TEXT.phoneLabel}</Label>
+          <Input
+            id="phone"
+            {...register('phone')}
+            inputMode="numeric"
+            placeholder={CREATE_USER_FORM_TEXT.phonePlaceholder}
+          />
+          <FieldError message={errors.phone?.message} />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="organization">{CREATE_USER_FORM_TEXT.organizationLabel}</Label>
+          <Input
+            id="organization"
+            {...register('organization')}
+            placeholder={CREATE_USER_FORM_TEXT.organizationPlaceholder}
+          />
+          <FieldError message={errors.organization?.message} />
+        </div>
       </div>
 
       <div className="space-y-1.5">
@@ -86,7 +131,8 @@ export function CreateUserForm() {
             ))}
           </SelectContent>
         </Select>
-        {errors.role && <p className="text-sm text-destructive">{errors.role.message}</p>}
+        <p className="text-xs text-muted-foreground">{CREATE_USER_FORM_TEXT.roleHint}</p>
+        <FieldError message={errors.role?.message} />
       </div>
 
       <Button type="submit" disabled={isPending} className="w-full">

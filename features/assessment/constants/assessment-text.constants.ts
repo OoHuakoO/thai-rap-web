@@ -12,7 +12,9 @@ export const ASSESSMENT_FORM_TEXT = {
   noStoreSelectedMessage: 'กรุณาเลือกร้านที่ต้องการประเมิน',
   saveDraft: '💾 บันทึกร่าง',
   saveNext: 'บันทึกและถัดไป →',
-  draftSaved: 'บันทึกร่างเรียบร้อย',
+  saveComplete: 'บันทึกและส่งผล ✓',
+  draftSaved: (scored: number, total: number) =>
+    `บันทึกร่างแล้ว — ประเมินไปแล้ว ${scored}/${total} ข้อ`,
   fileDeleted: 'ลบไฟล์แล้ว',
   submitSuccessTitle: 'สำเร็จ',
   submitSuccess: 'ส่งผลการประเมินสำเร็จ',
@@ -28,6 +30,14 @@ export const ASSESSMENT_FORM_TEXT = {
 
 export const SCORE_SUMMARY_TEXT = {
   title: 'สรุปผลการประเมินร้าน',
+  latestRoundBadge: (round: string) => `ผลรอบ ${round}`,
+  currentRoundBadge: (round: string) => `รอบ ${round} (กำลังประเมิน)`,
+  roundPickerLabel: 'รอบ',
+  provisional: 'ระหว่างประเมิน',
+  scoringProgress: (scored: number, total: number) => `ให้คะแนนแล้ว ${scored}/${total} ข้อ`,
+  zonePendingDescription: 'โซนจะแสดงเมื่อให้คะแนนครบทุกข้อ',
+  improvementNone: 'ทุกมิติผ่านเกณฑ์แล้ว',
+  dimensionPercent: (pct: number) => `${pct.toFixed(1)}%`,
   selectedDimScore: 'คะแนนมิติที่เลือก',
   weightedScore: 'คะแนนรวมถ่วงน้ำหนัก',
   provinceRank: 'อันดับในจังหวัด',
@@ -118,6 +128,19 @@ export const DIMENSION_ICON_SRC: Record<number, string> = {
   8: '/icons/dimensions/8.png',
 };
 
+// Tile background per dimension, shared by DimensionList and the AssessTable
+// header so the selected dimension keeps the same colour on both sides.
+export const DIMENSION_TILE_CLASS: Record<number, string> = {
+  1: 'bg-violet-600',
+  2: 'bg-orange',
+  3: 'bg-emerald-600',
+  4: 'bg-blue-700',
+  5: 'bg-amber-500',
+  6: 'bg-purple-600',
+  7: 'bg-teal-600',
+  8: 'bg-green-600',
+};
+
 export const STORE_PICKER_TEXT = {
   selectStore: 'เลือกร้านอาหาร',
   province: 'จังหวัด',
@@ -130,10 +153,4 @@ export const ROUND_PICKER_TEXT = {
   title: 'ประเมินร้าน',
   titleWithStore: (name: string) => `ประเมินร้าน: ${name}`,
   subtitle: 'เลือกรอบประเมินที่ต้องการให้คะแนน',
-} as const;
-
-export const STORE_LIST_TEXT = {
-  columnStore: 'ร้าน',
-  columnProvince: 'จังหวัด',
-  columnStatus: 'สถานะ',
 } as const;

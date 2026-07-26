@@ -61,7 +61,8 @@ describe('RegisterForm', () => {
     await userEvent.click(screen.getByRole('combobox', { name: 'บทบาท' }));
 
     const listbox = within(await screen.findByRole('listbox'));
-    expect(listbox.getByText('ผู้ประกอบการ')).toBeInTheDocument();
+    expect(listbox.getByText('ผู้ใช้ทั่วไป (User)')).toBeInTheDocument();
+    expect(listbox.getByText('ผู้ประกอบการ / ร้านค้า')).toBeInTheDocument();
     expect(listbox.getByText('ผู้ประเมิน (Assessor)')).toBeInTheDocument();
     expect(listbox.queryByText('ผู้ดูแลระบบ (Admin / PMO)')).not.toBeInTheDocument();
     expect(listbox.queryByText('ที่ปรึกษา (Mentor / Coach)')).not.toBeInTheDocument();

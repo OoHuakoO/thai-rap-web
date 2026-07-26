@@ -58,9 +58,9 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
     {
       key: 'name',
       header: STORE_LIST_TEXT.nameHeader,
-      className: 'text-center',
+      className: 'text-left',
       cell: (row) => (
-        <div className="flex items-center justify-center gap-2.5">
+        <div className="flex items-center justify-start gap-2.5">
           <div className="flex h-9 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted">
             {row.coverUrl ? (
               // eslint-disable-next-line @next/next/no-img-element

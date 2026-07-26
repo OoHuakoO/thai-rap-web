@@ -47,6 +47,9 @@ export const assessmentService = {
       .put<AssessmentQuestion>(`/assessments/${assessmentId}/scores/${questionId}`, data)
       .then((res) => res.data),
 
+  saveDraft: (assessmentId: string) =>
+    api.patch<Assessment>(`/assessments/${assessmentId}/draft`).then((res) => res.data),
+
   submit: (assessmentId: string) =>
     api.post<Assessment>(`/assessments/${assessmentId}/submit`).then((res) => res.data),
 

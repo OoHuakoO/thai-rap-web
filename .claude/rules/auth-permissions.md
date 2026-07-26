@@ -9,12 +9,12 @@ that; it covers roles/permissions and where access checks belong.
 
 ## The Permission Model
 
-Six roles (`Role`, `types/auth.types.ts`), eighteen permissions
-(`Permission`, same file) in the shape `<resource>:<action>` — `store:read`,
-`assessment:write`, `users:delete`, etc.
+Eight roles (`Role`, `types/auth.types.ts`) across the five access levels in
+the project brief, and permissions (`Permission`, same file) in the shape
+`<resource>:<action>` — `store:read`, `assessment:write`, `users:delete`, etc.
 
-`constants/permissions.ts` is the single source of truth mapping roles to
-permissions:
+`constants/permissions.ts` holds the **defaults**; SUPER_ADMIN can override
+them at runtime on `/users/permissions`:
 
 ```ts
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
@@ -23,6 +23,22 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   // ...
 }
 ```
+
+Three things make up a role's access:
+
+| Piece | Lives in | Answers |
+|---|---|---|
+| Permission | `ROLE_PERMISSIONS` | may this role do X at all? |
+| Data scope | `ROLE_DATA_SCOPES` | over which records — `ALL` / `ASSIGNED` / `OWN` / `PUBLIC` / `NONE`? |
+| Public fields | `PUBLIC_STORE_FIELDS` | which store fields a `PUBLIC`-scoped role (VIEWER) may see |
+
+Never read those tables directly — the saved config wins over them. Read
+through `getRolePermissions()`, `getDataScope()`, `getPublicStoreFields()`
+and `canViewStoreField()`, all in `constants/permissions.ts`.
+
+`permissions:manage` is SUPER_ADMIN-only and `hasPermission()` re-checks that
+independently of the saved matrix, so a bad config can never hand out the
+right to edit access itself.
 
 Never hardcode a role check like `user.role === 'ADMIN'` anywhere in the
 app. Always go through one of:
@@ -42,9 +58,13 @@ if (user.role === 'ADMIN' || user.role === 'ASSESSOR') { ... }
 ```
 
 Adding a new permission means: add it to the `Permission` union
-(`types/auth.types.ts`), then add it to every role's array in
-`ROLE_PERMISSIONS` that should have it (explicit, not opt-out — a role not
-listed for a permission does not have it).
+(`types/auth.types.ts`), add it to every role's array in `ROLE_PERMISSIONS`
+that should have it (explicit, not opt-out — a role not listed for a
+permission does not have it), then label it in `PERMISSION_LABELS` and place
+it in a `PERMISSION_GROUPS` section
+(`features/access-control/constants/permission-group.constants.ts`) so it
+shows up in the SUPER_ADMIN matrix. `PERMISSION_LABELS` is a
+`Record<Permission, string>`, so a missing label is a compile error.
 
 ---
 

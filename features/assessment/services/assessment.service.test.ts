@@ -85,6 +85,16 @@ describe('assessmentService', () => {
     expect(result).toEqual(updated);
   });
 
+  it('saves an assessment as a draft', async () => {
+    const draft = { id: 'a1', status: 'IN_PROGRESS' };
+    vi.mocked(api.patch).mockResolvedValue({ data: draft });
+
+    const result = await assessmentService.saveDraft('a1');
+
+    expect(api.patch).toHaveBeenCalledWith('/assessments/a1/draft');
+    expect(result).toEqual(draft);
+  });
+
   it('submits an assessment', async () => {
     const submitted = { id: 'a1', status: 'SUBMITTED' };
     vi.mocked(api.post).mockResolvedValue({ data: submitted });

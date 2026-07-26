@@ -1,13 +1,12 @@
-export type Round = 'T0' | 'T1' | 'T2' | 'T3' | 'T4'
+export type Round = 'T0' | 'T1' | 'T2' | 'T3'
 
-export const ROUNDS: Round[] = ['T0', 'T1', 'T2', 'T3', 'T4']
+export const ROUNDS: Round[] = ['T0', 'T1', 'T2', 'T3']
 
 export const ROUND_LABELS: Record<Round, string> = {
   T0: 'T0 — ก่อนเข้าค่าย',
   T1: 'T1 — หลังค่าย',
   T2: 'T2 — Field Audit',
   T3: 'T3 — ติดตาม 1 เดือน',
-  T4: 'T4 — ติดตาม 3 เดือน',
 }
 
 export type AssessmentStatus = 'DRAFT' | 'IN_PROGRESS' | 'SUBMITTED' | 'APPROVED'
@@ -88,7 +87,10 @@ export interface Assessment {
   round: Round
   assessorId: string
   status: AssessmentStatus
+  /** The frozen result — null until the round is submitted. */
   totalScore: number | null
+  /** Weighted score of whatever is scored right now; equals totalScore once submitted. */
+  currentScore: number
   zone: string | null
   notes: string | null
   createdAt: string

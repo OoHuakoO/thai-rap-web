@@ -22,6 +22,7 @@ import {
   useAssessmentSummaries,
   useDeleteEvidence,
   useDimensions,
+  useSaveDraft,
   useSubmitAssessment,
   useUpdateScore,
   useUploadEvidence,
@@ -71,6 +72,7 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
   const can = useAuthStore((s) => s.can);
 
   const updateScore = useUpdateScore(effectiveStoreId, round, assessment?.id ?? '');
+  const saveDraft = useSaveDraft(effectiveStoreId, round, assessment?.id ?? '');
   const submitAssessment = useSubmitAssessment(effectiveStoreId, round, assessment?.id ?? '');
   const uploadEvidence = useUploadEvidence(effectiveStoreId, round, assessment?.id ?? '');
   const deleteEvidence = useDeleteEvidence(effectiveStoreId, round, assessment?.id ?? '');
@@ -138,6 +140,10 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
   const readOnly = locked || !canWrite;
   const scoredCount = assessment.questions.filter((q) => q.rawScore !== null).length;
   const progressPct = Math.round((scoredCount / assessment.questions.length) * 100);
+  // Drives which of the two save modes the primary button offers: a complete
+  // assessment can be submitted from any dimension, an incomplete one only
+  // moves on to the next dimension.
+  const isComplete = scoredCount === assessment.questions.length;
   const dimension = dimensions?.find((d) => d.id === selectedDim) ?? dimensions?.[0];
   const dimQuestions = assessment.questions.filter((q) => q.dimensionId === dimension?.id);
 
@@ -193,9 +199,17 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
     });
   };
 
+  // Scores are already written on every change, so this doesn't re-send them —
+  // it marks the round as worked-on-but-unfinished, which is the "ยังไม่สมบูรณ์"
+  // half of the two save modes.
   const handleSaveDraft = () => {
-    queryClient.invalidateQueries({ queryKey: assessmentKeys.byStoreRound(storeId, round) });
-    toast.success(ASSESSMENT_FORM_TEXT.draftSaved);
+    saveDraft.mutate(undefined, {
+      onSuccess: () =>
+        toast.success(
+          ASSESSMENT_FORM_TEXT.draftSaved(scoredCount, assessment.questions.length)
+        ),
+      onError: (err) => toast.error(extractErrorMessage(err)),
+    });
   };
 
   const maxDim = dimensions?.length ?? 8;
@@ -275,12 +289,15 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
                 variant="outline"
                 className="gap-1.5 border-orange text-orange hover:bg-orange/10 hover:text-orange"
                 onClick={handleSaveDraft}
-                disabled={locked}
+                disabled={locked || saveDraft.isPending}
               >
                 {ASSESSMENT_FORM_TEXT.saveDraft}
               </Button>
-              <Button onClick={handleSaveNext} disabled={locked || submitAssessment.isPending}>
-                {ASSESSMENT_FORM_TEXT.saveNext}
+              <Button
+                onClick={isComplete ? handleSubmit : handleSaveNext}
+                disabled={locked || submitAssessment.isPending}
+              >
+                {isComplete ? ASSESSMENT_FORM_TEXT.saveComplete : ASSESSMENT_FORM_TEXT.saveNext}
               </Button>
             </>
           )}
@@ -310,7 +327,9 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
                 dimensions={dimensions}
                 questions={assessment.questions}
                 selectedId={selectedDim}
-                totalScore={assessment.totalScore}
+                // Falls back to the running score so the footer tracks scoring
+                // instead of sitting at 0.00 until the round is submitted.
+                totalScore={assessment.totalScore ?? assessment.currentScore}
                 onSelect={setSelectedDim}
               />
 
@@ -345,6 +364,7 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
             round={round}
             selectedDimId={selectedDim}
             totalScore={assessment.totalScore}
+            currentScore={assessment.currentScore}
             questions={assessment.questions}
             redFlags={assessment.redFlags}
             isSubmitted={locked}

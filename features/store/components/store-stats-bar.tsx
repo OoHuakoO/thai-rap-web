@@ -6,7 +6,8 @@ import { MaskIcon } from '@/components/shared/mask-icon';
 import { useStoreStats } from '../hooks/use-stores';
 import { STORE_STATS_ICONS, STORE_STATS_TEXT } from '../constants/store-stats-bar.constants';
 
-const ICON_CLASS = 'h-9 w-9 text-white sm:h-11 sm:w-11';
+// ~70% of the circle's diameter — matches the icon-to-circle ratio in the design.
+const ICON_CLASS = 'h-20 w-20 text-white sm:h-20 sm:w-20';
 
 function toPercent(part: number, whole: number): number {
   return whole === 0 ? 0 : Math.round((part / whole) * 1000) / 10;

@@ -2,7 +2,9 @@ import { z } from 'zod';
 import { ROLES } from '@/types/auth.types';
 import { AUTH_VALIDATION_MESSAGES } from '../constants/auth-form.constants';
 
-export const REGISTERABLE_ROLES = [ROLES.ENTREPRENEUR, ROLES.ASSESSOR] as const;
+// VIEWER is the default self-service level — anyone may sign up to browse the
+// disclosed data. Staff levels (MENTOR/ADMIN/…) are created by an admin instead.
+export const REGISTERABLE_ROLES = [ROLES.VIEWER, ROLES.ENTREPRENEUR, ROLES.ASSESSOR] as const;
 
 export const registerSchema = z
   .object({

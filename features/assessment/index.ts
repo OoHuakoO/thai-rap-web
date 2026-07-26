@@ -1,6 +1,5 @@
 export { AssessmentEntry } from './components/assessment-entry'
 export { AssessmentForm } from './components/assessment-form'
-export { AssessmentStoreList } from './components/assessment-store-list'
 export { AssessmentStorePicker } from './components/assessment-store-picker'
 export { RoundPills } from './components/round-pills'
 export { RoundPicker } from './components/round-picker'
@@ -15,7 +14,10 @@ export {
   useAssessmentRank,
 } from './hooks/use-assessment'
 export { ROUND_LABELS, ROUNDS } from './types/assessment.types'
+export { RED_FLAG_LABELS } from './types/assessment.types'
 export { isValidRound } from './utils/round'
+export { getZone, ZONE_COLORS, ZONE_BADGE_CLASSES, ZONE_DESCRIPTIONS } from './utils/zone'
+export type { Zone, ZoneColor } from './utils/zone'
 export type {
   Round,
   Dimension,
@@ -27,4 +29,6 @@ export type {
   AssessmentRank,
   DimensionAverage,
   RedFlag,
+  RedFlagType,
+  Severity,
 } from './types/assessment.types'

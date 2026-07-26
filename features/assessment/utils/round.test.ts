@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { isValidRound, isRoundCompleted, getMissingPriorRound } from './round';
+import {
+  isValidRound,
+  isRoundCompleted,
+  getLatestCompletedRound,
+  getMissingPriorRound,
+} from './round';
 import type { AssessmentSummary, Round } from '../types/assessment.types';
 
 describe('isValidRound', () => {
@@ -8,10 +13,10 @@ describe('isValidRound', () => {
     expect(isValidRound('T1')).toBe(true);
     expect(isValidRound('T2')).toBe(true);
     expect(isValidRound('T3')).toBe(true);
-    expect(isValidRound('T4')).toBe(true);
   });
 
   it('returns false for a round that does not exist', () => {
+    expect(isValidRound('T4')).toBe(false);
     expect(isValidRound('T5')).toBe(false);
   });
 
@@ -55,6 +60,34 @@ describe('isRoundCompleted', () => {
   });
 });
 
+describe('getLatestCompletedRound', () => {
+  it('returns null when no round has been completed', () => {
+    expect(getLatestCompletedRound(undefined)).toBeNull();
+    expect(getLatestCompletedRound([])).toBeNull();
+    expect(getLatestCompletedRound([makeSummary('T0', 'IN_PROGRESS')])).toBeNull();
+  });
+
+  it('returns the most advanced completed round, not the most recently touched', () => {
+    expect(
+      getLatestCompletedRound([
+        makeSummary('T0', 'SUBMITTED'),
+        makeSummary('T1', 'APPROVED'),
+        makeSummary('T2', 'IN_PROGRESS'),
+      ])
+    ).toBe('T1');
+  });
+
+  it('skips a round left unfinished between two completed ones', () => {
+    expect(
+      getLatestCompletedRound([
+        makeSummary('T0', 'SUBMITTED'),
+        makeSummary('T1', 'DRAFT'),
+        makeSummary('T2', 'SUBMITTED'),
+      ])
+    ).toBe('T2');
+  });
+});
+
 describe('getMissingPriorRound', () => {
   it('returns null for T0, which has no prior round', () => {
     expect(getMissingPriorRound(undefined, 'T0')).toBeNull();
@@ -70,7 +103,7 @@ describe('getMissingPriorRound', () => {
     expect(getMissingPriorRound([makeSummary('T0', 'APPROVED')], 'T1')).toBeNull();
   });
 
-  it('requires T1 (not T0) to be completed before T2/T3/T4', () => {
+  it('requires T1 (not T0) to be completed before T2/T3', () => {
     expect(getMissingPriorRound([makeSummary('T0', 'SUBMITTED')], 'T2')).toBe('T1');
     expect(
       getMissingPriorRound([makeSummary('T0', 'SUBMITTED'), makeSummary('T1', 'SUBMITTED')], 'T2')

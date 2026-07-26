@@ -1,8 +1,14 @@
 'use client';
 
+import { MaskIcon } from '@/components/shared/mask-icon';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/utils/cn';
 import { QuestionRow } from './question-row';
-import { ASSESS_TABLE_TEXT } from '../constants/assessment-text.constants';
+import {
+  ASSESS_TABLE_TEXT,
+  DIMENSION_ICON_SRC,
+  DIMENSION_TILE_CLASS,
+} from '../constants/assessment-text.constants';
 import { calcScorePercent, sumQuestionScores } from '../utils/dimension-score';
 import type { AssessmentQuestion, Dimension } from '../types/assessment.types';
 
@@ -48,8 +54,16 @@ export function AssessTable({
     >
       <div className="flex flex-shrink-0 flex-wrap items-start justify-between gap-3 border-b px-4 py-3">
         <div className="flex items-start gap-2.5">
-          <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-orange to-orange-light text-lg">
-            🍽
+          <span
+            className={cn(
+              'flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-white',
+              DIMENSION_TILE_CLASS[dimension.id] ?? DIMENSION_TILE_CLASS[1]
+            )}
+          >
+            <MaskIcon
+              src={DIMENSION_ICON_SRC[dimension.id] ?? DIMENSION_ICON_SRC[1]}
+              className="h-7 w-7"
+            />
           </span>
           <div>
             <p className="text-sm font-bold text-charcoal">

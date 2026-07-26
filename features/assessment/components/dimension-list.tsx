@@ -6,6 +6,7 @@ import { cn } from '@/utils/cn';
 import {
   DIMENSION_ICON_SRC,
   DIMENSION_LIST_TEXT,
+  DIMENSION_TILE_CLASS,
   SCORE_LABELS,
 } from '../constants/assessment-text.constants';
 import { calcScorePercent, sumQuestionScores } from '../utils/dimension-score';
@@ -13,20 +14,9 @@ import type { AssessmentQuestion, Dimension } from '../types/assessment.types';
 
 const SCORE_LEGEND = SCORE_LABELS.map((label, value) => ({ value, label }));
 
-// Tile colour per dimension. The illustrated artwork (DIMENSION_ICON_SRC) is
-// dense line art — it only reads clearly around 48px, so the tile is sized
-// well above lucide's usual 16px inline icon to keep it legible.
-const DIMENSION_TILE_CLASS: Record<number, string> = {
-  1: 'bg-violet-600',
-  2: 'bg-orange',
-  3: 'bg-emerald-600',
-  4: 'bg-blue-700',
-  5: 'bg-amber-500',
-  6: 'bg-purple-600',
-  7: 'bg-teal-600',
-  8: 'bg-green-600',
-};
-
+// The illustrated artwork (DIMENSION_ICON_SRC) is dense line art — it only
+// reads clearly around 48px, so the tile is sized well above lucide's usual
+// 16px inline icon to keep it legible.
 interface DimensionListProps {
   dimensions: Dimension[];
   questions: AssessmentQuestion[];

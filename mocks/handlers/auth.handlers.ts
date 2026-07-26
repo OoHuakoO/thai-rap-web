@@ -89,11 +89,17 @@ export const authHandlers = [
     );
   }),
 
+  // Envelope, unlike the other handlers: refresh is the one call that bypasses
+  // the `api` instance (raw axios in services/api.ts, so a 401 retry can't
+  // recurse), and that code reads `res.data.data` the way the real API replies.
   http.post(`${BASE_URL}/refresh`, () => {
     const userId = authSession.get();
     if (!userId) return refreshTokenInvalid();
 
-    return HttpResponse.json<AuthTokens>(mockTokens(userId));
+    return HttpResponse.json<{ success: true; data: AuthTokens }>({
+      success: true,
+      data: mockTokens(userId),
+    });
   }),
 
   http.post(`${BASE_URL}/logout`, () => {

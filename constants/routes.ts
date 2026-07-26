@@ -26,9 +26,16 @@ export const ROUTES = {
   // Reports
   REPORTS: '/reports',
 
+  // News / announcements
+  NEWS: '/news',
+  NEWS_NEW: '/news/new',
+  NEWS_EDIT: (id: string) => `/news/${id}/edit`,
+
   // User management
   USERS: '/users',
   USER_DETAIL: (id: string) => `/users/${id}`,
+  // Access-control matrix — SUPER_ADMIN only
+  USER_PERMISSIONS: '/users/permissions',
 
   // Settings
   SETTINGS: '/settings',

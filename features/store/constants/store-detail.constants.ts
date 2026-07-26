@@ -86,5 +86,4 @@ export const ASSESSMENT_ROUND_LABELS = [
   { round: 'T1', label: 'T1 — หลังค่าย' },
   { round: 'T2', label: 'T2 — Field Audit' },
   { round: 'T3', label: 'T3 — ติดตาม 1 เดือน' },
-  { round: 'T4', label: 'T4 — ติดตาม 3 เดือน' },
 ] as const;
