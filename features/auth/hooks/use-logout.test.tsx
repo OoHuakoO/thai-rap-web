@@ -17,7 +17,12 @@ function wrapper({ children }: { children: React.ReactNode }) {
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }
 
-const loggedInUser = { id: '1', name: 'Alice', email: 'alice@example.com', role: 'ENTREPRENEUR' as const };
+const loggedInUser = {
+  id: '1',
+  name: 'Alice',
+  email: 'alice@example.com',
+  role: 'ENTREPRENEUR' as const,
+};
 
 describe('useLogout', () => {
   beforeEach(() => {

@@ -65,9 +65,7 @@ const improvedStores = stores.filter((store) => {
   return false;
 }).length;
 
-const assessedScores = stores
-  .map(latestScore)
-  .filter((score): score is number => score !== null);
+const assessedScores = stores.map(latestScore).filter((score): score is number => score !== null);
 
 export const dashboardKpis: DashboardKPIs = {
   totalStores: DASHBOARD_STORE_COUNT,

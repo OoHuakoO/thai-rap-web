@@ -1,35 +1,35 @@
-'use client'
+'use client';
 
-import { useState, type KeyboardEvent } from 'react'
-import { X } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
+import { useState, type KeyboardEvent } from 'react';
+import { X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 
 interface TagInputProps {
-  value: string[]
-  onChange: (value: string[]) => void
-  placeholder?: string
+  value: string[];
+  onChange: (value: string[]) => void;
+  placeholder?: string;
 }
 
 export function TagInput({ value, onChange, placeholder }: TagInputProps) {
-  const [draft, setDraft] = useState('')
+  const [draft, setDraft] = useState('');
 
   const addTag = () => {
-    const trimmed = draft.trim()
-    if (trimmed && !value.includes(trimmed)) onChange([...value, trimmed])
-    setDraft('')
-  }
+    const trimmed = draft.trim();
+    if (trimmed && !value.includes(trimmed)) onChange([...value, trimmed]);
+    setDraft('');
+  };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' || e.key === ',') {
-      e.preventDefault()
-      addTag()
-      return
+      e.preventDefault();
+      addTag();
+      return;
     }
     if (e.key === 'Backspace' && draft === '' && value.length > 0) {
-      onChange(value.slice(0, -1))
+      onChange(value.slice(0, -1));
     }
-  }
+  };
 
   return (
     <div className="space-y-1.5">
@@ -58,5 +58,5 @@ export function TagInput({ value, onChange, placeholder }: TagInputProps) {
         </div>
       )}
     </div>
-  )
+  );
 }

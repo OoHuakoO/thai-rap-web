@@ -1,4 +1,4 @@
-import type { ChartConfig } from '@/components/ui/chart'
+import type { ChartConfig } from '@/components/ui/chart';
 
 export function buildChartConfig<T>(
   items: T[],
@@ -11,7 +11,7 @@ export function buildChartConfig<T>(
     acc[getKey(item)] = {
       label: getLabel(item),
       color: getColor(item) ?? defaultColors[i % defaultColors.length],
-    }
-    return acc
-  }, {})
+    };
+    return acc;
+  }, {});
 }

@@ -13,7 +13,7 @@ const colorMap: Record<ProgressColor, string> = {
   default: 'bg-orange',
   success: 'bg-score-green',
   warning: 'bg-amber-500',
-  danger:  'bg-score-red',
+  danger: 'bg-score-red',
 };
 
 export function ProgressBar({

@@ -1,4 +1,4 @@
-import { getCurrentFiscalYearBE } from '@/utils/get-fiscal-year'
+import { getCurrentFiscalYearBE } from '@/utils/get-fiscal-year';
 
 export function ProjectBanner() {
   return (
@@ -26,5 +26,5 @@ export function ProjectBanner() {
         มหาวิทยาลัยราชภัฏรำไพพรรณี จังหวัดจันทบุรี
       </p>
     </div>
-  )
+  );
 }

@@ -17,6 +17,7 @@ import {
 import { useAssessmentSummaries } from '../hooks/use-assessment';
 import { ROUND_PILLS_TEXT } from '../constants/assessment-text.constants';
 import { REQUIRED_PRIOR_ROUND, isRoundCompleted } from '../utils/round';
+import { isCompletedStatus } from '../utils/status';
 import { ROUNDS } from '../types/assessment.types';
 import type { Round } from '../types/assessment.types';
 
@@ -40,10 +41,11 @@ export function RoundPills({ storeId, activeRound }: RoundPillsProps) {
       <div className="flex flex-wrap gap-1.5">
         {ROUNDS.map((round) => {
           const summary = summaries?.find((s) => s.round === round);
-          const isSubmitted = summary?.status === 'SUBMITTED';
+          const isSubmitted = isCompletedStatus(summary?.status);
           const isActive = round === activeRound;
           const requiredRound = REQUIRED_PRIOR_ROUND[round];
-          const isLocked = requiredRound !== undefined && !isRoundCompleted(summaries, requiredRound);
+          const isLocked =
+            requiredRound !== undefined && !isRoundCompleted(summaries, requiredRound);
 
           return (
             <button
@@ -59,9 +61,7 @@ export function RoundPills({ storeId, activeRound }: RoundPillsProps) {
               className={cn(
                 'relative rounded-full border-[1.5px] px-3.5 py-1.5 text-xs font-bold transition-all',
                 isLocked && 'cursor-not-allowed border-border text-muted-foreground/50',
-                !isLocked &&
-                  isActive &&
-                  'border-purple-banner bg-purple-banner text-white',
+                !isLocked && isActive && 'border-purple-banner bg-purple-banner text-white',
                 !isLocked && !isActive && isSubmitted && 'border-score-green text-score-green',
                 !isLocked &&
                   !isActive &&

@@ -1,5 +1,6 @@
 import api from '@/services/api';
 import type { PaginatedResponse } from '@/types/api.types';
+import { ROUNDS } from '../types/assessment.types';
 import type {
   Assessment,
   AssessmentSummary,
@@ -25,19 +26,18 @@ export const assessmentService = {
       })
       .then((res) => res.data.items[0] ?? null),
 
+  // One assessment per (store, round), so the round count is the whole page.
   findAllByStore: (storeId: string) =>
     api
       .get<PaginatedResponse<AssessmentSummary>>('/assessments', {
-        params: { storeId, limit: 5 },
+        params: { storeId, limit: ROUNDS.length },
       })
       .then((res) => res.data.items),
 
   getById: (id: string) => api.get<Assessment>(`/assessments/${id}`).then((res) => res.data),
 
   getHistory: (storeId: string) =>
-    api
-      .get<AssessmentHistoryItem[]>(`/assessment/${storeId}/history`)
-      .then((res) => res.data),
+    api.get<AssessmentHistoryItem[]>(`/assessment/${storeId}/history`).then((res) => res.data),
 
   create: (data: CreateAssessmentDto) =>
     api.post<Assessment>('/assessments', data).then((res) => res.data),

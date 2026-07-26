@@ -162,6 +162,32 @@ describe('ScoreSummary', () => {
     expect(screen.getByText('ทุกมิติผ่านเกณฑ์แล้ว')).toBeInTheDocument();
   });
 
+  // An unscored dimension reads 0% by arithmetic, not by weakness — listing it
+  // would call every dimension of a fresh round a weak point.
+  it('withholds weak points for a dimension that is not fully scored yet', () => {
+    renderSummary({
+      round: 'T0',
+      totalScore: null,
+      currentScore: 12.5,
+      questions: [makeQuestion(1, 1), makeQuestion(2, null)],
+    });
+
+    expect(screen.getByText('คุณภาพอาหาร (มิติ 1)')).toBeInTheDocument();
+    expect(screen.queryByText('ความปลอดภัย (มิติ 2)')).not.toBeInTheDocument();
+  });
+
+  it('says nothing has been scored when no dimension is complete', () => {
+    renderSummary({
+      round: 'T0',
+      totalScore: null,
+      currentScore: 0,
+      questions: [makeQuestion(1, null), makeQuestion(2, null)],
+    });
+
+    expect(screen.getByText('ยังให้คะแนนไม่ครบสักมิติ')).toBeInTheDocument();
+    expect(screen.queryByText('ทุกมิติผ่านเกณฑ์แล้ว')).not.toBeInTheDocument();
+  });
+
   it('shows the running score, flagged as provisional, before the round is submitted', () => {
     renderSummary({
       round: 'T0',
@@ -232,11 +258,12 @@ describe('ScoreSummary', () => {
         { round: 'T1', status: 'SUBMITTED' },
       ],
     } as unknown as ReturnType<typeof useAssessmentSummaries>);
-    vi.mocked(useAssessmentByRound).mockImplementation(
-      ((_storeId: string, pickedRound: string) => ({
-        data: pickedRound === 'T0' ? makeAssessment() : undefined,
-      })) as unknown as typeof useAssessmentByRound
-    );
+    vi.mocked(useAssessmentByRound).mockImplementation(((
+      _storeId: string,
+      pickedRound: string
+    ) => ({
+      data: pickedRound === 'T0' ? makeAssessment() : undefined,
+    })) as unknown as typeof useAssessmentByRound);
 
     // T1 is both the latest completed round and the one open in the form, so
     // the card starts on the live props.

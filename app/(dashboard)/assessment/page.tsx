@@ -1,14 +1,14 @@
-import type { Metadata } from 'next'
-import { AssessmentEntry } from '@/features/assessment'
+import type { Metadata } from 'next';
+import { AssessmentEntry } from '@/features/assessment';
 
 export const metadata: Metadata = {
-  title: 'แบบประเมินร้าน | Thai Rap',
-}
+  title: 'แบบประเมินร้าน',
+};
 
 export default function AssessmentPage() {
   return (
     <section className="space-y-4">
       <AssessmentEntry />
     </section>
-  )
+  );
 }

@@ -18,6 +18,7 @@ import { buildFileUrl } from '@/utils/build-file-url';
 import { useStores } from '@/features/store';
 import { useProvinces } from '@/features/province';
 import { STORE_PICKER_TEXT } from '../constants/assessment-text.constants';
+import { STORE_PICKER_PAGE_SIZE } from '../constants/assessment-config.constants';
 import type { Round } from '../types/assessment.types';
 
 interface AssessmentStorePickerProps {
@@ -43,7 +44,7 @@ export function AssessmentStorePicker({
   const [province, setProvince] = useState<string>('ALL');
 
   const { data } = useStores({
-    limit: 100,
+    limit: STORE_PICKER_PAGE_SIZE,
     ...(search && { search }),
     ...(province !== 'ALL' && { province }),
   });

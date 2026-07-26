@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { ReportPageHeader, ReportWorkspace } from '@/features/report';
 
 export const metadata: Metadata = {
-  title: 'รายงานผลการประเมิน | Thai Rap',
+  title: 'รายงานผลการประเมิน',
 };
 
 export default function ReportsPage() {

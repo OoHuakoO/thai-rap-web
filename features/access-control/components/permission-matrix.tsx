@@ -11,10 +11,7 @@ import {
   SUPER_ADMIN_ONLY_PERMISSIONS,
 } from '@/types/auth.types';
 import { ACCESS_CONTROL_TEXT } from '../constants/access-control-text.constants';
-import {
-  PERMISSION_GROUPS,
-  PERMISSION_LABELS,
-} from '../constants/permission-group.constants';
+import { PERMISSION_GROUPS, PERMISSION_LABELS } from '../constants/permission-group.constants';
 
 interface PermissionMatrixProps {
   value: Record<Role, Permission[]>;
@@ -36,9 +33,7 @@ function getLockedHint(role: Role, permission: Permission): string | null {
 export function PermissionMatrix({ value, onChange }: PermissionMatrixProps) {
   const togglePermission = (role: Role, permission: Permission, checked: boolean) => {
     const current = value[role] ?? [];
-    const next = checked
-      ? [...current, permission]
-      : current.filter((p) => p !== permission);
+    const next = checked ? [...current, permission] : current.filter((p) => p !== permission);
     onChange({ ...value, [role]: next });
   };
 

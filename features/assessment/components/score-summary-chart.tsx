@@ -27,10 +27,7 @@ interface ScoreSummaryChartProps {
   dimensionAverages: DimensionAverage[];
 }
 
-export function ScoreSummaryChart({
-  dimensionScores,
-  dimensionAverages,
-}: ScoreSummaryChartProps) {
+export function ScoreSummaryChart({ dimensionScores, dimensionAverages }: ScoreSummaryChartProps) {
   const radarData = dimensionScores.map((dim) => ({
     dimension: SCORE_SUMMARY_TEXT.dimensionAxisLabel(dim.id),
     thisStore: dim.pct,

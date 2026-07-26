@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { UserList, UserPageHeader } from '@/features/user';
 
 export const metadata: Metadata = {
-  title: 'ผู้ใช้งานและสิทธิ์ | Thai Rap',
+  title: 'ผู้ใช้งานและสิทธิ์',
 };
 
 export default function UsersPage() {

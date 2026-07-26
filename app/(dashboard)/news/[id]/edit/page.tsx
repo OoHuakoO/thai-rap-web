@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { EditNewsForm, NewsPageHeader } from '@/features/news';
 
 export const metadata: Metadata = {
-  title: 'แก้ไขข่าวประชาสัมพันธ์ | Thai Rap',
+  title: 'แก้ไขข่าวประชาสัมพันธ์',
 };
 
 interface EditNewsPageProps {

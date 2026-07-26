@@ -62,12 +62,12 @@ import type { Metadata } from 'next'
 import { UserList } from '@/features/user'
 
 export const metadata: Metadata = {
-  title: 'Users | Thai Rap',
+  title: 'Users',
 }
 
 export default function UsersPage() {
   return (
-    <section className="space-y-6">
+    <section className="space-y-4">
       <h1 className="text-2xl font-semibold">Users</h1>
       <UserList />
     </section>
@@ -78,7 +78,11 @@ export default function UsersPage() {
 Rules:
 - No data fetching logic in page files
 - No business logic in page files
-- Export `metadata` for SEO on every page
+- Export `metadata` for SEO on every page — the page's own name only, never
+  with the app name appended (see Metadata API below)
+- Every page returns a single `<section className="space-y-4">` wrapper, even
+  when it renders one component — the spacing lives with the page, not in
+  `AppShell`
 - Default export only — no named exports from page files
 
 ---
@@ -161,20 +165,29 @@ only when a server-side proxy or transformation is needed.
 
 ## Metadata API
 
-Export `metadata` (static) or `generateMetadata` (dynamic) from every page.
+Export `metadata` from every page, carrying **only the page's own name**. The
+root layout declares a `title.template`, which appends the app name to every
+child title — repeating `| Thai Rap` in a page produces `X | Thai Rap | Thai
+Rap`, and hardcodes in each file a value `APP_NAME` already owns.
 
 ```ts
-// Static
+// app/layout.tsx — declared once
 export const metadata: Metadata = {
-  title: 'Page Title | Thai Rap',
-  description: 'Page description',
+  title: { default: APP_NAME, template: `%s | ${APP_NAME}` },
 }
 
-// Dynamic (based on params)
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  return { title: `User ${params.id} | Thai Rap` }
+// any page — renders as "Page Title | Thai Rap"
+export const metadata: Metadata = {
+  title: 'Page Title',
+  description: 'Page description',
 }
 ```
+
+`generateMetadata` is not used for the `[id]` routes in this project. Naming a
+record in its title means fetching it, and every fetch here is client-side
+against a separate API with a bearer token held in memory — a Server Component
+has no session to fetch with. Dynamic pages export a static title describing
+the *kind* of record (`'รายละเอียดร้าน'`), not the record itself.
 
 ---
 

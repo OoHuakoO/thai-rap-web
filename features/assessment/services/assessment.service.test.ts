@@ -49,7 +49,7 @@ describe('assessmentService', () => {
     const result = await assessmentService.findAllByStore('store-1');
 
     expect(api.get).toHaveBeenCalledWith('/assessments', {
-      params: { storeId: 'store-1', limit: 5 },
+      params: { storeId: 'store-1', limit: 4 },
     });
     expect(result).toEqual([{ id: 'a1' }]);
   });

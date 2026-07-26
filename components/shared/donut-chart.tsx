@@ -1,28 +1,28 @@
-'use client'
+'use client';
 
-import { PieChart, Pie, Cell } from 'recharts'
+import { PieChart, Pie, Cell } from 'recharts';
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,
-} from '@/components/ui/chart'
-import { colors } from '@/styles/tokens'
-import { buildChartConfig } from '@/utils/build-chart-config'
+} from '@/components/ui/chart';
+import { colors } from '@/styles/tokens';
+import { buildChartConfig } from '@/utils/build-chart-config';
 
 interface DonutSlice {
-  label: string
-  value: number
-  color?: string
+  label: string;
+  value: number;
+  color?: string;
 }
 
 interface DonutChartProps {
-  data: DonutSlice[]
-  centerLabel?: string
-  centerValue?: string | number
-  height?: number
-  showLegend?: boolean
+  data: DonutSlice[];
+  centerLabel?: string;
+  centerValue?: string | number;
+  height?: number;
+  showLegend?: boolean;
 }
 
 const DEFAULT_COLORS = [
@@ -33,7 +33,7 @@ const DEFAULT_COLORS = [
   colors.scoreRed,
   '#3B82F6',
   '#F59E0B',
-]
+];
 
 export function DonutChart({
   data,
@@ -48,7 +48,7 @@ export function DonutChart({
     (slice) => slice.label,
     (slice) => slice.color,
     DEFAULT_COLORS
-  )
+  );
 
   return (
     <ChartContainer config={chartConfig} className="mx-auto" style={{ height }}>
@@ -78,7 +78,12 @@ export function DonutChart({
                 </tspan>
               )}
               {centerLabel && (
-                <tspan x="50%" dy={centerValue !== undefined ? '1.4em' : '0.35em'} fontSize={11} fill={colors.charcoal}>
+                <tspan
+                  x="50%"
+                  dy={centerValue !== undefined ? '1.4em' : '0.35em'}
+                  fontSize={11}
+                  fill={colors.charcoal}
+                >
                   {centerLabel}
                 </tspan>
               )}
@@ -88,5 +93,5 @@ export function DonutChart({
         {showLegend && <ChartLegend content={<ChartLegendContent nameKey="label" />} />}
       </PieChart>
     </ChartContainer>
-  )
+  );
 }

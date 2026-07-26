@@ -23,9 +23,7 @@ const FALLBACK_FILENAME = (format: ReportFileFormat) => `assessment-report.${for
 export function useExportRoundReport() {
   return useMutation({
     mutationFn: ({ storeId, round, format }: ExportRoundInput) =>
-      reportService
-        .exportRoundReport(storeId, round, format)
-        .then((file) => ({ ...file, format })),
+      reportService.exportRoundReport(storeId, round, format).then((file) => ({ ...file, format })),
     onSuccess: ({ blob, filename, format }) => {
       downloadBlob(blob, filename ?? FALLBACK_FILENAME(format));
       toast.success(REPORT_TEXT.downloadSuccess);

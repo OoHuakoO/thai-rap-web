@@ -288,6 +288,40 @@ describe('AssessmentForm', () => {
     expect(screen.queryByRole('button', { name: 'บันทึกและถัดไป →' })).not.toBeInTheDocument();
   });
 
+  // A read-only role must not trigger the auto-create POST — the API answers
+  // 403 and the interceptor redirects the whole page to /403.
+  it('shows a not-started notice for a read-only viewer when the round has no assessment', () => {
+    vi.mocked(useAuthStore).mockImplementation(((
+      selector: (s: { can: () => boolean }) => unknown
+    ) => selector({ can: () => false })) as unknown as typeof useAuthStore);
+    vi.mocked(useAssessment).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: false,
+      isMissing: true,
+      retry: vi.fn(),
+    } as unknown as ReturnType<typeof useAssessment>);
+
+    render(<AssessmentForm storeId="store-1" round="T0" />, { wrapper: Wrapper });
+
+    expect(screen.getByText('ยังไม่มีผลการประเมินรอบ T0 ของร้านนี้')).toBeInTheDocument();
+    expect(vi.mocked(useAssessment).mock.calls[0][2]).toMatchObject({ canCreate: false });
+  });
+
+  it('locks the save actions on an approved assessment, not just a submitted one', () => {
+    vi.mocked(useAssessment).mockReturnValue({
+      data: makeAssessment({ status: 'APPROVED' }),
+      isLoading: false,
+      isError: false,
+      retry: vi.fn(),
+    } as unknown as ReturnType<typeof useAssessment>);
+
+    render(<AssessmentForm storeId="store-1" round="T0" />, { wrapper: Wrapper });
+
+    expect(screen.getByRole('button', { name: '💾 บันทึกร่าง' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'บันทึกและถัดไป →' })).toBeDisabled();
+  });
+
   it('shows the no-store-selected message after the store is cleared via province change', async () => {
     render(<AssessmentForm storeId="store-1" round="T0" />, { wrapper: Wrapper });
 

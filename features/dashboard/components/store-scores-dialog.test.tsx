@@ -67,18 +67,14 @@ describe('StoreScoresDialog', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'ดาวน์โหลด Excel' }));
 
-    await waitFor(() =>
-      expect(downloadBlob).toHaveBeenCalledWith(blob, 'store-round-scores.xlsx')
-    );
+    await waitFor(() => expect(downloadBlob).toHaveBeenCalledWith(blob, 'store-round-scores.xlsx'));
   });
 
   it('shows the empty state when no store has been assessed', async () => {
     vi.mocked(dashboardService.getStoreRoundScores).mockResolvedValue([]);
     renderWithClient(<StoreScoresDialog open onOpenChange={vi.fn()} />);
 
-    await waitFor(() =>
-      expect(screen.getByText('ยังไม่มีข้อมูลคะแนนรายร้าน')).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByText('ยังไม่มีข้อมูลคะแนนรายร้าน')).toBeInTheDocument());
   });
 
   it('shows the error message when the API fails', async () => {

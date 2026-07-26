@@ -13,21 +13,25 @@ const SCORE_ACTIVE_CLASS: Record<number, string> = {
 
 interface ScoreButtonGroupProps {
   value: number | null;
+  /** Question.maxScore from the API — the schema allows it to vary per question. */
+  maxScore: number;
   disabled?: boolean;
   onChange: (value: number) => void;
 }
 
-export function ScoreButtonGroup({ value, disabled, onChange }: ScoreButtonGroupProps) {
+export function ScoreButtonGroup({ value, maxScore, disabled, onChange }: ScoreButtonGroupProps) {
+  const options = Array.from({ length: maxScore + 1 }, (_, i) => i);
+
   return (
     <div className="flex flex-col items-start gap-1">
       <div className="flex gap-1">
-        {[0, 1, 2, 3, 4].map((v) => (
+        {options.map((v) => (
           <button
             key={v}
             type="button"
             disabled={disabled}
             onClick={() => onChange(v)}
-            title={`${v} - ${SCORE_LABELS[v]}`}
+            title={SCORE_LABELS[v] ? `${v} - ${SCORE_LABELS[v]}` : String(v)}
             aria-pressed={value === v}
             className={cn(
               'flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md border-[1.5px] bg-muted/40 text-xs font-bold text-muted-foreground transition-all',
@@ -41,7 +45,7 @@ export function ScoreButtonGroup({ value, disabled, onChange }: ScoreButtonGroup
         ))}
       </div>
       <span className="whitespace-nowrap text-xs text-muted-foreground">
-        {value !== null ? SCORE_LABELS[value] : '—'}
+        {value !== null ? (SCORE_LABELS[value] ?? value) : '—'}
       </span>
     </div>
   );

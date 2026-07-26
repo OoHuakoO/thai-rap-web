@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import {
   Pagination,
@@ -6,41 +6,41 @@ import {
   PaginationEllipsis,
   PaginationItem,
   PaginationLink,
-} from '@/components/ui/pagination'
+} from '@/components/ui/pagination';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from '@/components/ui/select';
 
-const PAGE_SIZE_OPTIONS = [10, 25, 50]
+const PAGE_SIZE_OPTIONS = [10, 25, 50];
 
 interface PaginationBarProps {
-  page: number
-  limit: number
-  total: number
-  totalPages: number
-  onPageChange: (page: number) => void
-  onLimitChange: (limit: number) => void
-  itemLabel?: string
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  onLimitChange: (limit: number) => void;
+  itemLabel?: string;
 }
 
 function getPageNumbers(page: number, totalPages: number): (number | 'ellipsis')[] {
   if (totalPages <= 7) {
-    return Array.from({ length: totalPages }, (_, i) => i + 1)
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
   }
 
-  const pages = new Set([1, 2, page - 1, page, page + 1, totalPages])
-  const sorted = [...pages].filter((p) => p >= 1 && p <= totalPages).sort((a, b) => a - b)
+  const pages = new Set([1, 2, page - 1, page, page + 1, totalPages]);
+  const sorted = [...pages].filter((p) => p >= 1 && p <= totalPages).sort((a, b) => a - b);
 
-  const result: (number | 'ellipsis')[] = []
+  const result: (number | 'ellipsis')[] = [];
   sorted.forEach((p, i) => {
-    if (i > 0 && p - sorted[i - 1] > 1) result.push('ellipsis')
-    result.push(p)
-  })
-  return result
+    if (i > 0 && p - sorted[i - 1] > 1) result.push('ellipsis');
+    result.push(p);
+  });
+  return result;
 }
 
 export function PaginationBar({
@@ -52,8 +52,8 @@ export function PaginationBar({
   onLimitChange,
   itemLabel = 'รายการ',
 }: PaginationBarProps) {
-  const start = total === 0 ? 0 : (page - 1) * limit + 1
-  const end = Math.min(page * limit, total)
+  const start = total === 0 ? 0 : (page - 1) * limit + 1;
+  const end = Math.min(page * limit, total);
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 border-t px-3 py-2.5">
@@ -72,8 +72,8 @@ export function PaginationBar({
                 aria-disabled={page <= 1}
                 className={page <= 1 ? 'pointer-events-none opacity-40' : ''}
                 onClick={(e) => {
-                  e.preventDefault()
-                  if (page > 1) onPageChange(page - 1)
+                  e.preventDefault();
+                  if (page > 1) onPageChange(page - 1);
                 }}
               >
                 ‹
@@ -92,8 +92,8 @@ export function PaginationBar({
                     size="icon"
                     isActive={p === page}
                     onClick={(e) => {
-                      e.preventDefault()
-                      onPageChange(p)
+                      e.preventDefault();
+                      onPageChange(p);
                     }}
                   >
                     {p}
@@ -110,8 +110,8 @@ export function PaginationBar({
                 aria-disabled={page >= totalPages}
                 className={page >= totalPages ? 'pointer-events-none opacity-40' : ''}
                 onClick={(e) => {
-                  e.preventDefault()
-                  if (page < totalPages) onPageChange(page + 1)
+                  e.preventDefault();
+                  if (page < totalPages) onPageChange(page + 1);
                 }}
               >
                 ›
@@ -137,5 +137,5 @@ export function PaginationBar({
         </div>
       </div>
     </div>
-  )
+  );
 }

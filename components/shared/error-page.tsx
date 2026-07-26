@@ -1,31 +1,44 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { useAuthStore } from '@/stores/auth-store'
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { useAuthStore } from '@/stores/auth-store';
+import { cn } from '@/utils/cn';
 
 interface ErrorAction {
-  label: string
-  onClick?: () => void
-  href?: string
-  reload?: boolean
-  hideWhenAuthenticated?: boolean
-  variant?: 'default' | 'outline' | 'ghost'
+  label: string;
+  onClick?: () => void;
+  href?: string;
+  reload?: boolean;
+  hideWhenAuthenticated?: boolean;
+  variant?: 'default' | 'outline' | 'ghost';
 }
 
 interface ErrorPageProps {
-  code: number
-  title: string
-  message: string
-  actions?: ErrorAction[]
+  code: number;
+  title: string;
+  message: string;
+  actions?: ErrorAction[];
+  /**
+   * Overrides the default full-viewport height. The standalone pages under
+   * `app/errors/` own the whole screen, but a boundary rendered inside the
+   * dashboard shell sits in an already-full-height scroll area — passing a
+   * shorter height there stops it from overflowing into a second scrollbar.
+   */
+  className?: string;
 }
 
-export function ErrorPage({ code, title, message, actions }: ErrorPageProps) {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-  const visibleActions = actions?.filter((a) => !(a.hideWhenAuthenticated && isAuthenticated))
+export function ErrorPage({ code, title, message, actions, className }: ErrorPageProps) {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const visibleActions = actions?.filter((a) => !(a.hideWhenAuthenticated && isAuthenticated));
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6 text-center">
+    <div
+      className={cn(
+        'flex min-h-screen flex-col items-center justify-center bg-background p-6 text-center',
+        className
+      )}
+    >
       <p className="select-none text-8xl font-extrabold text-orange opacity-20">{code}</p>
       <h1 className="mt-2 text-2xl font-bold text-charcoal">{title}</h1>
       <p className="mt-2 max-w-md text-sm text-muted-foreground">{message}</p>
@@ -50,5 +63,5 @@ export function ErrorPage({ code, title, message, actions }: ErrorPageProps) {
         </div>
       )}
     </div>
-  )
+  );
 }

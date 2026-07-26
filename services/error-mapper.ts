@@ -1,8 +1,8 @@
-import axios from 'axios'
-import { ApiError } from './api-error'
-import type { ErrorCode } from './api-error'
-import type { ApiErrorResponse } from '@/types/api.types'
-import { HTTP_STATUS } from '@/constants/http-status'
+import axios from 'axios';
+import { ApiError } from './api-error';
+import type { ErrorCode } from './api-error';
+import type { ApiErrorResponse } from '@/types/api.types';
+import { HTTP_STATUS } from '@/constants/http-status';
 
 function isApiErrorResponse(data: unknown): data is ApiErrorResponse {
   return (
@@ -10,42 +10,53 @@ function isApiErrorResponse(data: unknown): data is ApiErrorResponse {
     data !== null &&
     typeof (data as { error?: unknown }).error === 'object' &&
     (data as { error?: unknown }).error !== null
-  )
+  );
 }
 
 function codeFromStatus(status: number): ErrorCode {
   switch (status) {
-    case HTTP_STATUS.BAD_REQUEST: return 'BAD_REQUEST'
-    case HTTP_STATUS.UNAUTHORIZED: return 'UNAUTHORIZED'
-    case HTTP_STATUS.FORBIDDEN: return 'FORBIDDEN'
-    case HTTP_STATUS.NOT_FOUND: return 'NOT_FOUND'
-    case HTTP_STATUS.RATE_LIMITED: return 'RATE_LIMITED'
-    case HTTP_STATUS.SERVICE_UNAVAILABLE: return 'SERVICE_UNAVAILABLE'
+    case HTTP_STATUS.BAD_REQUEST:
+      return 'BAD_REQUEST';
+    case HTTP_STATUS.UNAUTHORIZED:
+      return 'UNAUTHORIZED';
+    case HTTP_STATUS.FORBIDDEN:
+      return 'FORBIDDEN';
+    case HTTP_STATUS.NOT_FOUND:
+      return 'NOT_FOUND';
+    case HTTP_STATUS.RATE_LIMITED:
+      return 'RATE_LIMITED';
+    case HTTP_STATUS.SERVICE_UNAVAILABLE:
+      return 'SERVICE_UNAVAILABLE';
     default:
-      if (status >= HTTP_STATUS.SERVER_ERROR) return 'SERVER_ERROR'
-      return 'UNKNOWN'
+      if (status >= HTTP_STATUS.SERVER_ERROR) return 'SERVER_ERROR';
+      return 'UNKNOWN';
   }
 }
 
 export function mapToApiError(error: unknown): ApiError {
   if (axios.isCancel(error)) {
-    return new ApiError({ message: 'Request cancelled', statusCode: 0, code: 'CANCELLED', isCancelled: true })
+    return new ApiError({
+      message: 'Request cancelled',
+      statusCode: 0,
+      code: 'CANCELLED',
+      isCancelled: true,
+    });
   }
 
   if (axios.isAxiosError(error)) {
     if (!error.response) {
-      const isTimeout = error.code === 'ECONNABORTED'
+      const isTimeout = error.code === 'ECONNABORTED';
       return new ApiError({
         message: isTimeout ? 'Request timed out' : 'Network error — check your connection',
         statusCode: 0,
         code: isTimeout ? 'TIMEOUT_ERROR' : 'NETWORK_ERROR',
         isNetworkError: true,
-      })
+      });
     }
 
-    const { status, data, headers } = error.response
-    const body = isApiErrorResponse(data) ? data : undefined
-    const retryAfter = headers['retry-after'] ? Number(headers['retry-after']) : undefined
+    const { status, data, headers } = error.response;
+    const body = isApiErrorResponse(data) ? data : undefined;
+    const retryAfter = headers['retry-after'] ? Number(headers['retry-after']) : undefined;
 
     return new ApiError({
       message: body?.error?.message ?? error.message,
@@ -54,12 +65,12 @@ export function mapToApiError(error: unknown): ApiError {
       details: body?.error?.details,
       requestId: typeof headers['x-request-id'] === 'string' ? headers['x-request-id'] : undefined,
       retryAfter,
-    })
+    });
   }
 
   if (error instanceof Error) {
-    return new ApiError({ message: error.message, statusCode: 0, code: 'UNKNOWN' })
+    return new ApiError({ message: error.message, statusCode: 0, code: 'UNKNOWN' });
   }
 
-  return new ApiError({ message: 'An unexpected error occurred', statusCode: 0, code: 'UNKNOWN' })
+  return new ApiError({ message: 'An unexpected error occurred', statusCode: 0, code: 'UNKNOWN' });
 }

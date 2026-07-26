@@ -28,7 +28,9 @@ describe('registerSchema', () => {
   });
 
   it('rejects a password shorter than 8 characters', () => {
-    const result = registerSchema.safeParse(validPayload({ password: '1234567', confirmPassword: '1234567' }));
+    const result = registerSchema.safeParse(
+      validPayload({ password: '1234567', confirmPassword: '1234567' })
+    );
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.issues[0].message).toBe(AUTH_VALIDATION_MESSAGES.registerPasswordMin);

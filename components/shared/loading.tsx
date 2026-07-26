@@ -1,16 +1,16 @@
-import { Skeleton } from '@/components/ui/skeleton'
-import { cn } from '@/utils/cn'
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/utils/cn';
 
 interface LoadingProps {
-  className?: string
-  size?: 'sm' | 'md' | 'lg'
+  className?: string;
+  size?: 'sm' | 'md' | 'lg';
 }
 
 const sizeMap = {
   sm: 'h-4 w-4 border-2',
   md: 'h-8 w-8 border-2',
   lg: 'h-12 w-12 border-4',
-}
+};
 
 export function Loading({ className, size = 'md' }: LoadingProps) {
   return (
@@ -18,19 +18,16 @@ export function Loading({ className, size = 'md' }: LoadingProps) {
       <div
         role="status"
         aria-label="Loading"
-        className={cn(
-          'animate-spin rounded-full border-cream border-t-orange',
-          sizeMap[size]
-        )}
+        className={cn('animate-spin rounded-full border-cream border-t-orange', sizeMap[size])}
       />
     </div>
-  )
+  );
 }
 
 interface TableSkeletonProps {
-  rows?: number
-  cols?: number
-  className?: string
+  rows?: number;
+  cols?: number;
+  className?: string;
 }
 
 export function TableSkeleton({ rows = 5, cols = 4, className }: TableSkeletonProps) {
@@ -49,11 +46,11 @@ export function TableSkeleton({ rows = 5, cols = 4, className }: TableSkeletonPr
         </div>
       ))}
     </div>
-  )
+  );
 }
 
 interface CardSkeletonProps {
-  className?: string
+  className?: string;
 }
 
 export function CardSkeleton({ className }: CardSkeletonProps) {
@@ -63,5 +60,5 @@ export function CardSkeleton({ className }: CardSkeletonProps) {
       <Skeleton className="h-8 w-1/2" />
       <Skeleton className="h-3 w-2/3" />
     </div>
-  )
+  );
 }

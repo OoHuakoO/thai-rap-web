@@ -13,6 +13,7 @@ import {
 } from '../hooks/use-assessment';
 import { getZone, DIMENSION_PASS_THRESHOLD_PCT } from '../utils/zone';
 import { getLatestCompletedRound, isRoundCompleted } from '../utils/round';
+import { isCompletedStatus } from '../utils/status';
 import { calcScorePercent, sumQuestionScores } from '../utils/dimension-score';
 import { SCORE_SUMMARY_TEXT } from '../constants/assessment-text.constants';
 import { RED_FLAG_LABELS, ROUNDS } from '../types/assessment.types';
@@ -88,22 +89,30 @@ export function ScoreSummary({
           totalScore: latestAssessment.totalScore,
           currentScore: latestAssessment.currentScore,
           redFlags: latestAssessment.redFlags,
-          isSubmitted: latestAssessment.status === 'SUBMITTED',
+          isSubmitted: isCompletedStatus(latestAssessment.status),
         }
       : null;
 
   const dimensionScores = (dimensions ?? []).map((dim) => {
     const dimQuestions = (source?.questions ?? []).filter((q) => q.dimensionId === dim.id);
     const { sum, max } = sumQuestionScores(dimQuestions);
-    return { ...dim, pct: calcScorePercent(sum, max, 1) };
+    return {
+      ...dim,
+      pct: calcScorePercent(sum, max, 1),
+      // Its percentage is only final once every question in it is answered.
+      isFullyScored: dimQuestions.length > 0 && dimQuestions.every((q) => q.rawScore !== null),
+    };
   });
 
   const selectedDim = dimensionScores.find((d) => d.id === selectedDimId);
 
   // Weak points are the dimensions that fell below the pass mark, not a fixed
   // top-three — a store with one bad dimension should show one, not three.
+  // A half-scored dimension sits below the mark by arithmetic alone, so it only
+  // qualifies once it is complete; otherwise a round nobody has touched lists
+  // all eight as weak, which is the same misreading the zone gate avoids.
   const improvementPoints = dimensionScores
-    .filter((dim) => dim.pct < DIMENSION_PASS_THRESHOLD_PCT)
+    .filter((dim) => dim.isFullyScored && dim.pct < DIMENSION_PASS_THRESHOLD_PCT)
     .sort((a, b) => a.pct - b.pct);
 
   // A round that isn't submitted has no frozen totalScore, so it shows the
@@ -241,7 +250,9 @@ export function ScoreSummary({
           </p>
           {improvementPoints.length === 0 ? (
             <p className="text-[12.5px] text-muted-foreground">
-              {SCORE_SUMMARY_TEXT.improvementNone}
+              {dimensionScores.some((dim) => dim.isFullyScored)
+                ? SCORE_SUMMARY_TEXT.improvementNone
+                : SCORE_SUMMARY_TEXT.improvementPending}
             </p>
           ) : (
             <ul className="space-y-1">

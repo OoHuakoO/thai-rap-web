@@ -1,25 +1,30 @@
-'use client'
+'use client';
 
-import Image from 'next/image'
-import { useAuthStore } from '@/stores/auth-store'
-import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { cn } from '@/utils/cn'
-import { Bell, ChevronDown, LogOut } from 'lucide-react'
-import { ROLE_LABELS } from '@/types/auth.types'
-import { useLogout } from '@/features/auth'
-import { getInitials } from '@/utils/get-initials'
+import Image from 'next/image';
+import { useAuthStore } from '@/stores/auth-store';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { cn } from '@/utils/cn';
+import { Bell, ChevronDown, LogOut } from 'lucide-react';
+import { ROLE_LABELS } from '@/types/auth.types';
+import { useLogout } from '@/features/auth';
+import { getInitials } from '@/utils/get-initials';
 
 interface TopHeaderProps {
-  className?: string
+  className?: string;
 }
 
 export function TopHeader({ className }: TopHeaderProps) {
-  const user = useAuthStore((s) => s.user)
-  const { mutate: logout } = useLogout()
+  const user = useAuthStore((s) => s.user);
+  const { mutate: logout } = useLogout();
 
   return (
-    <header className={cn('flex items-center justify-between gap-3 border-b bg-white px-4 py-2', className)}>
+    <header
+      className={cn(
+        'flex items-center justify-between gap-3 border-b bg-white px-4 py-2',
+        className
+      )}
+    >
       <div className="flex flex-1 justify-center">
         <Image
           src="/partner-logos.png"
@@ -65,5 +70,5 @@ export function TopHeader({ className }: TopHeaderProps) {
         )}
       </div>
     </header>
-  )
+  );
 }

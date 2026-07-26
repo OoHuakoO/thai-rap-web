@@ -2,6 +2,7 @@ import { Megaphone, Settings, ShieldCheck, UserCog } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { Role } from '@/types/auth.types';
 import { ROLES } from '@/types/auth.types';
+import { canAccessRoute } from './permissions';
 import { ROUTES } from './routes';
 
 export const NAV_ICONS = {
@@ -160,7 +161,37 @@ export function getBottomNavItemsForRole(role: Role): NavItem[] {
   return NAV_BOTTOM_ITEMS.filter((item) => item.allowedRoles.includes(role));
 }
 
+/**
+ * Where to send a role when it has no specific destination — after login, or
+ * after being bounced off a route it may not see.
+ *
+ * `allowedRoles` on a nav item only decides whether the link is *shown*; the
+ * route guard runs `canAccessRoute()` against the SUPER_ADMIN-defined matrix,
+ * which can be narrower. Re-checking here keeps the two in step: without it, a
+ * revoked permission leaves this returning a route the guard rejects, and the
+ * dashboard layout redirects to it forever.
+ *
+ * Falls back to 403 rather than HOME because HOME is itself permission-gated
+ * (`dashboard:read`) — returning it for a role that lacks it would restart the
+ * same loop. `/errors/403` sits outside both route groups, so nothing guards it.
+ */
 export function getDefaultRouteForRole(role: Role): string {
-  const firstAccessible = getNavItemsForRole(role).find((item) => !item.disabled);
-  return firstAccessible?.href ?? ROUTES.HOME;
+  const firstAccessible = getNavItemsForRole(role).find(
+    (item) => !item.disabled && canAccessRoute(role, item.href)
+  );
+  return firstAccessible?.href ?? ROUTES.ERROR_403;
+}
+
+/**
+ * Post-login destination: the path the guard bounced the user off (`?next=`)
+ * when it is safe and the role may see it, otherwise the role's default route.
+ *
+ * `next` arrives from a query string, so it is treated as untrusted: only a
+ * same-origin absolute path is accepted (a protocol-relative `//evil.com` would
+ * otherwise be an open redirect), and it must still pass the route guard.
+ */
+export function resolvePostLoginRoute(role: Role, next?: string | null): string {
+  const isSameOriginPath = !!next && next.startsWith('/') && !next.startsWith('//');
+  if (isSameOriginPath && canAccessRoute(role, next)) return next;
+  return getDefaultRouteForRole(role);
 }

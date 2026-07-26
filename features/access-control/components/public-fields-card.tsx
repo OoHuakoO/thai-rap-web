@@ -35,9 +35,7 @@ export function PublicFieldsCard({ value, onChange }: PublicFieldsCardProps) {
           <AlertCard
             variant="warning"
             title={ACCESS_CONTROL_TEXT.sensitiveWarning}
-            message={disclosedSensitiveFields
-              .map((field) => STORE_FIELD_LABELS[field])
-              .join(', ')}
+            message={disclosedSensitiveFields.map((field) => STORE_FIELD_LABELS[field]).join(', ')}
           />
         )}
 

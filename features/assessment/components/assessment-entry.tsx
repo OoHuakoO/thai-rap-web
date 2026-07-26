@@ -8,6 +8,7 @@ import { extractErrorMessage } from '@/utils/extract-error-message';
 import { useStores } from '@/features/store';
 import { EMPTY_STORE_MESSAGE } from '../constants/assessment-text.constants';
 import { useAssessmentSummaries } from '../hooks/use-assessment';
+import { isCompletedStatus } from '../utils/status';
 import { ROUNDS } from '../types/assessment.types';
 
 export function AssessmentEntry() {
@@ -23,8 +24,9 @@ export function AssessmentEntry() {
   useEffect(() => {
     if (!firstStore || !summaries) return;
     const currentRound =
-      ROUNDS.find((round) => summaries.find((s) => s.round === round)?.status !== 'SUBMITTED') ??
-      ROUNDS[ROUNDS.length - 1];
+      ROUNDS.find(
+        (round) => !isCompletedStatus(summaries.find((s) => s.round === round)?.status)
+      ) ?? ROUNDS[ROUNDS.length - 1];
     router.replace(ROUTES.ASSESSMENT_DETAIL(firstStore.id, currentRound));
   }, [firstStore, summaries, router]);
 

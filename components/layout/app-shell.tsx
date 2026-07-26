@@ -1,9 +1,9 @@
-import { Sidebar } from './sidebar'
-import { TopHeader } from './top-header'
-import { ProjectBanner } from './project-banner'
+import { Sidebar } from './sidebar';
+import { TopHeader } from './top-header';
+import { ProjectBanner } from './project-banner';
 
 interface AppShellProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export function AppShell({ children }: AppShellProps) {
@@ -18,5 +18,5 @@ export function AppShell({ children }: AppShellProps) {
         </main>
       </div>
     </div>
-  )
+  );
 }

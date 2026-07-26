@@ -73,25 +73,50 @@ shows up in the SUPER_ADMIN matrix. `PERMISSION_LABELS` is a
 Route guarding is **client-side, layout-level** — there is no
 `middleware.ts`. Two layouts do the gating:
 
+This is a UX guard, not a security boundary. The API lives on a different
+origin and owns the httpOnly refresh cookie, so a Next middleware could not
+read the session even if one existed — the backend re-checks every request,
+and that is what actually protects data. Keep it that way: never move data
+fetching into a Server Component in `app/(dashboard)/`, because the RSC
+payload is produced before this guard ever runs.
+
 - `app/(auth)/layout.tsx` — if already authenticated, redirect *away* from
   login/register to the role's default route.
-- `app/(dashboard)/layout.tsx` — if not authenticated, redirect to login; if
-  authenticated but the role can't access the current path
+- `app/(dashboard)/layout.tsx` — if not signed in, redirect to login carrying
+  `?next=` so login can return the user to where they were headed; if signed
+  in but the role can't access the current path
   (`canAccessRoute(role, pathname)`), redirect to the role's default route.
 
 ```tsx
-const isAllowed = role ? canAccessRoute(role, pathname) : false
+const isReady = hasHydrated && accessControlHasHydrated
+// Subscribed only so the guard re-runs when SUPER_ADMIN saves a new matrix —
+// canAccessRoute() reads it through getState(), which React cannot track.
+const rolePermissions = useAccessControlStore((s) => s.rolePermissions)
+
+const isAllowed = useMemo(
+  () => (isAuthenticated && role ? canAccessRoute(role, pathname) : false),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [isAuthenticated, role, pathname, rolePermissions]
+)
 
 useEffect(() => {
-  if (!hasHydrated) return
-  if (!isAuthenticated) { router.replace(ROUTES.LOGIN); return }
-  if (role && !isAllowed) { router.replace(getDefaultRouteForRole(role)) }
+  if (!isReady) return
+  if (!isAuthenticated || !role) {
+    router.replace(`${ROUTES.LOGIN}?next=${encodeURIComponent(pathname)}`)
+    return
+  }
+  if (!isAllowed) { router.replace(getDefaultRouteForRole(role)) }
 }, [...])
 
-if (!hasHydrated) return <Loading className="min-h-screen" />
-if (!isAuthenticated) return null
-if (role && !isAllowed) return null
+if (!isReady) return <Loading className="min-h-screen" />
+if (!isAuthenticated || !role || !isAllowed) return null
 ```
+
+Guard on `!isAuthenticated || !role`, never on `isAuthenticated` alone. A
+session carrying no role satisfies no permission check, so `isAllowed` is
+`false` — but a `role && !isAllowed` test skips over it and renders the shell
+on every route. `auth-storage` is hand-editable `localStorage`, so a roleless
+session is reachable, not hypothetical.
 
 Every route's required permission lives in `ROUTE_PERMISSIONS`
 (`constants/permissions.ts`):
@@ -120,16 +145,27 @@ type the URL directly. `ROUTE_PERMISSIONS` + the dashboard layout check is
 what actually blocks access; `allowedRoles` on the nav item is only for
 hiding the link.
 
+Nav `allowedRoles` and the permission matrix are two different lists, and the
+matrix is the narrower one at runtime. `getDefaultRouteForRole()` therefore
+re-checks its candidate with `canAccessRoute()` and falls back to
+`ROUTES.ERROR_403` — never `ROUTES.HOME`, which is itself gated on
+`dashboard:read`. Any redirect target the guard would reject sends the layout
+into an endless `router.replace` loop, so a redirect target must always be
+verified against the same check that will run on arrival.
+
 ### `hasHydrated` gate
 
-Every route guard must wait on `useHasHydrated()` before making a redirect
-decision or rendering protected content. Zustand's `persist` middleware
-rehydrates `user`/`isAuthenticated` from `localStorage` asynchronously — 
-checking `isAuthenticated` before hydration finishes reads a false `false`
-and redirects a logged-in user to login on every reload.
+Every route guard must wait on **both** `useHasHydrated()` (auth) and
+`useAccessControlHasHydrated()` (the saved permission matrix) before making a
+redirect decision or rendering protected content. Zustand's `persist`
+middleware rehydrates from `localStorage` asynchronously — checking
+`isAuthenticated` before hydration finishes reads a false `false` and
+redirects a logged-in user to login on every reload, and judging a route
+before the matrix lands evaluates it against the built-in defaults instead of
+the config SUPER_ADMIN saved.
 
 ```tsx
-if (!hasHydrated) return <Loading className="min-h-screen" />
+if (!hasHydrated || !accessControlHasHydrated) return <Loading className="min-h-screen" />
 ```
 
 ---

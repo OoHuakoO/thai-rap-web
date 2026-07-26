@@ -1,9 +1,9 @@
-import type { Metadata } from 'next'
-import { CreateStoreForm, StoreFormHeader, StoreListBackLink } from '@/features/store'
+import type { Metadata } from 'next';
+import { CreateStoreForm, StoreFormHeader, StoreListBackLink } from '@/features/store';
 
 export const metadata: Metadata = {
-  title: 'เพิ่มร้านอาหาร | Thai Rap',
-}
+  title: 'เพิ่มร้านอาหาร',
+};
 
 export default function NewStorePage() {
   return (
@@ -12,5 +12,5 @@ export default function NewStorePage() {
       <StoreFormHeader mode="create" />
       <CreateStoreForm />
     </section>
-  )
+  );
 }

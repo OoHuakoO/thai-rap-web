@@ -27,7 +27,8 @@ export const USER_LIST_TEXT = {
   assignedCount: (count: number) => `${count} ร้าน`,
   neverLoggedIn: 'ยังไม่เคยเข้าใช้',
   deleteTitle: 'ลบผู้ใช้งาน',
-  deleteDescription: (name: string) => `ต้องการลบผู้ใช้ "${name}" ใช่หรือไม่? การลบไม่สามารถกู้คืนได้`,
+  deleteDescription: (name: string) =>
+    `ต้องการลบผู้ใช้ "${name}" ใช่หรือไม่? การลบไม่สามารถกู้คืนได้`,
   deleteConfirmLabel: 'ลบ',
   deleteSuccess: 'ลบผู้ใช้งานแล้ว',
   roleChangeSuccess: 'เปลี่ยนระดับผู้ใช้แล้ว',

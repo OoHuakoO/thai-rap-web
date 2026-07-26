@@ -81,7 +81,9 @@ export function AssessTable({
           </span>
           <Separator orientation="vertical" className="h-4" />
           <div className="flex items-baseline gap-1.5">
-            <span className="text-[11.5px] text-muted-foreground">{ASSESS_TABLE_TEXT.rawScoreLabel}</span>
+            <span className="text-[11.5px] text-muted-foreground">
+              {ASSESS_TABLE_TEXT.rawScoreLabel}
+            </span>
             <span className="text-lg font-extrabold text-orange">{sum}</span>
             <span className="text-xs font-normal text-muted-foreground">/ {max}</span>
             <span className="text-[11.5px] text-muted-foreground">({pct}%)</span>

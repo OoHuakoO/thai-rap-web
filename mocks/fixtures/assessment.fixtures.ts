@@ -137,13 +137,26 @@ let idCounter = 0;
 // Mirrors computeDimensionScores/computeTotalScore in the API's
 // assessment-scoring.util.ts — unscored questions count as 0, so the running
 // value converges on the submitted total instead of jumping at submit.
+function dimensionPct(questions: Assessment['questions'], dimensionId: number): number {
+  const dimQuestions = questions.filter((q) => q.dimensionId === dimensionId);
+  // Denominator is Σ maxScore, matching buildDimensionInfos in the API — not
+  // questionCount × a fixed 4.
+  const max = dimQuestions.reduce((acc, q) => acc + q.maxScore, 0);
+  if (max === 0) return 0;
+  const sum = dimQuestions.reduce((acc, q) => acc + (q.rawScore ?? 0), 0);
+  return (sum / max) * 100;
+}
+
 function weightedScore(questions: Assessment['questions']): number {
-  return dimensionSeed.reduce((total, dim) => {
-    const dimQuestions = questions.filter((q) => q.dimensionId === dim.id);
-    const sum = dimQuestions.reduce((acc, q) => acc + (q.rawScore ?? 0), 0);
-    const pct = (sum / (dim.questionCount * 4)) * 100;
-    return total + (pct * dim.weight) / 100;
-  }, 0);
+  return dimensionSeed.reduce(
+    (total, dim) => total + (dimensionPct(questions, dim.id) * dim.weight) / 100,
+    0
+  );
+}
+
+// Mirrors COMPLETED_STATUSES in the API's AssessmentService.
+function isCompleted(assessment: Assessment): boolean {
+  return assessment.status === 'SUBMITTED' || assessment.status === 'APPROVED';
 }
 
 function summarize(a: Assessment): AssessmentSummary {
@@ -172,7 +185,10 @@ export const assessmentDb = {
   findAllByStore: (storeId: string): AssessmentSummary[] =>
     assessments.filter((a) => a.storeId === storeId).map(summarize),
 
-  findAllByRound: (round: Round): Assessment[] => assessments.filter((a) => a.round === round),
+  // Ranking counts finished rounds only — the API's findSubmittedForRanking
+  // never sees a draft.
+  findCompletedByRound: (round: Round): Assessment[] =>
+    assessments.filter((a) => a.round === round && isCompleted(a)),
 
   findById: (id: string): Assessment | null => assessments.find((a) => a.id === id) ?? null,
 
@@ -283,6 +299,20 @@ export const assessmentDb = {
     return assessment;
   },
 
+  isCompleted: (assessmentId: string): boolean => {
+    const assessment = assessments.find((a) => a.id === assessmentId);
+    return assessment !== undefined && isCompleted(assessment);
+  },
+
+  countScored: (assessmentId: string): { scored: number; total: number } | null => {
+    const assessment = assessments.find((a) => a.id === assessmentId);
+    if (!assessment) return null;
+    return {
+      scored: assessment.questions.filter((q) => q.rawScore !== null).length,
+      total: assessment.questions.length,
+    };
+  },
+
   submit: (assessmentId: string): Assessment | null => {
     const assessment = assessments.find((a) => a.id === assessmentId);
     if (!assessment) return null;
@@ -302,18 +332,14 @@ export const assessmentDb = {
 };
 
 export function getDimensionAverages(round: Round): Map<number, number> {
-  const submitted = assessments.filter((a) => a.round === round && a.status === 'SUBMITTED');
+  const submitted = assessments.filter((a) => a.round === round && isCompleted(a));
   const averages = new Map<number, number>();
   for (const dim of dimensionSeed) {
     if (submitted.length === 0) {
       averages.set(dim.id, 0);
       continue;
     }
-    const pctSum = submitted.reduce((sum, a) => {
-      const dimQuestions = a.questions.filter((q) => q.dimensionId === dim.id);
-      const raw = dimQuestions.reduce((acc, q) => acc + (q.rawScore ?? 0), 0);
-      return sum + (raw / (dim.questionCount * 4)) * 100;
-    }, 0);
+    const pctSum = submitted.reduce((sum, a) => sum + dimensionPct(a.questions, dim.id), 0);
     averages.set(dim.id, Math.round((pctSum / submitted.length) * 10) / 10);
   }
   return averages;

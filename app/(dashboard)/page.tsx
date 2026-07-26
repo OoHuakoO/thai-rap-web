@@ -10,12 +10,12 @@ import {
 } from '@/features/dashboard';
 
 export const metadata: Metadata = {
-  title: 'ภาพรวมโครงการ | Thai Rap',
+  title: 'ภาพรวมโครงการ',
 };
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-4">
+    <section className="space-y-4">
       <KpiRow />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -29,6 +29,6 @@ export default function DashboardPage() {
         <ActivityFeedCard />
         <ReportsStatusCard />
       </div>
-    </div>
+    </section>
   );
 }

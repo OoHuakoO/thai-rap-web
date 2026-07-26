@@ -73,6 +73,20 @@ function priorRoundLock(storeId: string, round: Round): Response | null {
   );
 }
 
+function badRequest(code: string, message: string): Response {
+  return HttpResponse.json<ApiErrorResponse>(
+    { success: false, error: { code, message } },
+    { status: HTTP_STATUS.BAD_REQUEST }
+  );
+}
+
+// Mirrors assertDraftOrInProgress in the API — a submitted or approved round
+// rejects every write, it is not merely hidden by the UI.
+function completedLock(assessmentId: string): Response | null {
+  if (!assessmentDb.isCompleted(assessmentId)) return null;
+  return badRequest('ASSESS_004', 'ไม่สามารถแก้ไขการประเมินที่ส่งไปแล้ว');
+}
+
 function guard(request: Request): Response | null {
   const scenario = getScenario(request);
   if (scenario === 'unauthorized') return unauthorized();
@@ -107,9 +121,14 @@ export const assessmentHandlers = [
     let items = storeId ? assessmentDb.findAllByStore(storeId) : [];
     if (round) items = items.filter((a) => a.round === round);
 
+    const total = items.length;
+    const page = Number(url.searchParams.get('page') ?? 1);
+    const limit = Number(url.searchParams.get('limit') ?? total);
+    const paged = limit > 0 ? items.slice((page - 1) * limit, page * limit) : items;
+
     return HttpResponse.json<PaginatedResponse<AssessmentSummary>>({
-      items,
-      meta: { page: 1, limit: items.length || 1, total: items.length, totalPages: 1 },
+      items: paged,
+      meta: { page, limit, total, totalPages: limit > 0 ? Math.ceil(total / limit) : 1 },
     });
   }),
 
@@ -142,7 +161,7 @@ export const assessmentHandlers = [
     }
 
     const store = storeDb.findById(storeId);
-    const ranked = [...assessmentDb.findAllByRound(round)].sort(
+    const ranked = [...assessmentDb.findCompletedByRound(round)].sort(
       (a, b) => (b.totalScore ?? 0) - (a.totalScore ?? 0)
     );
     const overallIndex = ranked.findIndex((a) => a.storeId === storeId);
@@ -171,6 +190,8 @@ export const assessmentHandlers = [
     if (getScenario(request) === 'validation-error' || typeof body.notes !== 'string') {
       return validationError([{ field: 'notes', message: 'Notes is required' }]);
     }
+    const completed = completedLock(params.id as string);
+    if (completed) return completed;
     const updated = assessmentDb.updateNotes(params.id as string, body.notes);
     if (!updated) return notFound('ASSESS_001', 'ไม่พบการประเมิน');
     return HttpResponse.json<Assessment>(updated);
@@ -214,9 +235,19 @@ export const assessmentHandlers = [
       return validationError([{ field: 'rawScore', message: 'rawScore is required' }]);
     }
 
-    const updated = assessmentDb.updateScore(params.id as string, Number(params.questionId), body);
+    const assessmentId = params.id as string;
+    const questionId = Number(params.questionId);
+    const completed = completedLock(assessmentId);
+    if (completed) return completed;
+
+    const seeded = questionSeed.find((q) => q.id === questionId);
+    if (seeded && body.rawScore > seeded.maxScore) {
+      return badRequest('ASSESS_006', `คะแนนต้องไม่เกิน ${seeded.maxScore}`);
+    }
+
+    const updated = assessmentDb.updateScore(assessmentId, questionId, body);
     if (!updated) return notFound('ASSESS_001', 'ไม่พบการประเมิน');
-    const question = updated.questions.find((q) => q.questionId === Number(params.questionId));
+    const question = updated.questions.find((q) => q.questionId === questionId);
     if (!question) return notFound('ASSESS_007', 'ไม่พบคำถาม');
     return HttpResponse.json<AssessmentQuestion>(question);
   }),
@@ -231,6 +262,8 @@ export const assessmentHandlers = [
       if (!(file instanceof File)) {
         return validationError([{ field: 'file', message: 'file is required' }]);
       }
+      const completed = completedLock(params.id as string);
+      if (completed) return completed;
       const created = assessmentDb.addEvidence(params.id as string, Number(params.questionId), {
         filename: file.name,
         fileType: file.type,
@@ -244,6 +277,8 @@ export const assessmentHandlers = [
   http.delete(`${BASE_URL}/assessments/:id/evidence/:evidenceId`, ({ request, params }) => {
     const blocked = guard(request);
     if (blocked) return blocked;
+    const completed = completedLock(params.id as string);
+    if (completed) return completed;
     const removed = assessmentDb.removeEvidence(params.id as string, params.evidenceId as string);
     if (!removed) return notFound('FILE_003', 'ไม่พบไฟล์หลักฐาน');
     return new HttpResponse(null, { status: HTTP_STATUS.NO_CONTENT });
@@ -252,6 +287,8 @@ export const assessmentHandlers = [
   http.patch(`${BASE_URL}/assessments/:id/draft`, ({ request, params }) => {
     const blocked = guard(request);
     if (blocked) return blocked;
+    const completed = completedLock(params.id as string);
+    if (completed) return completed;
     const updated = assessmentDb.saveDraft(params.id as string);
     if (!updated) return notFound('ASSESS_001', 'ไม่พบการประเมิน');
     return HttpResponse.json<Assessment>(updated);
@@ -260,7 +297,28 @@ export const assessmentHandlers = [
   http.post(`${BASE_URL}/assessments/:id/submit`, ({ request, params }) => {
     const blocked = guard(request);
     if (blocked) return blocked;
-    const updated = assessmentDb.submit(params.id as string);
+
+    const assessmentId = params.id as string;
+    const existing = assessmentDb.findById(assessmentId);
+    if (!existing) return notFound('ASSESS_001', 'ไม่พบการประเมิน');
+    if (assessmentDb.isCompleted(assessmentId)) {
+      return badRequest('ASSESS_004', 'การประเมินนี้ถูกส่งไปแล้ว');
+    }
+
+    const locked = priorRoundLock(existing.storeId, existing.round);
+    if (locked) return locked;
+
+    // The API refuses a partial submit — a mock that accepts one lets the form
+    // look finished against mocks and fail against the real backend.
+    const progress = assessmentDb.countScored(assessmentId);
+    if (progress && progress.scored < progress.total) {
+      return badRequest(
+        'ASSESS_005',
+        `ต้องให้คะแนนครบทั้ง ${progress.total} ข้อก่อนส่ง (${progress.scored}/${progress.total})`
+      );
+    }
+
+    const updated = assessmentDb.submit(assessmentId);
     if (!updated) return notFound('ASSESS_001', 'ไม่พบการประเมิน');
     return HttpResponse.json<Assessment>(updated, { status: HTTP_STATUS.CREATED });
   }),

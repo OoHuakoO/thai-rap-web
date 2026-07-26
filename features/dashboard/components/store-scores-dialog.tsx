@@ -46,10 +46,15 @@ export function StoreScoresDialog({ open, onOpenChange }: StoreScoresDialogProps
         </DialogHeader>
 
         {isLoading && (
-          <TableSkeleton rows={SKELETON_ROWS} cols={TEXT_COLUMN_COUNT + ASSESSMENT_ROUND_COLUMNS.length} />
+          <TableSkeleton
+            rows={SKELETON_ROWS}
+            cols={TEXT_COLUMN_COUNT + ASSESSMENT_ROUND_COLUMNS.length}
+          />
         )}
 
-        {!isLoading && isError && <AlertCard variant="error" message={extractErrorMessage(error)} />}
+        {!isLoading && isError && (
+          <AlertCard variant="error" message={extractErrorMessage(error)} />
+        )}
 
         {!isLoading && !isError && !rows?.length && (
           <AlertCard variant="info" message={STORE_SCORES_DIALOG_TEXT.empty} />

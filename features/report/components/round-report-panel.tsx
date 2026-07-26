@@ -31,8 +31,7 @@ export function RoundReportPanel({ storeId, round }: RoundReportPanelProps) {
   const { data: report, isLoading, isError, error } = useRoundReport(storeId, round);
   const { mutate: exportReport, isPending: isExporting } = useExportRoundReport();
 
-  const handleDownload = (format: ReportFileFormat) =>
-    exportReport({ storeId, round, format });
+  const handleDownload = (format: ReportFileFormat) => exportReport({ storeId, round, format });
 
   if (isLoading) return <CardSkeleton />;
   // A missing round answers 404, which reads as "not assessed yet" here rather

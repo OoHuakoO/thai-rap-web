@@ -1,30 +1,30 @@
-'use client'
+'use client';
 
-import { useEffect } from 'react'
-import { useAuthStore, useHasHydrated } from '@/stores/auth-store'
-import { refreshAccessToken } from '@/services/api'
+import { useEffect } from 'react';
+import { useAuthStore, useHasHydrated } from '@/stores/auth-store';
+import { refreshAccessToken } from '@/services/api';
 
 // accessToken is memory-only (see auth-store.ts), so a reload always loses
 // it even though `isAuthenticated` persisted. Trade it back in for a fresh
 // one using the httpOnly refresh cookie before the rest of the app renders
 // authenticated data.
 export function AuthBootstrap() {
-  const hasHydrated = useHasHydrated()
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-  const accessToken = useAuthStore((s) => s.accessToken)
-  const logout = useAuthStore((s) => s.logout)
+  const hasHydrated = useHasHydrated();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const logout = useAuthStore((s) => s.logout);
 
   useEffect(() => {
-    if (!hasHydrated || !isAuthenticated || accessToken) return
+    if (!hasHydrated || !isAuthenticated || accessToken) return;
 
-    let cancelled = false
+    let cancelled = false;
     refreshAccessToken().then((token) => {
-      if (!cancelled && !token) logout()
-    })
+      if (!cancelled && !token) logout();
+    });
     return () => {
-      cancelled = true
-    }
-  }, [hasHydrated, isAuthenticated, accessToken, logout])
+      cancelled = true;
+    };
+  }, [hasHydrated, isAuthenticated, accessToken, logout]);
 
-  return null
+  return null;
 }

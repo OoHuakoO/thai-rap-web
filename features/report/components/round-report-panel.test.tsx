@@ -24,12 +24,8 @@ const report: RoundReport = {
   assessorName: 'นายสมชาย วงษ์สมบัติ',
   submittedAt: '2026-05-20T00:00:00.000Z',
   notes: 'ผ่านเกณฑ์ทุกมิติ',
-  dimensions: [
-    { dimensionId: 1, dimensionName: 'ความปลอดภัยอาหาร', weight: 14, scorePct: 80.5 },
-  ],
-  redFlags: [
-    { type: 'FINANCIAL', severity: 'CRITICAL', triggerQuestions: [28], resolved: false },
-  ],
+  dimensions: [{ dimensionId: 1, dimensionName: 'ความปลอดภัยอาหาร', weight: 14, scorePct: 80.5 }],
+  redFlags: [{ type: 'FINANCIAL', severity: 'CRITICAL', triggerQuestions: [28], resolved: false }],
 };
 
 function renderWithClient(ui: React.ReactElement) {

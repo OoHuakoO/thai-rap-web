@@ -1,5 +1,5 @@
-import { Loading } from '@/components/shared/loading'
+import { Loading } from '@/components/shared/loading';
 
 export default function DashboardLoading() {
-  return <Loading className="min-h-[60vh]" size="lg" />
+  return <Loading className="min-h-[60vh]" size="lg" />;
 }

@@ -37,7 +37,9 @@ export function StoreProgressTimelineCard({
                         : 'border-2 border-border bg-muted'
                   }`}
                 >
-                  {(isCurrent || t.done) && <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />}
+                  {(isCurrent || t.done) && (
+                    <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />
+                  )}
                 </span>
                 {!isLast && (
                   <span className={`w-px flex-1 ${t.done ? 'bg-score-green' : 'bg-border'}`} />

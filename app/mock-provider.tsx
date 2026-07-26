@@ -26,9 +26,7 @@ export function MockProvider({ children }: MockProviderProps) {
       });
       return;
     }
-    import('@/mocks')
-      .then(({ initMocks }) => initMocks())
-      .then(() => setReady(true));
+    import('@/mocks').then(({ initMocks }) => initMocks()).then(() => setReady(true));
   }, [mocksEnabled]);
 
   if (!ready) return null;

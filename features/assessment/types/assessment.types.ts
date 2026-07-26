@@ -1,15 +1,15 @@
-export type Round = 'T0' | 'T1' | 'T2' | 'T3'
+export type Round = 'T0' | 'T1' | 'T2' | 'T3';
 
-export const ROUNDS: Round[] = ['T0', 'T1', 'T2', 'T3']
+export const ROUNDS: Round[] = ['T0', 'T1', 'T2', 'T3'];
 
 export const ROUND_LABELS: Record<Round, string> = {
   T0: 'T0 — ก่อนเข้าค่าย',
   T1: 'T1 — หลังค่าย',
   T2: 'T2 — Field Audit',
   T3: 'T3 — ติดตาม 1 เดือน',
-}
+};
 
-export type AssessmentStatus = 'DRAFT' | 'IN_PROGRESS' | 'SUBMITTED' | 'APPROVED'
+export type AssessmentStatus = 'DRAFT' | 'IN_PROGRESS' | 'SUBMITTED' | 'APPROVED';
 
 export type RedFlagType =
   | 'FOOD_SAFETY'
@@ -19,7 +19,7 @@ export type RedFlagType =
   | 'LEGAL'
   | 'OWNER_READINESS'
   | 'EVIDENCE'
-  | 'GROWTH'
+  | 'GROWTH';
 
 export const RED_FLAG_LABELS: Record<RedFlagType, string> = {
   FOOD_SAFETY: 'ความปลอดภัยอาหาร',
@@ -30,128 +30,128 @@ export const RED_FLAG_LABELS: Record<RedFlagType, string> = {
   OWNER_READINESS: 'ความพร้อมเจ้าของร้าน',
   EVIDENCE: 'หลักฐานประกอบ',
   GROWTH: 'เป้าหมายการเติบโต',
-}
+};
 
-export type Severity = 'WARNING' | 'CRITICAL'
+export type Severity = 'WARNING' | 'CRITICAL';
 
 export interface Dimension {
-  id: number
-  name: string
-  nameEn: string
-  weight: number
-  questionCount: number
+  id: number;
+  name: string;
+  nameEn: string;
+  weight: number;
+  questionCount: number;
 }
 
 export interface Question {
-  id: number
-  dimensionId: number
-  questionNo: number
-  questionText: string
-  maxScore: number
+  id: number;
+  dimensionId: number;
+  questionNo: number;
+  questionText: string;
+  maxScore: number;
 }
 
 export interface RedFlag {
-  id: string
-  assessmentId: string
-  type: RedFlagType
-  severity: Severity
-  triggerQuestions: number[]
-  recommendation: string | null
-  resolved: boolean
+  id: string;
+  assessmentId: string;
+  type: RedFlagType;
+  severity: Severity;
+  triggerQuestions: number[];
+  recommendation: string | null;
+  resolved: boolean;
 }
 
 export interface EvidenceFile {
-  id: string
-  filename: string
-  fileType: string
-  fileSize: number
-  url: string
-  uploadedAt: string
+  id: string;
+  filename: string;
+  fileType: string;
+  fileSize: number;
+  url: string;
+  uploadedAt: string;
 }
 
 export interface AssessmentQuestion {
-  questionId: number
-  questionNo: number
-  dimensionId: number
-  questionText: string
-  maxScore: number
-  rawScore: number | null
-  note: string | null
-  suggestion: string | null
-  evidence: EvidenceFile[]
+  questionId: number;
+  questionNo: number;
+  dimensionId: number;
+  questionText: string;
+  maxScore: number;
+  rawScore: number | null;
+  note: string | null;
+  suggestion: string | null;
+  evidence: EvidenceFile[];
 }
 
 export interface Assessment {
-  id: string
-  storeId: string
-  round: Round
-  assessorId: string
-  status: AssessmentStatus
+  id: string;
+  storeId: string;
+  round: Round;
+  assessorId: string;
+  status: AssessmentStatus;
   /** The frozen result — null until the round is submitted. */
-  totalScore: number | null
+  totalScore: number | null;
   /** Weighted score of whatever is scored right now; equals totalScore once submitted. */
-  currentScore: number
-  zone: string | null
-  notes: string | null
-  createdAt: string
-  updatedAt: string
-  submittedAt: string | null
-  questions: AssessmentQuestion[]
-  redFlags: RedFlag[]
+  currentScore: number;
+  zone: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  submittedAt: string | null;
+  questions: AssessmentQuestion[];
+  redFlags: RedFlag[];
 }
 
 /** Shape returned by the list endpoint (GET /assessments) — no question breakdown. */
 export interface AssessmentSummary {
-  id: string
-  storeId: string
-  round: Round
-  assessorId: string
-  status: AssessmentStatus
-  totalScore: number | null
-  createdAt: string
-  updatedAt: string
-  submittedAt: string | null
+  id: string;
+  storeId: string;
+  round: Round;
+  assessorId: string;
+  status: AssessmentStatus;
+  totalScore: number | null;
+  createdAt: string;
+  updatedAt: string;
+  submittedAt: string | null;
 }
 
 /** Shape returned by GET /assessment/{storeId}/history — includes the assessor's display name. */
 export interface AssessmentHistoryItem {
-  round: Round
-  status: AssessmentStatus
-  totalScore: number | null
-  assessorName: string
-  updatedAt: string
-  submittedAt: string | null
+  round: Round;
+  status: AssessmentStatus;
+  totalScore: number | null;
+  assessorName: string;
+  updatedAt: string;
+  submittedAt: string | null;
 }
 
 export interface CreateAssessmentDto {
-  storeId: string
-  round: Round
+  storeId: string;
+  round: Round;
 }
 
 export interface UpdateScoreDto {
-  rawScore: number
-  note?: string
-  suggestion?: string
+  rawScore: number;
+  note?: string;
+  suggestion?: string;
 }
 
 export interface BulkScoreItem extends UpdateScoreDto {
-  questionId: number
+  questionId: number;
 }
 
 export interface AssessmentProgress {
-  scored: number
-  total: number
+  scored: number;
+  total: number;
 }
 
 export interface DimensionAverage {
-  dimensionId: number
-  avgPct: number
+  dimensionId: number;
+  avgPct: number;
 }
 
 export interface AssessmentRank {
-  overallRank: number | null
-  overallTotal: number
-  provinceRank: number | null
-  provinceTotal: number
-  dimensionAverages: DimensionAverage[]
+  overallRank: number | null;
+  overallTotal: number;
+  provinceRank: number | null;
+  provinceTotal: number;
+  dimensionAverages: DimensionAverage[];
 }

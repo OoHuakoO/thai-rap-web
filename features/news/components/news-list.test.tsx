@@ -127,9 +127,7 @@ describe('NewsList', () => {
     vi.mocked(newsService.getAll).mockResolvedValue([]);
     renderWithClient(<NewsList />);
 
-    await waitFor(() =>
-      expect(screen.getByText('ยังไม่มีข่าวประชาสัมพันธ์')).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByText('ยังไม่มีข่าวประชาสัมพันธ์')).toBeInTheDocument());
   });
 
   it('shows the error message when the API fails', async () => {

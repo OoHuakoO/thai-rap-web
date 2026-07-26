@@ -21,7 +21,10 @@ export const createUserSchema = z.object({
   email: z.string().email(CREATE_USER_VALIDATION_MESSAGES.emailInvalid),
   role: z.enum(USER_ROLES),
   phone: z
-    .union([z.string().regex(PHONE_PATTERN, CREATE_USER_VALIDATION_MESSAGES.phoneInvalid), z.literal('')])
+    .union([
+      z.string().regex(PHONE_PATTERN, CREATE_USER_VALIDATION_MESSAGES.phoneInvalid),
+      z.literal(''),
+    ])
     .optional(),
   organization: z.string().optional(),
 });

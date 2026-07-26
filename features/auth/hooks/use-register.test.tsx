@@ -19,7 +19,12 @@ function wrapper({ children }: { children: React.ReactNode }) {
 describe('useRegister', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    useAuthStore.setState({ user: null, accessToken: null, expiresAt: null, isAuthenticated: false });
+    useAuthStore.setState({
+      user: null,
+      accessToken: null,
+      expiresAt: null,
+      isAuthenticated: false,
+    });
   });
 
   it('logs the new user in and redirects to the role default route on success', async () => {

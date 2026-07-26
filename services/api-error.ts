@@ -9,27 +9,27 @@ export type ErrorCode =
   | 'RATE_LIMITED'
   | 'SERVER_ERROR'
   | 'SERVICE_UNAVAILABLE'
-  | 'UNKNOWN'
+  | 'UNKNOWN';
 
 interface ApiErrorParams {
-  message: string
-  statusCode: number
-  code: ErrorCode
-  details?: { field: string; message: string }[]
-  requestId?: string
-  isNetworkError?: boolean
-  isCancelled?: boolean
-  retryAfter?: number
+  message: string;
+  statusCode: number;
+  code: ErrorCode;
+  details?: { field: string; message: string }[];
+  requestId?: string;
+  isNetworkError?: boolean;
+  isCancelled?: boolean;
+  retryAfter?: number;
 }
 
 export class ApiError extends Error {
-  readonly statusCode: number
-  readonly code: ErrorCode
-  readonly details?: { field: string; message: string }[]
-  readonly requestId?: string
-  readonly isNetworkError: boolean
-  readonly isCancelled: boolean
-  readonly retryAfter?: number
+  readonly statusCode: number;
+  readonly code: ErrorCode;
+  readonly details?: { field: string; message: string }[];
+  readonly requestId?: string;
+  readonly isNetworkError: boolean;
+  readonly isCancelled: boolean;
+  readonly retryAfter?: number;
 
   constructor({
     message,
@@ -41,16 +41,16 @@ export class ApiError extends Error {
     isCancelled = false,
     retryAfter,
   }: ApiErrorParams) {
-    super(message)
-    this.name = 'ApiError'
-    this.statusCode = statusCode
-    this.code = code
-    this.details = details
-    this.requestId = requestId
-    this.isNetworkError = isNetworkError
-    this.isCancelled = isCancelled
-    this.retryAfter = retryAfter
+    super(message);
+    this.name = 'ApiError';
+    this.statusCode = statusCode;
+    this.code = code;
+    this.details = details;
+    this.requestId = requestId;
+    this.isNetworkError = isNetworkError;
+    this.isCancelled = isCancelled;
+    this.retryAfter = retryAfter;
     // Maintain prototype chain for instanceof checks across transpilation targets
-    Object.setPrototypeOf(this, ApiError.prototype)
+    Object.setPrototypeOf(this, ApiError.prototype);
   }
 }

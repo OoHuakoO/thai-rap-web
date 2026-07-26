@@ -48,4 +48,4 @@ export const ROUTES = {
   ERROR_429: '/errors/429',
   ERROR_500: '/errors/500',
   ERROR_503: '/errors/503',
-} as const
+} as const;

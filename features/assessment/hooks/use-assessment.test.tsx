@@ -130,6 +130,19 @@ describe('useAssessment', () => {
     expect(assessmentService.create).not.toHaveBeenCalled();
   });
 
+  it('does not create one for a viewer without write access, and reports it as missing', async () => {
+    vi.mocked(assessmentService.findByStoreAndRound).mockResolvedValue(null);
+
+    const { result } = renderHook(() => useAssessment('store-1', 'T0', { canCreate: false }), {
+      wrapper,
+    });
+
+    await waitFor(() => expect(result.current.isMissing).toBe(true));
+    expect(assessmentService.create).not.toHaveBeenCalled();
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.data).toBeUndefined();
+  });
+
   it('creates an assessment when none exists yet, and only once', async () => {
     const created = makeAssessment({ id: 'a2' });
     vi.mocked(assessmentService.findByStoreAndRound).mockResolvedValue(null);
@@ -156,10 +169,9 @@ describe('useAssessment', () => {
   // the caller never fires a doomed fetch/create against a round it already
   // knows it can't work on.
   it('does not fetch or create when enabled is false', () => {
-    const { result } = renderHook(
-      () => useAssessment('store-1', 'T1', { enabled: false }),
-      { wrapper }
-    );
+    const { result } = renderHook(() => useAssessment('store-1', 'T1', { enabled: false }), {
+      wrapper,
+    });
 
     expect(result.current.data).toBeUndefined();
     expect(assessmentService.findByStoreAndRound).not.toHaveBeenCalled();

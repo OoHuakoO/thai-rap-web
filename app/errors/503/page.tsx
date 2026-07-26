@@ -1,15 +1,16 @@
-import type { Metadata } from 'next'
-import { ErrorPage } from '@/components/shared/error-page'
-import { ROUTES } from '@/constants/routes'
+import type { Metadata } from 'next';
+import { ErrorPage } from '@/components/shared/error-page';
+import { HTTP_STATUS } from '@/constants/http-status';
+import { ROUTES } from '@/constants/routes';
 
 export const metadata: Metadata = {
-  title: 'ระบบไม่พร้อมให้บริการ | Thai Rap',
-}
+  title: 'ระบบไม่พร้อมให้บริการ',
+};
 
 export default function ServiceUnavailablePage() {
   return (
     <ErrorPage
-      code={503}
+      code={HTTP_STATUS.SERVICE_UNAVAILABLE}
       title="ระบบไม่พร้อมให้บริการ"
       message="ระบบกำลังอยู่ในช่วงบำรุงรักษาหรือมีโหลดสูง กรุณาลองอีกครั้งในอีกสักครู่"
       actions={[
@@ -17,5 +18,5 @@ export default function ServiceUnavailablePage() {
         { label: 'กลับหน้าหลัก', href: ROUTES.HOME, variant: 'outline' },
       ]}
     />
-  )
+  );
 }

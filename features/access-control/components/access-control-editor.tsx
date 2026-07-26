@@ -125,10 +125,7 @@ export function AccessControlEditor({ config }: AccessControlEditorProps) {
         </TabsContent>
 
         <TabsContent value="roles" className="mt-4">
-          <RoleSummaryList
-            rolePermissions={draft.rolePermissions}
-            roleScopes={draft.roleScopes}
-          />
+          <RoleSummaryList rolePermissions={draft.rolePermissions} roleScopes={draft.roleScopes} />
         </TabsContent>
       </Tabs>
     </div>

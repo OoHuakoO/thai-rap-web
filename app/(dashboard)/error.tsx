@@ -1,17 +1,21 @@
-'use client'
+'use client';
 
-import { ErrorPage } from '@/components/shared/error-page'
-import { ROUTES } from '@/constants/routes'
+import { ErrorPage } from '@/components/shared/error-page';
+import { HTTP_STATUS } from '@/constants/http-status';
+import { ROUTES } from '@/constants/routes';
 
 interface ErrorProps {
-  error: Error & { digest?: string }
-  reset: () => void
+  error: Error & { digest?: string };
+  reset: () => void;
 }
 
 export default function DashboardError({ error, reset }: ErrorProps) {
   return (
     <ErrorPage
-      code={500}
+      // Renders inside AppShell, which already fills the viewport — the
+      // default min-h-screen would overflow its scroll area.
+      className="min-h-[60vh]"
+      code={HTTP_STATUS.SERVER_ERROR}
       title="เกิดข้อผิดพลาด"
       message={error.message || 'ไม่สามารถโหลดข้อมูลได้ กรุณาลองอีกครั้ง'}
       actions={[
@@ -19,5 +23,5 @@ export default function DashboardError({ error, reset }: ErrorProps) {
         { label: 'กลับหน้าหลัก', href: ROUTES.HOME, variant: 'outline' },
       ]}
     />
-  )
+  );
 }

@@ -17,9 +17,7 @@ function toDownloadedFile(res: { data: Blob; headers: unknown }): DownloadedFile
 
 export const reportService = {
   getRoundReport: (storeId: string, round: AssessmentRound) =>
-    api
-      .get<RoundReport>(`/reports/stores/${storeId}/rounds/${round}`)
-      .then((res) => res.data),
+    api.get<RoundReport>(`/reports/stores/${storeId}/rounds/${round}`).then((res) => res.data),
 
   getOverviewReport: (storeId: string) =>
     api.get<OverviewReport>(`/reports/stores/${storeId}/overview`).then((res) => res.data),

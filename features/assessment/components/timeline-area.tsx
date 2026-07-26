@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { ArrowRight, Pencil } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,6 +9,7 @@ import { cn } from '@/utils/cn';
 import { useDebounce } from '@/hooks/use-debounce';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { useAssessmentHistory, useUpdateNotes } from '../hooks/use-assessment';
+import { isCompletedStatus } from '../utils/status';
 import { TIMELINE_TEXT } from '../constants/assessment-text.constants';
 import { ROUND_LABELS, ROUNDS } from '../types/assessment.types';
 import type { Round } from '../types/assessment.types';
@@ -47,17 +48,27 @@ export function TimelineArea({
   const [notesValue, setNotesValue] = useState(notes ?? '');
   const [editingNotes, setEditingNotes] = useState(false);
   const debouncedNotes = useDebounce(notesValue, 800);
+  // What the server was last told. The `notes` prop only catches up after the
+  // PATCH round-trips, so comparing against it alone made the debounce and the
+  // "เสร็จสิ้น" button each send the same text.
+  const lastSentNotes = useRef(notes ?? '');
 
   useEffect(() => {
     setNotesValue(notes ?? '');
+    lastSentNotes.current = notes ?? '';
   }, [notes]);
+
+  const saveNotes = (value: string) => {
+    if (value === lastSentNotes.current) return;
+    lastSentNotes.current = value;
+    updateNotes.mutate(value, {
+      onError: (err) => toast.error(extractErrorMessage(err)),
+    });
+  };
 
   useEffect(() => {
     if (!editingNotes) return;
-    if (debouncedNotes === (notes ?? '')) return;
-    updateNotes.mutate(debouncedNotes, {
-      onError: (err) => toast.error(extractErrorMessage(err)),
-    });
+    saveNotes(debouncedNotes);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedNotes]);
 
@@ -65,7 +76,7 @@ export function TimelineArea({
     (r) => {
       const historyItem = history?.find((h) => h.round === r);
       const isCurrent = r === round;
-      const isDone = historyItem?.status === 'SUBMITTED';
+      const isDone = isCompletedStatus(historyItem?.status);
       return {
         round: r,
         title: isCurrent ? TIMELINE_TEXT.currentRound(r) : ROUND_LABELS[r],
@@ -154,11 +165,7 @@ export function TimelineArea({
                 className="h-8 text-xs"
                 onClick={() => {
                   setEditingNotes(false);
-                  if (notesValue !== (notes ?? '')) {
-                    updateNotes.mutate(notesValue, {
-                      onError: (err) => toast.error(extractErrorMessage(err)),
-                    });
-                  }
+                  saveNotes(notesValue);
                 }}
               >
                 {TIMELINE_TEXT.done}

@@ -2,7 +2,13 @@ import { http, HttpResponse } from 'msw';
 import { API_URL } from '@/constants';
 import type { AccessControlConfig, UpdateAccessControlDto } from '@/types/auth.types';
 import { accessControlDb } from '../fixtures/access-control.fixtures';
-import { forbidden, getScenario, serverError, unauthorized, validationError } from '../utils/scenario';
+import {
+  forbidden,
+  getScenario,
+  serverError,
+  unauthorized,
+  validationError,
+} from '../utils/scenario';
 
 const BASE_URL = `${API_URL}/access-control`;
 

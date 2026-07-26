@@ -6,6 +6,9 @@ export const DIMENSION_PASS_THRESHOLD_PCT = 60;
 export type ZoneColor = 'red' | 'orange' | 'yellow' | 'blue' | 'green';
 export type Zone = 'Red Zone' | 'Survival Zone' | 'Improve Zone' | 'Growth Zone' | 'Model Zone';
 
+// Mirrors getZone in the API's assessment-scoring.util.ts. It exists on both
+// sides because the card also labels the running score of a round the API has
+// not frozen a zone for yet — the thresholds must be changed in both places.
 export function getZone(totalScore: number): Zone {
   if (totalScore < 40) return 'Red Zone';
   if (totalScore < 60) return 'Survival Zone';

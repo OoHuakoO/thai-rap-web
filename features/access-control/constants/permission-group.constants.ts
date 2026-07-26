@@ -59,11 +59,7 @@ export const PERMISSION_GROUPS: PermissionGroup[] = [
   {
     key: 'analytics',
     label: 'วิเคราะห์และรายงาน',
-    permissions: [
-      PERMISSIONS.ANALYTICS_READ,
-      PERMISSIONS.REPORTS_READ,
-      PERMISSIONS.REPORTS_EXPORT,
-    ],
+    permissions: [PERMISSIONS.ANALYTICS_READ, PERMISSIONS.REPORTS_READ, PERMISSIONS.REPORTS_EXPORT],
   },
   {
     key: 'pitching',

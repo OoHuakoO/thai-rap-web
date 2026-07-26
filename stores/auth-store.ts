@@ -1,22 +1,22 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
-import type { AuthUser, Role, Permission } from '@/types/auth.types'
-import type { AuthTokens } from '@/features/auth/types/auth-response.types'
-import { hasPermission } from '@/constants/permissions'
+import { useState, useEffect } from 'react';
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import type { AuthUser, Role, Permission } from '@/types/auth.types';
+import type { AuthTokens } from '@/features/auth/types/auth-response.types';
+import { hasPermission } from '@/constants/permissions';
 
 interface AuthState {
-  user: AuthUser | null
-  accessToken: string | null
-  expiresAt: number | null
-  isAuthenticated: boolean
-  login: (user: AuthUser, tokens: AuthTokens) => void
-  setTokens: (tokens: AuthTokens) => void
-  logout: () => void
-  can: (permission: Permission) => boolean
-  hasRole: (role: Role | Role[]) => boolean
+  user: AuthUser | null;
+  accessToken: string | null;
+  expiresAt: number | null;
+  isAuthenticated: boolean;
+  login: (user: AuthUser, tokens: AuthTokens) => void;
+  setTokens: (tokens: AuthTokens) => void;
+  logout: () => void;
+  can: (permission: Permission) => boolean;
+  hasRole: (role: Role | Role[]) => boolean;
 }
 
 // refreshToken lives in an httpOnly cookie set by the backend — never held here.
@@ -44,20 +44,19 @@ export const useAuthStore = create<AuthState>()(
           expiresAt: Date.now() + tokens.expiresIn * 1000,
         }),
 
-      logout: () =>
-        set({ user: null, accessToken: null, expiresAt: null, isAuthenticated: false }),
+      logout: () => set({ user: null, accessToken: null, expiresAt: null, isAuthenticated: false }),
 
       can: (permission) => {
-        const { user } = get()
-        if (!user) return false
-        return hasPermission(user.role, permission)
+        const { user } = get();
+        if (!user) return false;
+        return hasPermission(user.role, permission);
       },
 
       hasRole: (role) => {
-        const { user } = get()
-        if (!user) return false
-        const roles = Array.isArray(role) ? role : [role]
-        return roles.includes(user.role)
+        const { user } = get();
+        if (!user) return false;
+        const roles = Array.isArray(role) ? role : [role];
+        return roles.includes(user.role);
       },
     }),
     {
@@ -68,16 +67,16 @@ export const useAuthStore = create<AuthState>()(
       }),
     }
   )
-)
+);
 
 export function useHasHydrated() {
-  const [hasHydrated, setHasHydrated] = useState(false)
+  const [hasHydrated, setHasHydrated] = useState(false);
 
   useEffect(() => {
-    const unsub = useAuthStore.persist.onFinishHydration(() => setHasHydrated(true))
-    setHasHydrated(useAuthStore.persist.hasHydrated())
-    return unsub
-  }, [])
+    const unsub = useAuthStore.persist.onFinishHydration(() => setHasHydrated(true));
+    setHasHydrated(useAuthStore.persist.hasHydrated());
+    return unsub;
+  }, []);
 
-  return hasHydrated
+  return hasHydrated;
 }

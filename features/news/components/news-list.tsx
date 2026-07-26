@@ -125,7 +125,10 @@ export function NewsList() {
                       {display.label}
                     </Badge>
                     {item.urgent && (
-                      <Badge variant="outline" className="border-orange/20 bg-orange/10 text-orange">
+                      <Badge
+                        variant="outline"
+                        className="border-orange/20 bg-orange/10 text-orange"
+                      >
                         {NEWS_TEXT.urgentBadge}
                       </Badge>
                     )}

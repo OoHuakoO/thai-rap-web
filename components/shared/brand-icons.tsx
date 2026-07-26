@@ -33,7 +33,14 @@ export function InstagramIcon({ className }: BrandIconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
       <defs>
-        <linearGradient id="ig-gradient" x1="0" y1="24" x2="24" y2="0" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="ig-gradient"
+          x1="0"
+          y1="24"
+          x2="24"
+          y2="0"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop offset="0" stopColor="#F58529" />
           <stop offset="0.5" stopColor="#DD2A7B" />
           <stop offset="1" stopColor="#8134AF" />

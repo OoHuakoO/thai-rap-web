@@ -13,6 +13,7 @@ import { isFileSizeValid, fileTooLargeMessage } from '@/utils/validate-file-size
 import { splitFilename } from '@/utils/split-filename';
 import { ScoreButtonGroup } from './score-button-group';
 import { QUESTION_ROW_TEXT } from '../constants/assessment-text.constants';
+import { EVIDENCE_ACCEPT } from '../constants/assessment-config.constants';
 import type { AssessmentQuestion } from '../types/assessment.types';
 
 function getStatus(score: number | null): { variant: StatusVariant; label: string } {
@@ -98,7 +99,12 @@ export function QuestionRow({
         {question.questionText}
       </td>
       <td className="min-w-[120px] px-2 py-2.5">
-        <ScoreButtonGroup value={question.rawScore} disabled={locked} onChange={onScoreChange} />
+        <ScoreButtonGroup
+          value={question.rawScore}
+          maxScore={question.maxScore}
+          disabled={locked}
+          onChange={onScoreChange}
+        />
       </td>
       <td className="min-w-[120px] max-w-[200px] px-2 py-2.5">
         <div className="flex flex-col gap-1">
@@ -151,7 +157,7 @@ export function QuestionRow({
             ref={fileInputRef}
             type="file"
             multiple
-            accept="image/jpeg,image/png,image/webp,application/pdf,.xlsx,.docx,.csv"
+            accept={EVIDENCE_ACCEPT}
             className="hidden"
             onChange={(e) => {
               handleFileSelected(e.target.files);

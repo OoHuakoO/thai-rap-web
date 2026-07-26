@@ -63,9 +63,7 @@ export function DataTable<T extends object>({
                       col.className
                     )}
                   >
-                    {col.cell
-                      ? col.cell(row)
-                      : String(row[col.key as keyof T] ?? '-')}
+                    {col.cell ? col.cell(row) : String(row[col.key as keyof T] ?? '-')}
                   </td>
                 ))}
               </tr>

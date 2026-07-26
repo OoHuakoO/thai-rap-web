@@ -1,12 +1,12 @@
-'use client'
+'use client';
 
-import { inter, sarabun } from '@/styles/fonts'
-import { ErrorPage } from '@/components/shared/error-page'
-import { ROUTES } from '@/constants/routes'
+import { inter, sarabun } from '@/styles/fonts';
+import { ErrorPage } from '@/components/shared/error-page';
+import { ROUTES } from '@/constants/routes';
 
 interface GlobalErrorProps {
-  error: Error & { digest?: string }
-  reset: () => void
+  error: Error & { digest?: string };
+  reset: () => void;
 }
 
 export default function GlobalError({ error, reset }: GlobalErrorProps) {
@@ -24,5 +24,5 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
         />
       </body>
     </html>
-  )
+  );
 }

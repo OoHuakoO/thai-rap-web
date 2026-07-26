@@ -64,8 +64,17 @@ export function useAssessmentByRound(
   });
 }
 
-export function useAssessment(storeId: string, round: Round, options?: { enabled?: boolean }) {
+export function useAssessment(
+  storeId: string,
+  round: Round,
+  options?: { enabled?: boolean; canCreate?: boolean }
+) {
   const enabled = options?.enabled ?? true;
+  // Opening a round creates it — that is a write, and a read-only role (an
+  // entrepreneur or ME team viewing their own store) must not fire it. The API
+  // answers 403, which the axios interceptor turns into a hard redirect to
+  // /403, so an ungated auto-create locks those roles out of the page entirely.
+  const canCreate = options?.canCreate ?? true;
   const queryClient = useQueryClient();
 
   // Read-only: finds the existing assessment, or null if none exists yet.
@@ -101,16 +110,16 @@ export function useAssessment(storeId: string, round: Round, options?: { enabled
   const triedKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !canCreate) return;
     const key = `${storeId}:${round}`;
     if (query.data === null && triedKeyRef.current !== key) {
       triedKeyRef.current = key;
       createMutation.mutate({ storeId, round });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query.data, storeId, round, enabled]);
+  }, [query.data, storeId, round, enabled, canCreate]);
 
-  const isCreating = query.data === null && !createMutation.isError;
+  const isCreating = canCreate && query.data === null && !createMutation.isError;
 
   // Lets the caller recover from a failed auto-create without a full page
   // reload — triedKeyRef would otherwise permanently block a retry for this
@@ -129,6 +138,8 @@ export function useAssessment(storeId: string, round: Round, options?: { enabled
     isLoading: query.isLoading || isCreating,
     isError: query.isError || createMutation.isError,
     error: query.error ?? createMutation.error,
+    /** The round has no assessment yet and this viewer may not start one. */
+    isMissing: !canCreate && query.data === null,
     retry,
   };
 }

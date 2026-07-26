@@ -179,7 +179,10 @@ export function UserList() {
           aria-label={USER_LIST_TEXT.searchPlaceholder}
         />
 
-        <Select value={role} onValueChange={(val) => setRole(val as Role | typeof FILTER_ALL_VALUE)}>
+        <Select
+          value={role}
+          onValueChange={(val) => setRole(val as Role | typeof FILTER_ALL_VALUE)}
+        >
           <SelectTrigger className="w-56" aria-label={USER_LIST_TEXT.columnRole}>
             <SelectValue />
           </SelectTrigger>
