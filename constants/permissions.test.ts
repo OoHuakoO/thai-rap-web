@@ -59,15 +59,25 @@ describe('permissions', () => {
       expect(getDataScope(ROLES.MENTOR, 'assessment')).toBe(DATA_SCOPES.ASSIGNED);
     });
 
-    // The scoring page is staff-only. A store and the M&E team read results
-    // through reports/analytics, so they hold neither assessment permission.
+    // The scoring page is staff-only. The M&E team reads results through
+    // reports/analytics instead, so it holds neither assessment permission.
     it('keeps the assessment page away from a store and the M&E team', () => {
       for (const role of [ROLES.ENTREPRENEUR, ROLES.ME_TEAM]) {
         expect(hasPermission(role, PERMISSIONS.ASSESSMENT_READ)).toBe(false);
         expect(hasPermission(role, PERMISSIONS.ASSESSMENT_WRITE)).toBe(false);
         expect(canAccessRoute(role, ROUTES.ASSESSMENT)).toBe(false);
-        expect(canAccessRoute(role, ROUTES.REPORTS)).toBe(true);
       }
+      expect(canAccessRoute(ROLES.ME_TEAM, ROUTES.REPORTS)).toBe(true);
+    });
+
+    // ผู้ประกอบการ gets two pages: the project overview and its own store
+    // profile. Analysis and export are programme-wide staff tooling.
+    it('leaves a store with only the overview and its own store profile', () => {
+      expect(canAccessRoute(ROLES.ENTREPRENEUR, ROUTES.HOME)).toBe(true);
+      expect(canAccessRoute(ROLES.ENTREPRENEUR, ROUTES.STORES)).toBe(true);
+
+      expect(canAccessRoute(ROLES.ENTREPRENEUR, ROUTES.ANALYTICS)).toBe(false);
+      expect(canAccessRoute(ROLES.ENTREPRENEUR, ROUTES.REPORTS)).toBe(false);
     });
 
     it('lets an assessor score, scoped to assigned stores only', () => {

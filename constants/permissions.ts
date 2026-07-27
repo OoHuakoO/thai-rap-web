@@ -70,13 +70,15 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   ],
 
   // ผู้ประกอบการ — manages its own store only (scope OWN), plus everything a
-  // VIEWER sees. Reports are included because the brief gives a store access to
-  // its own assessment reports — scoped to OWN below, so it still never sees
-  // another store's, and reports/analytics are where it reads its own result
-  // ("ดูผลประเมินของตนเอง"). dashboard:read is the same deal: the API answers
+  // VIEWER sees. Two pages and no more: the project overview and its own store
+  // profile. dashboard:read is what gives it the overview — the API answers
   // every /dashboard/* call for an ENTREPRENEUR with the stores it owns, so the
-  // overview page carries no other store's numbers. No assessment:read — the
-  // scoring page itself is staff-only, see ROUTE_PERMISSIONS below.
+  // page carries no other store's numbers.
+  //
+  // No analytics:read / reports:read — วิเคราะห์ศักยภาพ and รายงานและส่งออก are
+  // staff pages. A store reads its own result through its store profile, not
+  // through the programme-wide analysis and export tooling. No assessment:read
+  // either — the scoring page is staff-only, see ROUTE_PERMISSIONS below.
   ENTREPRENEUR: [
     PERMISSIONS.MANUAL_READ,
     PERMISSIONS.DASHBOARD_READ,
@@ -84,9 +86,6 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.STORE_READ,
     PERMISSIONS.STORE_WRITE,
     PERMISSIONS.STORE_DELETE,
-    PERMISSIONS.ANALYTICS_READ,
-    PERMISSIONS.REPORTS_READ,
-    PERMISSIONS.REPORTS_EXPORT,
   ],
 
   // กรรมการ Pitching — pitching scoring + view dashboard/store for context
@@ -149,10 +148,10 @@ export const ROLE_DATA_SCOPES: Record<Role, RoleDataScopes> = {
   ENTREPRENEUR: {
     store: DATA_SCOPES.OWN,
     assessment: DATA_SCOPES.OWN,
-    analytics: DATA_SCOPES.OWN,
-    // Its own assessment reports — per-T and the all-T overview — never another
-    // store's. The API enforces the same rule on every /reports/stores/:id call.
-    reports: DATA_SCOPES.OWN,
+    // NONE, matching the permissions above — the analytics and reports pages are
+    // staff-only for this role, so there is no record set for it to be scoped to.
+    analytics: DATA_SCOPES.NONE,
+    reports: DATA_SCOPES.NONE,
   },
 
   JUDGE: {

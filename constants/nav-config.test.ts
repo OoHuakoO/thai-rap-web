@@ -39,8 +39,8 @@ describe('nav-config', () => {
       // but without dashboard:read and store:read the route guard rejects both
       // — returning either here would make the dashboard layout redirect to a
       // route it immediately bounces again.
-      saveConfig({ ENTREPRENEUR: ['analytics:read', 'reports:read'] });
-      expect(getDefaultRouteForRole(ROLES.ENTREPRENEUR)).toBe(ROUTES.ANALYTICS);
+      saveConfig({ ENTREPRENEUR: ['store:read'] });
+      expect(getDefaultRouteForRole(ROLES.ENTREPRENEUR)).toBe(ROUTES.STORES);
     });
 
     it('falls back to 403 when the role can open nothing', () => {
@@ -58,11 +58,12 @@ describe('nav-config', () => {
 
   describe('resolvePostLoginRoute', () => {
     it('returns the requested path when the role may open it', () => {
-      expect(resolvePostLoginRoute(ROLES.ENTREPRENEUR, ROUTES.REPORTS)).toBe(ROUTES.REPORTS);
+      expect(resolvePostLoginRoute(ROLES.ENTREPRENEUR, ROUTES.STORES)).toBe(ROUTES.STORES);
     });
 
     it('ignores a path the role may not open', () => {
       expect(resolvePostLoginRoute(ROLES.ENTREPRENEUR, ROUTES.USERS)).toBe(ROUTES.HOME);
+      expect(resolvePostLoginRoute(ROLES.ENTREPRENEUR, ROUTES.REPORTS)).toBe(ROUTES.HOME);
     });
 
     it('ignores an off-site path', () => {

@@ -96,8 +96,9 @@ describe('Top20Card', () => {
   });
 
   // A general user reads the ranking on the overview but /stores does not admit
-  // them — navigating would only bounce them straight back here.
-  it('does not navigate or offer the store link for a role that cannot open /stores', async () => {
+  // them — drilling into a store would only bounce them straight back here. The
+  // footer stays: it expands the ranking in place, it does not navigate.
+  it('does not open a store for a role that cannot reach /stores', async () => {
     signInAs(ROLES.VIEWER);
     vi.mocked(dashboardService.getTop20).mockResolvedValue([entry]);
     renderWithClient(<Top20Card />);
@@ -105,6 +106,25 @@ describe('Top20Card', () => {
     await userEvent.click(await screen.findByText('ครัวริมธารจันทบุรี'));
 
     expect(push).not.toHaveBeenCalled();
+    expect(screen.getByText('ดูรายชื่อทั้งหมด 20 ร้าน')).toBeInTheDocument();
+  });
+
+  it('opens the full ranking in a dialog from the footer', async () => {
+    vi.mocked(dashboardService.getTop20).mockResolvedValue([entry]);
+    renderWithClient(<Top20Card />);
+
+    await userEvent.click(await screen.findByText('ดูรายชื่อทั้งหมด 20 ร้าน'));
+
+    expect(
+      await screen.findByRole('dialog', { name: 'Top 20 ร้านค้าที่ได้คะแนนสูงสุด' })
+    ).toBeInTheDocument();
+  });
+
+  it('hides the footer when there is no ranking to expand', async () => {
+    vi.mocked(dashboardService.getTop20).mockResolvedValue([]);
+    renderWithClient(<Top20Card />);
+
+    await screen.findByText('ยังไม่มีข้อมูลคะแนนร้านค้า');
     expect(screen.queryByText('ดูรายชื่อทั้งหมด 20 ร้าน')).not.toBeInTheDocument();
   });
 });

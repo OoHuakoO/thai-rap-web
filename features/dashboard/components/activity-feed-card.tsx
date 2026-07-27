@@ -17,8 +17,8 @@ export function ActivityFeedCard() {
   const { data: activities, isLoading, isError, error } = useActivities();
   // The feed is ungated on the API (every role sees announcements), but the
   // page it points at is not — JUDGE and VIEWER reach this card without
-  // assessment:read.
-  const canOpenAssessment = useAuthStore((s) => s.canRoute(ROUTES.ASSESSMENT));
+  // news:read.
+  const canOpenNews = useAuthStore((s) => s.canRoute(ROUTES.NEWS));
 
   return (
     <Card className="flex h-full flex-col shadow-sm">
@@ -74,9 +74,9 @@ export function ActivityFeedCard() {
           </ul>
         )}
 
-        {canOpenAssessment && (
+        {canOpenNews && !!activities?.length && (
           <div className="mt-auto flex justify-end pt-1">
-            <CardFooterLink href={ROUTES.ASSESSMENT} label={ACTIVITY_FEED_TEXT.footerLink} />
+            <CardFooterLink href={ROUTES.NEWS} label={ACTIVITY_FEED_TEXT.footerLink} />
           </div>
         )}
       </CardContent>

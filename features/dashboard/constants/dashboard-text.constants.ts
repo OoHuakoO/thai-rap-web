@@ -29,6 +29,11 @@ export const TOP20_TEXT = {
   empty: 'ยังไม่มีข้อมูลคะแนนร้านค้า',
 } as const;
 
+export const TOP20_DIALOG_TEXT = {
+  title: 'Top 20 ร้านค้าที่ได้คะแนนสูงสุด',
+  description: 'รายชื่อร้านค้า 20 อันดับแรกตามรอบการประเมินที่เลือก',
+} as const;
+
 export const INCUBATION_PROGRESS_TEXT = {
   title: 'สถานะการพัฒนาผู้ประกอบการ (Incubation Progress)',
   storeCount: (count: number) => `${count} ร้าน`,

@@ -80,8 +80,8 @@ describe('useLogin', () => {
   });
 
   it('returns the user to the path the guard bounced them off', async () => {
-    await loginWith('/reports');
-    expect(mockReplace).toHaveBeenCalledWith('/reports');
+    await loginWith('/stores');
+    expect(mockReplace).toHaveBeenCalledWith('/stores');
   });
 
   it('ignores a return path the role may not access', async () => {

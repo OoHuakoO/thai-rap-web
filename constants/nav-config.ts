@@ -65,14 +65,7 @@ export const NAV_ITEMS: NavItem[] = [
     labelTh: 'วิเคราะห์ศักยภาพ',
     href: ROUTES.ANALYTICS,
     icon: NAV_ICONS.analytics,
-    allowedRoles: [
-      ROLES.SUPER_ADMIN,
-      ROLES.ADMIN,
-      ROLES.ASSESSOR,
-      ROLES.MENTOR,
-      ROLES.ME_TEAM,
-      ROLES.ENTREPRENEUR,
-    ],
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ASSESSOR, ROLES.MENTOR, ROLES.ME_TEAM],
   },
   {
     label: 'Pitching & Ranking',
@@ -93,14 +86,7 @@ export const NAV_ITEMS: NavItem[] = [
     labelTh: 'รายงานและส่งออก',
     href: ROUTES.REPORTS,
     icon: NAV_ICONS.reports,
-    allowedRoles: [
-      ROLES.SUPER_ADMIN,
-      ROLES.ADMIN,
-      ROLES.ASSESSOR,
-      ROLES.MENTOR,
-      ROLES.ME_TEAM,
-      ROLES.ENTREPRENEUR,
-    ],
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ASSESSOR, ROLES.MENTOR, ROLES.ME_TEAM],
   },
   {
     label: 'News & Announcements',
