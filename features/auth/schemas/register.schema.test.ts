@@ -60,11 +60,16 @@ describe('registerSchema', () => {
     expect(result.success).toBe(true);
   });
 
-  it.each(['ASSESSOR', 'MENTOR', 'JUDGE', 'ME_TEAM', 'SUPER_ADMIN'])(
-    'rejects the staff role %s',
+  it.each(['ASSESSOR', 'MENTOR', 'JUDGE', 'ME_TEAM'])(
+    'accepts the staff role %s',
     (role) => {
       const result = registerSchema.safeParse(validPayload({ role }));
-      expect(result.success).toBe(false);
+      expect(result.success).toBe(true);
     }
   );
+
+  it.each(['ADMIN', 'SUPER_ADMIN'])('rejects the admin role %s', (role) => {
+    const result = registerSchema.safeParse(validPayload({ role }));
+    expect(result.success).toBe(false);
+  });
 });

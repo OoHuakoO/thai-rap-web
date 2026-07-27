@@ -1,4 +1,4 @@
-import type { AuthUser, ROLES } from '@/types/auth.types';
+import type { AuthUser, Role, ROLES } from '@/types/auth.types';
 
 export interface LoginDto {
   email: string;
@@ -9,10 +9,10 @@ export interface RegisterDto {
   name: string;
   email: string;
   password: string;
-  // Self-registration is limited to these roles — every staff account (ASSESSOR,
-  // MENTOR, JUDGE, ME_TEAM, ADMIN) is provisioned by an admin, never through this
-  // form. Keep in sync with REGISTERABLE_ROLES (features/auth/schemas/register.schema.ts).
-  role: typeof ROLES.VIEWER | typeof ROLES.ENTREPRENEUR;
+  // Self-registration covers every role except ADMIN and SUPER_ADMIN, which an
+  // admin provisions. Keep in sync with REGISTERABLE_ROLES
+  // (features/auth/schemas/register.schema.ts).
+  role: Exclude<Role, typeof ROLES.ADMIN | typeof ROLES.SUPER_ADMIN>;
 }
 
 export interface AuthTokens {
