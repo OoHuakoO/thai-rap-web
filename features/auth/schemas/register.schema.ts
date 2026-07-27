@@ -2,9 +2,18 @@ import { z } from 'zod';
 import { ROLES } from '@/types/auth.types';
 import { AUTH_VALIDATION_MESSAGES } from '../constants/auth-form.constants';
 
-// VIEWER is the default self-service level — anyone may sign up to browse the
-// disclosed data. Staff levels (MENTOR/ADMIN/…) are created by an admin instead.
-export const REGISTERABLE_ROLES = [ROLES.VIEWER, ROLES.ENTREPRENEUR, ROLES.ASSESSOR] as const;
+// Registration activates the account immediately, so a self-registered ASSESSOR
+// can score assessments on day one — accepted for now. ADMIN and SUPER_ADMIN are
+// excluded: they manage users and rewrite every other role's permissions.
+// Mirrors SELF_REGISTERABLE_ROLES in thai-rap-api (common/constants/role.const.ts).
+export const REGISTERABLE_ROLES = [
+  ROLES.VIEWER,
+  ROLES.ENTREPRENEUR,
+  ROLES.MENTOR,
+  ROLES.ASSESSOR,
+  ROLES.JUDGE,
+  ROLES.ME_TEAM,
+] as const;
 
 export const registerSchema = z
   .object({

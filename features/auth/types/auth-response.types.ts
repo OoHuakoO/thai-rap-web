@@ -9,10 +9,10 @@ export interface RegisterDto {
   name: string;
   email: string;
   password: string;
-  // Self-registration is limited to these roles — ADMIN, MENTOR, JUDGE, and
-  // ME_TEAM accounts are provisioned by an admin, never through this form.
-  // Keep in sync with REGISTERABLE_ROLES (features/auth/schemas/register.schema.ts).
-  role: typeof ROLES.VIEWER | typeof ROLES.ENTREPRENEUR | typeof ROLES.ASSESSOR;
+  // Self-registration is limited to these roles — every staff account (ASSESSOR,
+  // MENTOR, JUDGE, ME_TEAM, ADMIN) is provisioned by an admin, never through this
+  // form. Keep in sync with REGISTERABLE_ROLES (features/auth/schemas/register.schema.ts).
+  role: typeof ROLES.VIEWER | typeof ROLES.ENTREPRENEUR;
 }
 
 export interface AuthTokens {

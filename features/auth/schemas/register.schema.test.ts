@@ -55,8 +55,16 @@ describe('registerSchema', () => {
     }
   });
 
-  it('accepts ASSESSOR as a registerable role', () => {
-    const result = registerSchema.safeParse(validPayload({ role: 'ASSESSOR' }));
+  it('accepts VIEWER as a registerable role', () => {
+    const result = registerSchema.safeParse(validPayload({ role: 'VIEWER' }));
     expect(result.success).toBe(true);
   });
+
+  it.each(['ASSESSOR', 'MENTOR', 'JUDGE', 'ME_TEAM', 'SUPER_ADMIN'])(
+    'rejects the staff role %s',
+    (role) => {
+      const result = registerSchema.safeParse(validPayload({ role }));
+      expect(result.success).toBe(false);
+    }
+  );
 });

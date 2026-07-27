@@ -28,7 +28,7 @@ describe('useRegister', () => {
   });
 
   it('logs the new user in and redirects to the role default route on success', async () => {
-    const user = { id: '2', name: 'Bob', email: 'bob@example.com', role: 'ASSESSOR' as const };
+    const user = { id: '2', name: 'Bob', email: 'bob@example.com', role: 'ENTREPRENEUR' as const };
     const tokens = { accessToken: 'token-456', expiresIn: 3600 };
     vi.mocked(authService.register).mockResolvedValue({ user, tokens });
 
@@ -37,7 +37,7 @@ describe('useRegister', () => {
       name: 'Bob',
       email: 'bob@example.com',
       password: 'password123',
-      role: 'ASSESSOR',
+      role: 'ENTREPRENEUR',
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -54,7 +54,7 @@ describe('useRegister', () => {
       name: 'Bob',
       email: 'bob@example.com',
       password: 'password123',
-      role: 'ASSESSOR',
+      role: 'ENTREPRENEUR',
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));

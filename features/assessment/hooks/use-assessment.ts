@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { QUERY_STALE_TIME_MS } from '@/constants';
 import { storeKeys } from '@/features/store';
 import { assessmentService, dimensionService } from '../services/assessment.service';
 import { calcWeightedTotal } from '../utils/dimension-score';
@@ -244,5 +245,10 @@ export function useAssessmentRank(storeId: string, round: Round) {
     queryKey: assessmentKeys.rank(storeId, round),
     queryFn: () => assessmentService.getRank(storeId, round),
     enabled: !!storeId && !!round,
+    // Ranks only move when some store submits a round, and this store's own
+    // submit already invalidates the key. Without a stale time the summary card
+    // re-runs the cohort aggregate on every remount — switching dimensions,
+    // reopening the form, flipping the round picker back and forth.
+    staleTime: QUERY_STALE_TIME_MS,
   });
 }

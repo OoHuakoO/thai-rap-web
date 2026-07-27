@@ -28,16 +28,21 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   // re-listing every value.
   SUPER_ADMIN: [...ALL_PERMISSIONS],
 
-  // Everything SUPER_ADMIN has except defining access itself — ADMIN runs the
-  // programme, SUPER_ADMIN decides who may access what.
+  // Everything SUPER_ADMIN has except user management and defining access
+  // itself — ADMIN runs the programme, SUPER_ADMIN owns the accounts and
+  // decides who may access what.
   ADMIN: ALL_PERMISSIONS.filter((p) => !SUPER_ADMIN_ONLY_PERMISSIONS.includes(p)),
 
-  // ผู้ประเมินร้าน — assessment write on assigned stores + pitching/analytics/reports
+  // ผู้ติดตาม / Assessor — the one staff role that scores. Brief "แบบ 50 ข้อ"
+  // §3.3 + §16: ประเมิน 50 ข้อ, ตรวจหลักฐาน, บันทึก Red Flag, and on the store
+  // itself only "ดูร้านที่รับผิดชอบ" — no store editing, which is why
+  // STORE_WRITE is absent (the API has always rejected it: StoreService allows
+  // writes from admin roles and the owning ENTREPRENEUR only).
   ASSESSOR: [
     PERMISSIONS.NEWS_READ,
+    PERMISSIONS.MANUAL_READ,
     PERMISSIONS.DASHBOARD_READ,
     PERMISSIONS.STORE_READ,
-    PERMISSIONS.STORE_WRITE,
     PERMISSIONS.ASSESSMENT_READ,
     PERMISSIONS.ASSESSMENT_WRITE,
     PERMISSIONS.ANALYTICS_READ,
@@ -46,15 +51,17 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.REPORTS_EXPORT,
   ],
 
-  // ที่ปรึกษา — same evaluation duty as ASSESSOR over assigned stores
-  // (brief §3), but no store editing.
+  // ที่ปรึกษา / Mentor — brief §3.4 + §16: ประเมิน = "ดูผล", not "ให้คะแนน".
+  // A mentor reads the finished assessment and turns it into an IDP, so it
+  // holds ASSESSMENT_READ and never ASSESSMENT_WRITE.
   MENTOR: [
     PERMISSIONS.NEWS_READ,
+    PERMISSIONS.MANUAL_READ,
     PERMISSIONS.DASHBOARD_READ,
     PERMISSIONS.STORE_READ,
     PERMISSIONS.ASSESSMENT_READ,
-    PERMISSIONS.ASSESSMENT_WRITE,
     PERMISSIONS.ANALYTICS_READ,
+    PERMISSIONS.PITCHING_READ,
     PERMISSIONS.REPORTS_READ,
     PERMISSIONS.REPORTS_EXPORT,
   ],
@@ -65,6 +72,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   // below, so it still never sees another store's.
   ENTREPRENEUR: [
     PERMISSIONS.NEWS_READ,
+    PERMISSIONS.MANUAL_READ,
     PERMISSIONS.STORE_READ_PUBLIC,
     PERMISSIONS.STORE_READ,
     PERMISSIONS.STORE_WRITE,
@@ -78,6 +86,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   // กรรมการ Pitching — pitching scoring + view dashboard/store for context
   JUDGE: [
     PERMISSIONS.NEWS_READ,
+    PERMISSIONS.MANUAL_READ,
     PERMISSIONS.DASHBOARD_READ,
     PERMISSIONS.STORE_READ,
     PERMISSIONS.PITCHING_READ,
@@ -87,6 +96,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   // ทีม M&E — monitor all, view reports, no write
   ME_TEAM: [
     PERMISSIONS.NEWS_READ,
+    PERMISSIONS.MANUAL_READ,
     PERMISSIONS.DASHBOARD_READ,
     PERMISSIONS.STORE_READ,
     PERMISSIONS.ASSESSMENT_READ,
@@ -94,11 +104,10 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.PITCHING_READ,
     PERMISSIONS.REPORTS_READ,
     PERMISSIONS.REPORTS_EXPORT,
-    PERMISSIONS.USERS_READ,
   ],
 
   // ผู้ใช้ทั่วไป — announcements plus the store fields the project discloses
-  VIEWER: [PERMISSIONS.NEWS_READ, PERMISSIONS.STORE_READ_PUBLIC],
+  VIEWER: [PERMISSIONS.NEWS_READ, PERMISSIONS.MANUAL_READ, PERMISSIONS.STORE_READ_PUBLIC],
 };
 
 // ─── Role → Data Scope (defaults) ────────────────────────────────────────────
@@ -202,13 +211,18 @@ export const ROUTE_PERMISSIONS: RoutePermissionConfig[] = [
   { path: ROUTES.PITCHING, requiredPermission: PERMISSIONS.PITCHING_READ },
   { path: ROUTES.REPORTS, requiredPermission: PERMISSIONS.REPORTS_READ },
   { path: ROUTES.NEWS, requiredPermission: PERMISSIONS.NEWS_READ },
-  { path: ROUTES.USERS, requiredPermission: PERMISSIONS.USERS_READ },
+  {
+    path: ROUTES.USERS,
+    requiredPermission: PERMISSIONS.USERS_READ,
+    allowedRoles: [ROLES.SUPER_ADMIN],
+  },
   {
     path: ROUTES.USER_PERMISSIONS,
     requiredPermission: PERMISSIONS.PERMISSIONS_MANAGE,
     allowedRoles: [ROLES.SUPER_ADMIN],
   },
   { path: ROUTES.SETTINGS, requiredPermission: PERMISSIONS.SETTINGS_READ },
+  { path: ROUTES.MANUAL, requiredPermission: PERMISSIONS.MANUAL_READ },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

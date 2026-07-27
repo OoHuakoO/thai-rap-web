@@ -3,11 +3,15 @@
 // is the source of truth for this union since JWT payloads/user records carry it.
 // Single source of truth: every hardcoded role elsewhere in the app should
 // reference ROLES.* instead of retyping the string literal.
-// SUPER_ADMIN  — ผู้ดูแลระบบสูงสุด: everything ADMIN has, plus managing admins
-//                and defining every other role's access (permissions:manage)
-// ADMIN        — ผู้ดูแลระบบ / PMO: full access + user management
-// ASSESSOR     — ผู้ประเมินร้าน: assessment + scoring write on assigned stores
-// MENTOR       — ที่ปรึกษา / Coach: assesses assigned stores + analytics/reports
+// SUPER_ADMIN  — ผู้ดูแลระบบสูงสุด: everything ADMIN has, plus managing user
+//                accounts (users:*) and defining every other role's access
+//                (permissions:manage)
+// ADMIN        — ผู้ดูแลระบบ / PMO: runs the programme — every store/assessment
+//                function, but no user management
+// ASSESSOR     — ผู้ติดตาม / ผู้ประเมิน: the only staff role that scores an
+//                assessment (brief "แบบ 50 ข้อ" §3.3)
+// MENTOR       — ที่ปรึกษา / Coach: reads the finished assessment and turns it
+//                into an IDP — never scores it (brief §3.4, §16 "ดูผล")
 // ENTREPRENEUR — ผู้ประกอบการ / ร้านค้า: own store + own assessment read-only
 // JUDGE        — กรรมการ Pitching: pitching scoring only
 // ME_TEAM      — ทีม M&E: monitor + view all reports, no write
@@ -69,8 +73,8 @@ export const ROLE_SHORT_LABELS: Record<Role, string> = {
 export const ROLE_DESCRIPTIONS: Record<Role, string> = {
   VIEWER: 'ดูได้เฉพาะข้อมูลที่โครงการกำหนดว่าเปิดเผยได้',
   ENTREPRENEUR: 'เพิ่ม/แก้ไขข้อมูลร้านของตนเองเท่านั้น และดูข้อมูลเปิดเผยเหมือนผู้ใช้ทั่วไป',
-  MENTOR: 'ประเมินร้านที่ได้รับมอบหมาย ดูผลประเมิน วิเคราะห์ศักยภาพ และรายงาน',
-  ASSESSOR: 'ประเมินร้านที่ได้รับมอบหมาย ดูผลประเมิน วิเคราะห์ศักยภาพ และรายงาน',
+  MENTOR: 'ดูผลประเมินร้านที่ได้รับมอบหมาย ให้คำแนะนำรายมิติ จัดทำแผนพัฒนา และติดตามความก้าวหน้า',
+  ASSESSOR: 'ประเมินร้านที่ได้รับมอบหมาย ตรวจหลักฐาน บันทึก Red Flag ดูวิเคราะห์ศักยภาพ และรายงาน',
   JUDGE: 'ให้คะแนน Pitching ของร้านที่ได้รับมอบหมาย',
   ME_TEAM: 'ติดตามและดูรายงานทุกร้าน แต่แก้ไขข้อมูลไม่ได้',
   ADMIN: 'จัดการข้อมูลร้านค้าทั้งหมด ประเมินร้านที่ได้รับมอบหมาย ดูผลประเมิน วิเคราะห์ และรายงาน',
@@ -121,6 +125,10 @@ export const PERMISSIONS = {
   NEWS_READ: 'news:read',
   NEWS_WRITE: 'news:write',
   NEWS_DELETE: 'news:delete',
+  // The user manual — every role holds it by default; it exists as a permission
+  // only so ROUTE_PERMISSIONS has an entry to check (canAccessRoute is
+  // default-deny, so a route missing from that table is unreachable).
+  MANUAL_READ: 'manual:read',
   USERS_READ: 'users:read',
   USERS_WRITE: 'users:write',
   USERS_DELETE: 'users:delete',
@@ -143,8 +151,18 @@ export const ALL_PERMISSIONS = Object.values(PERMISSIONS);
  * Permissions no role other than SUPER_ADMIN may hold. The access-control
  * matrix renders these locked for every other role: ADMIN runs the programme,
  * but only SUPER_ADMIN decides who may access what (brief §5).
+ *
+ * The whole `users:*` set sits here, not just permissions:manage — user
+ * management (`/users`) is SUPER_ADMIN-only, so listing/creating/deleting
+ * accounts must be unreachable for every other role even if a saved matrix
+ * ticks the box.
  */
-export const SUPER_ADMIN_ONLY_PERMISSIONS: Permission[] = [PERMISSIONS.PERMISSIONS_MANAGE];
+export const SUPER_ADMIN_ONLY_PERMISSIONS: Permission[] = [
+  PERMISSIONS.USERS_READ,
+  PERMISSIONS.USERS_WRITE,
+  PERMISSIONS.USERS_DELETE,
+  PERMISSIONS.PERMISSIONS_MANAGE,
+];
 
 // ─── Data Scope ──────────────────────────────────────────────────────────────
 // A permission answers "may this role touch stores at all?"; a scope answers

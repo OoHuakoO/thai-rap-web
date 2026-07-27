@@ -54,7 +54,7 @@ describe('RegisterForm', () => {
     await waitFor(() => expect(screen.getByText('รหัสผ่านไม่ตรงกัน')).toBeInTheDocument());
   });
 
-  it('only offers self-registerable roles in the dropdown, not admin/mentor/judge/me_team', async () => {
+  it('only offers self-registerable roles in the dropdown, never a staff role', async () => {
     mockUseRegister();
     render(<RegisterForm />);
 
@@ -63,7 +63,7 @@ describe('RegisterForm', () => {
     const listbox = within(await screen.findByRole('listbox'));
     expect(listbox.getByText('ผู้ใช้ทั่วไป (User)')).toBeInTheDocument();
     expect(listbox.getByText('ผู้ประกอบการ / ร้านค้า')).toBeInTheDocument();
-    expect(listbox.getByText('ผู้ประเมิน (Assessor)')).toBeInTheDocument();
+    expect(listbox.queryByText('ผู้ประเมิน (Assessor)')).not.toBeInTheDocument();
     expect(listbox.queryByText('ผู้ดูแลระบบ (Admin / PMO)')).not.toBeInTheDocument();
     expect(listbox.queryByText('ที่ปรึกษา (Mentor / Coach)')).not.toBeInTheDocument();
     expect(listbox.queryByText('กรรมการ Pitching')).not.toBeInTheDocument();

@@ -5,6 +5,12 @@ export * from './confirm-dialog';
 export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? 'App';
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api/v1';
 
+// Brand lockup + standalone mark, extracted from the logo sheet in `icon/`
+export const BRAND_ICONS = {
+  logo: '/icons/brand/logo.png',
+  mark: '/icons/brand/mark.png',
+} as const;
+
 export const API_TIMEOUT_MS = 10_000;
 export const QUERY_STALE_TIME_MS = 60_000;
 

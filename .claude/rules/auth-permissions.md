@@ -36,9 +36,12 @@ Never read those tables directly — the saved config wins over them. Read
 through `getRolePermissions()`, `getDataScope()`, `getPublicStoreFields()`
 and `canViewStoreField()`, all in `constants/permissions.ts`.
 
-`permissions:manage` is SUPER_ADMIN-only and `hasPermission()` re-checks that
-independently of the saved matrix, so a bad config can never hand out the
-right to edit access itself.
+`SUPER_ADMIN_ONLY_PERMISSIONS` (`types/auth.types.ts`) — `users:read`,
+`users:write`, `users:delete` and `permissions:manage` — is re-checked by
+`hasPermission()` independently of the saved matrix, so a bad config can never
+hand out user management or the right to edit access itself. `/users` and
+`/users/permissions` also carry `allowedRoles: [SUPER_ADMIN]` in
+`ROUTE_PERMISSIONS`.
 
 Never hardcode a role check like `user.role === 'ADMIN'` anywhere in the
 app. Always go through one of:

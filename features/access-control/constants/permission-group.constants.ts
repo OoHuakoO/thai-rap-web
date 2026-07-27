@@ -22,6 +22,7 @@ export const PERMISSION_LABELS: PermissionLabels = {
   'news:read': 'ดูข่าวประชาสัมพันธ์',
   'news:write': 'เขียน/แก้ไขข่าว',
   'news:delete': 'ลบข่าว',
+  'manual:read': 'ดูคู่มือการใช้งาน',
   'users:read': 'ดูรายชื่อผู้ใช้งาน',
   'users:write': 'เพิ่ม/แก้ไขผู้ใช้งาน',
   'users:delete': 'ลบผู้ใช้งาน',
@@ -74,6 +75,11 @@ export const PERMISSION_GROUPS: PermissionGroup[] = [
     key: 'news',
     label: 'ข่าวประชาสัมพันธ์',
     permissions: [PERMISSIONS.NEWS_READ, PERMISSIONS.NEWS_WRITE, PERMISSIONS.NEWS_DELETE],
+  },
+  {
+    key: 'manual',
+    label: 'คู่มือการใช้งาน',
+    permissions: [PERMISSIONS.MANUAL_READ],
   },
   {
     key: 'users',

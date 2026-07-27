@@ -24,7 +24,6 @@ export interface NavItem {
   href: string;
   icon: NavIcon;
   allowedRoles: Role[];
-  disabled?: boolean;
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -54,7 +53,9 @@ export const NAV_ITEMS: NavItem[] = [
     labelTh: 'แบบประเมินร้าน',
     href: ROUTES.ASSESSMENT,
     icon: NAV_ICONS.assessment,
-    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ASSESSOR],
+    // MENTOR belongs here on assessment:read alone — the brief gives it "ดูผล"
+    // on this page, and the form renders read-only without assessment:write.
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ASSESSOR, ROLES.MENTOR],
   },
   {
     label: 'Performance Analytics',
@@ -75,8 +76,14 @@ export const NAV_ITEMS: NavItem[] = [
     labelTh: 'คะแนนพิชชิ่ง',
     href: ROUTES.PITCHING,
     icon: NAV_ICONS.pitching,
-    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ASSESSOR, ROLES.JUDGE, ROLES.ME_TEAM],
-    disabled: true,
+    allowedRoles: [
+      ROLES.SUPER_ADMIN,
+      ROLES.ADMIN,
+      ROLES.ASSESSOR,
+      ROLES.MENTOR,
+      ROLES.JUDGE,
+      ROLES.ME_TEAM,
+    ],
   },
   {
     label: 'Reports & Export',
@@ -113,7 +120,9 @@ export const NAV_ITEMS: NavItem[] = [
     labelTh: 'ผู้ใช้งานและสิทธิ์',
     href: ROUTES.USERS,
     icon: UserCog,
-    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ME_TEAM],
+    // SUPER_ADMIN only — managing accounts is theirs alone, same as the
+    // access-control page below. The route guard enforces it too.
+    allowedRoles: [ROLES.SUPER_ADMIN],
   },
   {
     label: 'Access Control',
@@ -129,7 +138,6 @@ export const NAV_ITEMS: NavItem[] = [
     href: ROUTES.SETTINGS,
     icon: Settings,
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-    disabled: true,
   },
 ];
 
@@ -149,7 +157,6 @@ export const NAV_BOTTOM_ITEMS: NavItem[] = [
       ROLES.ME_TEAM,
       ROLES.VIEWER,
     ],
-    disabled: true,
   },
 ];
 
@@ -176,8 +183,8 @@ export function getBottomNavItemsForRole(role: Role): NavItem[] {
  * same loop. `/errors/403` sits outside both route groups, so nothing guards it.
  */
 export function getDefaultRouteForRole(role: Role): string {
-  const firstAccessible = getNavItemsForRole(role).find(
-    (item) => !item.disabled && canAccessRoute(role, item.href)
+  const firstAccessible = getNavItemsForRole(role).find((item) =>
+    canAccessRoute(role, item.href)
   );
   return firstAccessible?.href ?? ROUTES.ERROR_403;
 }

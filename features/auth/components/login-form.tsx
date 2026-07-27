@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/shared/field-error';
 import { ROUTES } from '@/constants/routes';
+import { AuthBrandLogo } from './auth-brand-logo';
 import { LOGIN_FORM_TEXT } from '../constants/auth-form.constants';
 import { loginSchema } from '../schemas/login.schema';
 import type { LoginFormValues } from '../schemas/login.schema';
@@ -29,7 +30,7 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-1 text-center">
-        <p className="text-2xl font-bold text-orange">{LOGIN_FORM_TEXT.brand}</p>
+        <AuthBrandLogo />
         <CardTitle className="text-xl">{LOGIN_FORM_TEXT.title}</CardTitle>
         <CardDescription>{LOGIN_FORM_TEXT.description}</CardDescription>
       </CardHeader>

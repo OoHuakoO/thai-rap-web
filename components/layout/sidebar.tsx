@@ -37,7 +37,6 @@ function NavIcon({ icon, size, className }: NavIconProps) {
 
 interface SidebarNavLinkProps {
   href: string;
-  disabled?: boolean;
   collapsed: boolean;
   labelTh: string;
   padding: string;
@@ -47,41 +46,24 @@ interface SidebarNavLinkProps {
 
 function SidebarNavLink({
   href,
-  disabled,
   collapsed,
   labelTh,
   padding,
   linkClassName,
   children,
 }: SidebarNavLinkProps) {
-  const title = disabled
-    ? collapsed
-      ? `${labelTh} (ยังไม่เปิดใช้งาน)`
-      : 'ยังไม่เปิดใช้งาน'
-    : collapsed
-      ? labelTh
-      : undefined;
-
-  const base = cn(
-    'flex items-center gap-2.5 rounded-md transition-colors',
-    padding,
-    collapsed ? 'justify-center px-0' : 'px-2'
-  );
-
-  if (disabled) {
-    return (
-      <span
-        aria-disabled="true"
-        title={title}
-        className={cn(base, 'cursor-not-allowed text-gray-500 opacity-50')}
-      >
-        {children}
-      </span>
-    );
-  }
-
   return (
-    <Link href={href} title={title} className={cn(base, linkClassName)}>
+    <Link
+      href={href}
+      // Collapsed hides the text label, so the tooltip is the only way to read it.
+      title={collapsed ? labelTh : undefined}
+      className={cn(
+        'flex items-center gap-2.5 rounded-md transition-colors',
+        padding,
+        collapsed ? 'justify-center px-0' : 'px-2',
+        linkClassName
+      )}
+    >
       {children}
     </Link>
   );
@@ -122,14 +104,14 @@ export function Sidebar({ className }: SidebarProps) {
 
       {/* Main nav */}
       <nav aria-label="Main navigation" className="flex flex-1 flex-col gap-0.5 overflow-y-auto">
-        {navItems.map(({ label, labelTh, href, icon, disabled }) => {
+        {navItems.map(({ label, labelTh, href, icon }) => {
           const isActive = href === ROUTES.HOME ? pathname === href : pathname.startsWith(href);
 
           const iconBox = (
             <span
               className={cn(
                 'flex h-10 w-10 shrink-0 items-center justify-center rounded-md',
-                isActive && !disabled ? 'bg-white/20' : 'bg-white/10'
+                isActive ? 'bg-white/20' : 'bg-white/10'
               )}
             >
               <NavIcon icon={icon} size={28} className="h-7 w-7" />
@@ -147,7 +129,6 @@ export function Sidebar({ className }: SidebarProps) {
             <SidebarNavLink
               key={href}
               href={href}
-              disabled={disabled}
               collapsed={collapsed}
               labelTh={labelTh}
               padding="py-1.5"
@@ -187,11 +168,10 @@ export function Sidebar({ className }: SidebarProps) {
         <>
           <Separator className="my-1.5 bg-white/10" />
           <nav aria-label="Help navigation" className="flex flex-col gap-0.5">
-            {bottomItems.map(({ label, labelTh, href, icon, disabled }) => (
+            {bottomItems.map(({ label, labelTh, href, icon }) => (
               <SidebarNavLink
                 key={href}
                 href={href}
-                disabled={disabled}
                 collapsed={collapsed}
                 labelTh={labelTh}
                 padding="py-2"

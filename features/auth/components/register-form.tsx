@@ -17,6 +17,7 @@ import {
 import { FieldError } from '@/components/shared/field-error';
 import { ROUTES } from '@/constants/routes';
 import { ROLE_LABELS, ROLES } from '@/types/auth.types';
+import { AuthBrandLogo } from './auth-brand-logo';
 import { REGISTER_FORM_TEXT } from '../constants/auth-form.constants';
 import { registerSchema, REGISTERABLE_ROLES } from '../schemas/register.schema';
 import type { RegisterFormValues } from '../schemas/register.schema';
@@ -39,7 +40,7 @@ export function RegisterForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-1 text-center">
-        <p className="text-2xl font-bold text-orange">{REGISTER_FORM_TEXT.brand}</p>
+        <AuthBrandLogo />
         <CardTitle className="text-xl">{REGISTER_FORM_TEXT.title}</CardTitle>
         <CardDescription>{REGISTER_FORM_TEXT.description}</CardDescription>
       </CardHeader>
