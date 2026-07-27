@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import { ROUTES } from '@/constants/routes';
 import { useAuthStore } from '@/stores/auth-store';
+import { ROLES } from '@/types/auth.types';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { DEFAULT_TOP20_ROUND, TOP20_ROUND_OPTIONS } from '../constants/dashboard-display.constants';
 import { TOP20_TEXT } from '../constants/dashboard-text.constants';
@@ -34,11 +35,16 @@ export function Top20Card() {
   // sees, but /stores is narrower than that — drilling into a store is only
   // offered to the roles the route actually admits.
   const canOpenStore = useAuthStore((s) => s.canRoute(ROUTES.STORES));
+  // ปิดให้ ENTREPRENEUR (ร้านค้า/ผู้ประกอบการ) ก่อน — ตามคำขอ ยังไม่มี requirement ว่าควรเห็นอันดับร้านอื่นหรือไม่
+  const hasRole = useAuthStore((s) => s.hasRole);
+  const isHiddenForRole = hasRole(ROLES.ENTREPRENEUR);
 
   const handleRowClick = (storeId: string) => {
     if (!canOpenStore) return;
     router.push(ROUTES.STORE_DETAIL(storeId));
   };
+
+  if (isHiddenForRole) return null;
 
   return (
     <Card className="flex h-full flex-col shadow-sm">

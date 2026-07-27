@@ -86,6 +86,14 @@ describe('Top20Card', () => {
     await waitFor(() => expect(screen.getByText('โหลดข้อมูลไม่สำเร็จ')).toBeInTheDocument());
   });
 
+  it('renders nothing for ENTREPRENEUR', () => {
+    signInAs(ROLES.ENTREPRENEUR);
+    vi.mocked(dashboardService.getTop20).mockResolvedValue([entry]);
+    const { container } = renderWithClient(<Top20Card />);
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
   it('opens the store detail page when a row is clicked', async () => {
     vi.mocked(dashboardService.getTop20).mockResolvedValue([entry]);
     renderWithClient(<Top20Card />);
