@@ -86,11 +86,11 @@ describe('useLogin', () => {
 
   it('ignores a return path the role may not access', async () => {
     await loginWith('/users');
-    expect(mockReplace).toHaveBeenCalledWith(ROUTES.STORES);
+    expect(mockReplace).toHaveBeenCalledWith(ROUTES.HOME);
   });
 
   it('ignores a protocol-relative return path', async () => {
     await loginWith('//evil.example.com');
-    expect(mockReplace).toHaveBeenCalledWith(ROUTES.STORES);
+    expect(mockReplace).toHaveBeenCalledWith(ROUTES.HOME);
   });
 });

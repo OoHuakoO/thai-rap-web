@@ -84,8 +84,13 @@ export function StoreDetail({ storeId, variant = 'compact' }: StoreDetailProps) 
   const visibleStrip = isCompact ? stripPhotos.slice(0, COMPACT_STORE_PHOTO_LIMIT) : stripPhotos;
   const hiddenStripCount = stripPhotos.length - visibleStrip.length;
 
-  const visibleDocs = isCompact ? store.documents.slice(0, COMPACT_DOC_LIMIT) : store.documents;
-  const hiddenDocsCount = store.documents.length - visibleDocs.length;
+  // The API omits documents entirely on a store whose private data is not the
+  // caller's — a VIEWER's rows, and someone else's store for an ENTREPRENEUR
+  // (StoreService.applyFieldScope). Typed as required on Store, so this is the
+  // one place the narrowed shape has to be absorbed rather than crash on slice.
+  const documents = store.documents ?? [];
+  const visibleDocs = isCompact ? documents.slice(0, COMPACT_DOC_LIMIT) : documents;
+  const hiddenDocsCount = documents.length - visibleDocs.length;
 
   const visibleMenuPhotos = isCompact
     ? store.menuPhotos.slice(0, COMPACT_MENU_PHOTO_LIMIT)
@@ -137,7 +142,7 @@ export function StoreDetail({ storeId, variant = 'compact' }: StoreDetailProps) 
         {/* Right column — documents, menu menuPhotos, progress timeline */}
         <div className="space-y-2">
           <StoreDetailDocumentsCard
-            documents={store.documents}
+            documents={documents}
             visibleDocs={visibleDocs}
             hiddenDocsCount={hiddenDocsCount}
             isCompact={isCompact}

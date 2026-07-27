@@ -29,9 +29,9 @@ describe('permissions', () => {
   });
 
   describe('default matrix', () => {
-    it('gives a general user only announcements, the manual and disclosed store data', () => {
+    it('gives a general user the overview, the manual and disclosed store data', () => {
       expect(ROLE_PERMISSIONS.VIEWER).toEqual([
-        PERMISSIONS.NEWS_READ,
+        PERMISSIONS.DASHBOARD_READ,
         PERMISSIONS.MANUAL_READ,
         PERMISSIONS.STORE_READ_PUBLIC,
       ]);
@@ -39,11 +39,35 @@ describe('permissions', () => {
       expect(hasPermission(ROLES.VIEWER, PERMISSIONS.ASSESSMENT_READ)).toBe(false);
     });
 
-    // Brief "แบบ 50 ข้อ" §16: ผู้ติดตาม/Assessor "ให้คะแนน", ที่ปรึกษา/Mentor "ดูผล".
+    it('keeps announcements to the admin roles', () => {
+      expect(hasPermission(ROLES.SUPER_ADMIN, PERMISSIONS.NEWS_READ)).toBe(true);
+      expect(hasPermission(ROLES.ADMIN, PERMISSIONS.NEWS_READ)).toBe(true);
+
+      expect(hasPermission(ROLES.ASSESSOR, PERMISSIONS.NEWS_READ)).toBe(false);
+      expect(hasPermission(ROLES.MENTOR, PERMISSIONS.NEWS_READ)).toBe(false);
+      expect(hasPermission(ROLES.ENTREPRENEUR, PERMISSIONS.NEWS_READ)).toBe(false);
+      expect(hasPermission(ROLES.JUDGE, PERMISSIONS.NEWS_READ)).toBe(false);
+      expect(hasPermission(ROLES.ME_TEAM, PERMISSIONS.NEWS_READ)).toBe(false);
+      expect(hasPermission(ROLES.VIEWER, PERMISSIONS.NEWS_READ)).toBe(false);
+    });
+
+    // "แบบ 50 ข้อ" §3.3 vs §3.4: ผู้ติดตาม/Assessor "ให้คะแนน", ที่ปรึกษา/Mentor
+    // "ดูผลประเมินรายร้าน" — the mentor's own writing lives on the IDP pages.
     it('lets a mentor read an assessment but never score it', () => {
       expect(hasPermission(ROLES.MENTOR, PERMISSIONS.ASSESSMENT_READ)).toBe(true);
       expect(hasPermission(ROLES.MENTOR, PERMISSIONS.ASSESSMENT_WRITE)).toBe(false);
       expect(getDataScope(ROLES.MENTOR, 'assessment')).toBe(DATA_SCOPES.ASSIGNED);
+    });
+
+    // The scoring page is staff-only. A store and the M&E team read results
+    // through reports/analytics, so they hold neither assessment permission.
+    it('keeps the assessment page away from a store and the M&E team', () => {
+      for (const role of [ROLES.ENTREPRENEUR, ROLES.ME_TEAM]) {
+        expect(hasPermission(role, PERMISSIONS.ASSESSMENT_READ)).toBe(false);
+        expect(hasPermission(role, PERMISSIONS.ASSESSMENT_WRITE)).toBe(false);
+        expect(canAccessRoute(role, ROUTES.ASSESSMENT)).toBe(false);
+        expect(canAccessRoute(role, ROUTES.REPORTS)).toBe(true);
+      }
     });
 
     it('lets an assessor score, scoped to assigned stores only', () => {
@@ -87,16 +111,16 @@ describe('permissions', () => {
 
   describe('saved config', () => {
     it('applies a permission the super admin granted', () => {
-      expect(hasPermission(ROLES.VIEWER, PERMISSIONS.DASHBOARD_READ)).toBe(false);
+      expect(hasPermission(ROLES.VIEWER, PERMISSIONS.STORE_READ)).toBe(false);
 
       saveConfig({
         rolePermissions: {
           ...DEFAULT_ACCESS_CONTROL.rolePermissions,
-          VIEWER: [PERMISSIONS.NEWS_READ, PERMISSIONS.DASHBOARD_READ],
+          VIEWER: [PERMISSIONS.DASHBOARD_READ, PERMISSIONS.STORE_READ],
         },
       });
 
-      expect(hasPermission(ROLES.VIEWER, PERMISSIONS.DASHBOARD_READ)).toBe(true);
+      expect(hasPermission(ROLES.VIEWER, PERMISSIONS.STORE_READ)).toBe(true);
       expect(hasPermission(ROLES.VIEWER, PERMISSIONS.STORE_READ_PUBLIC)).toBe(false);
     });
 
@@ -164,10 +188,32 @@ describe('permissions', () => {
       expect(canAccessRoute(ROLES.SUPER_ADMIN, ROUTES.USER_PERMISSIONS)).toBe(false);
     });
 
-    it('keeps a general user out of the internal pages', () => {
-      expect(canAccessRoute(ROLES.VIEWER, ROUTES.NEWS)).toBe(true);
-      expect(canAccessRoute(ROLES.VIEWER, ROUTES.HOME)).toBe(false);
+    it('lets a general user see the overview but not the internal pages', () => {
+      expect(canAccessRoute(ROLES.VIEWER, ROUTES.HOME)).toBe(true);
+      expect(canAccessRoute(ROLES.VIEWER, ROUTES.NEWS)).toBe(false);
       expect(canAccessRoute(ROLES.VIEWER, ROUTES.ASSESSMENT)).toBe(false);
+      expect(canAccessRoute(ROLES.VIEWER, ROUTES.STORES)).toBe(false);
+    });
+
+    it('lets only the admin roles reach announcements', () => {
+      expect(canAccessRoute(ROLES.SUPER_ADMIN, ROUTES.NEWS)).toBe(true);
+      expect(canAccessRoute(ROLES.ADMIN, ROUTES.NEWS)).toBe(true);
+      expect(canAccessRoute(ROLES.ADMIN, ROUTES.NEWS_NEW)).toBe(true);
+
+      expect(canAccessRoute(ROLES.ME_TEAM, ROUTES.NEWS)).toBe(false);
+      expect(canAccessRoute(ROLES.ENTREPRENEUR, ROUTES.NEWS)).toBe(false);
+    });
+
+    it('still refuses announcements to a role the saved matrix granted news:read', () => {
+      saveConfig({
+        rolePermissions: {
+          ...DEFAULT_ACCESS_CONTROL.rolePermissions,
+          ME_TEAM: [PERMISSIONS.NEWS_READ],
+        },
+      });
+
+      expect(hasPermission(ROLES.ME_TEAM, PERMISSIONS.NEWS_READ)).toBe(true);
+      expect(canAccessRoute(ROLES.ME_TEAM, ROUTES.NEWS)).toBe(false);
     });
   });
 

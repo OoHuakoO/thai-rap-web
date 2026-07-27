@@ -1,4 +1,4 @@
-import { Megaphone, Settings, ShieldCheck, UserCog } from 'lucide-react';
+import { Megaphone, Settings } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { Role } from '@/types/auth.types';
 import { ROLES } from '@/types/auth.types';
@@ -39,6 +39,8 @@ export const NAV_ITEMS: NavItem[] = [
       ROLES.MENTOR,
       ROLES.ME_TEAM,
       ROLES.JUDGE,
+      ROLES.ENTREPRENEUR,
+      ROLES.VIEWER,
     ],
   },
   {
@@ -53,8 +55,9 @@ export const NAV_ITEMS: NavItem[] = [
     labelTh: 'แบบประเมินร้าน',
     href: ROUTES.ASSESSMENT,
     icon: NAV_ICONS.assessment,
-    // MENTOR belongs here on assessment:read alone — the brief gives it "ดูผล"
-    // on this page, and the form renders read-only without assessment:write.
+    // MENTOR belongs here on assessment:read alone — "แบบ 50 ข้อ" §3.4 gives it
+    // "ดูผลประเมินรายร้าน", and the form renders read-only without
+    // assessment:write.
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ASSESSOR, ROLES.MENTOR],
   },
   {
@@ -104,34 +107,21 @@ export const NAV_ITEMS: NavItem[] = [
     labelTh: 'ข่าวประชาสัมพันธ์',
     href: ROUTES.NEWS,
     icon: Megaphone,
-    allowedRoles: [
-      ROLES.SUPER_ADMIN,
-      ROLES.ADMIN,
-      ROLES.ASSESSOR,
-      ROLES.MENTOR,
-      ROLES.ENTREPRENEUR,
-      ROLES.JUDGE,
-      ROLES.ME_TEAM,
-      ROLES.VIEWER,
-    ],
+    // Admin roles only — the route guard enforces it too, this just hides the link.
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   },
-  {
-    label: 'Users & Roles',
-    labelTh: 'ผู้ใช้งานและสิทธิ์',
-    href: ROUTES.USERS,
-    icon: UserCog,
-    // SUPER_ADMIN only — managing accounts is theirs alone, same as the
-    // access-control page below. The route guard enforces it too.
-    allowedRoles: [ROLES.SUPER_ADMIN],
-  },
-  {
-    label: 'Access Control',
-    labelTh: 'กำหนดสิทธิ์การเข้าถึง',
-    href: ROUTES.USER_PERMISSIONS,
-    icon: ShieldCheck,
-    // SUPER_ADMIN only — the route guard enforces it too, this just hides the link.
-    allowedRoles: [ROLES.SUPER_ADMIN],
-  },
+  // Users & Roles (/users) and Access Control (/users/permissions) are
+  // deliberately absent. Both pages are built and both are SUPER_ADMIN-only,
+  // but the API they call does not exist yet — thai-rap-api registers no
+  // `users` and no `access-control` controller, so opening either one 404s.
+  // Linking them from the sidebar would only advertise a dead end.
+  //
+  // Their ROUTE_PERMISSIONS entries stay in place, so restoring the links is
+  // just re-adding two NAV_ITEMS entries here once the endpoints ship:
+  //   { label: 'Users & Roles', labelTh: 'ผู้ใช้งานและสิทธิ์',
+  //     href: ROUTES.USERS, icon: UserCog, allowedRoles: [ROLES.SUPER_ADMIN] }
+  //   { label: 'Access Control', labelTh: 'กำหนดสิทธิ์การเข้าถึง',
+  //     href: ROUTES.USER_PERMISSIONS, icon: ShieldCheck, allowedRoles: [ROLES.SUPER_ADMIN] }
   {
     label: 'Settings',
     labelTh: 'ตั้งค่า',

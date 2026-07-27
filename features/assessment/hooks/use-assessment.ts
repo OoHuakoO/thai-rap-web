@@ -71,10 +71,10 @@ export function useAssessment(
   options?: { enabled?: boolean; canCreate?: boolean }
 ) {
   const enabled = options?.enabled ?? true;
-  // Opening a round creates it — that is a write, and a read-only role (an
-  // entrepreneur or ME team viewing their own store) must not fire it. The API
-  // answers 403, which the axios interceptor turns into a hard redirect to
-  // /403, so an ungated auto-create locks those roles out of the page entirely.
+  // Opening a round creates it — that is a write, and a read-only role (a
+  // MENTOR, which reaches this page on assessment:read alone) must not fire it.
+  // The API answers 403, which the axios interceptor turns into a hard redirect
+  // to /403, so an ungated auto-create locks that role out of the page entirely.
   const canCreate = options?.canCreate ?? true;
   const queryClient = useQueryClient();
 

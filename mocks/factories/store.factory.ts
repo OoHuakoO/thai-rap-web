@@ -11,6 +11,7 @@ export function createStore(overrides: Partial<Store> = {}): Store {
     province: 'ชลบุรี',
     storeType: 'อาหารตามสั่ง',
     ownerName: 'เจ้าของร้าน',
+    ownerId: null,
     phone: '0800000000',
     email: null,
     address: '-',

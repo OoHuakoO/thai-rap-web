@@ -4,6 +4,7 @@ import { AlertCard } from '@/components/shared/alert-card';
 import { CardSkeleton } from '@/components/shared/loading';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ROUTES } from '@/constants/routes';
+import { useAuthStore } from '@/stores/auth-store';
 import { cn } from '@/utils/cn';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { ACTIVITY_DISPLAY } from '../constants/dashboard-display.constants';
@@ -14,6 +15,10 @@ import { CardFooterLink } from './card-footer-link';
 
 export function ActivityFeedCard() {
   const { data: activities, isLoading, isError, error } = useActivities();
+  // The feed is ungated on the API (every role sees announcements), but the
+  // page it points at is not — JUDGE and VIEWER reach this card without
+  // assessment:read.
+  const canOpenAssessment = useAuthStore((s) => s.canRoute(ROUTES.ASSESSMENT));
 
   return (
     <Card className="flex h-full flex-col shadow-sm">
@@ -69,9 +74,11 @@ export function ActivityFeedCard() {
           </ul>
         )}
 
-        <div className="mt-auto flex justify-end pt-1">
-          <CardFooterLink href={ROUTES.ASSESSMENT} label={ACTIVITY_FEED_TEXT.footerLink} />
-        </div>
+        {canOpenAssessment && (
+          <div className="mt-auto flex justify-end pt-1">
+            <CardFooterLink href={ROUTES.ASSESSMENT} label={ACTIVITY_FEED_TEXT.footerLink} />
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -2,6 +2,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useAuthStore } from '@/stores/auth-store';
+import type { Role } from '@/types/auth.types';
+import { ROLES } from '@/types/auth.types';
 import { dashboardService } from '../services/dashboard.service';
 import type { Top20Entry } from '../types/dashboard.types';
 import { Top20Card } from './top20-card';
@@ -27,6 +30,13 @@ function renderWithClient(ui: React.ReactElement) {
   return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
 }
 
+function signInAs(role: Role) {
+  useAuthStore.setState({
+    user: { id: 'u1', name: 'ทดสอบ', email: 'test@example.com', role },
+    isAuthenticated: true,
+  });
+}
+
 beforeAll(() => {
   // Radix Select relies on pointer-capture and scrollIntoView, neither of which
   // jsdom implements — without these stubs opening the dropdown throws.
@@ -39,6 +49,7 @@ beforeAll(() => {
 describe('Top20Card', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    signInAs(ROLES.ADMIN);
   });
 
   it('shows the empty state when the API returns no stores', async () => {
@@ -82,5 +93,18 @@ describe('Top20Card', () => {
     await userEvent.click(await screen.findByText('ครัวริมธารจันทบุรี'));
 
     expect(push).toHaveBeenCalledWith('/stores/store-01');
+  });
+
+  // A general user reads the ranking on the overview but /stores does not admit
+  // them — navigating would only bounce them straight back here.
+  it('does not navigate or offer the store link for a role that cannot open /stores', async () => {
+    signInAs(ROLES.VIEWER);
+    vi.mocked(dashboardService.getTop20).mockResolvedValue([entry]);
+    renderWithClient(<Top20Card />);
+
+    await userEvent.click(await screen.findByText('ครัวริมธารจันทบุรี'));
+
+    expect(push).not.toHaveBeenCalled();
+    expect(screen.queryByText('ดูรายชื่อทั้งหมด 20 ร้าน')).not.toBeInTheDocument();
   });
 });

@@ -5,7 +5,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { AuthUser, Role, Permission } from '@/types/auth.types';
 import type { AuthTokens } from '@/features/auth/types/auth-response.types';
-import { hasPermission } from '@/constants/permissions';
+import { canAccessRoute, hasPermission } from '@/constants/permissions';
 
 interface AuthState {
   user: AuthUser | null;
@@ -16,6 +16,7 @@ interface AuthState {
   setTokens: (tokens: AuthTokens) => void;
   logout: () => void;
   can: (permission: Permission) => boolean;
+  canRoute: (path: string) => boolean;
   hasRole: (role: Role | Role[]) => boolean;
 }
 
@@ -50,6 +51,17 @@ export const useAuthStore = create<AuthState>()(
         const { user } = get();
         if (!user) return false;
         return hasPermission(user.role, permission);
+      },
+
+      // For gating a *link* rather than an action. A permission check alone is
+      // not enough: a route can carry `allowedRoles` narrower than the
+      // permission it requires (/stores needs store:read but admits only
+      // SUPER_ADMIN/ADMIN/ENTREPRENEUR), so `can('store:read')` would still
+      // render a link the dashboard layout bounces straight back.
+      canRoute: (path) => {
+        const { user } = get();
+        if (!user) return false;
+        return canAccessRoute(user.role, path);
       },
 
       hasRole: (role) => {

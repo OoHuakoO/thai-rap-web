@@ -10,7 +10,7 @@ import { useConfirm } from '@/components/shared/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 import { useAuthStore } from '@/stores/auth-store';
-import { PERMISSIONS } from '@/types/auth.types';
+import { PERMISSIONS, ROLES } from '@/types/auth.types';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { buildFileUrl } from '@/utils/build-file-url';
 import { cn } from '@/utils/cn';
@@ -30,6 +30,12 @@ interface StoreListProps {
 
 export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
   const can = useAuthStore((s) => s.can);
+  // An entrepreneur browses the whole directory but manages only its own store,
+  // so store:write/delete alone is no longer enough to show the row actions —
+  // without the ownership test every row offers an edit button the API rejects.
+  const userId = useAuthStore((s) => s.user?.id);
+  const isEntrepreneur = useAuthStore((s) => s.hasRole(ROLES.ENTREPRENEUR));
+  const canManage = (store: Store) => !isEntrepreneur || store.ownerId === userId;
   const { data, isLoading, isError, error } = useStores(query);
   const { mutate: deleteStore } = useDeleteStore();
   const confirm = useConfirm();
@@ -140,7 +146,7 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
               <Eye className="h-3.5 w-3.5" />
             </Link>
           </Button>
-          {can(PERMISSIONS.STORE_WRITE) && (
+          {can(PERMISSIONS.STORE_WRITE) && canManage(row) && (
             <Button variant="outline" size="icon" className="h-7 w-7" asChild>
               <Link
                 href={ROUTES.STORE_EDIT(row.id)}
@@ -151,7 +157,7 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
               </Link>
             </Button>
           )}
-          {can(PERMISSIONS.STORE_DELETE) && (
+          {can(PERMISSIONS.STORE_DELETE) && canManage(row) && (
             <Button
               variant="outline"
               size="icon"

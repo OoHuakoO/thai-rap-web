@@ -11,7 +11,7 @@
 // ASSESSOR     — ผู้ติดตาม / ผู้ประเมิน: the only staff role that scores an
 //                assessment (brief "แบบ 50 ข้อ" §3.3)
 // MENTOR       — ที่ปรึกษา / Coach: reads the finished assessment and turns it
-//                into an IDP — never scores it (brief §3.4, §16 "ดูผล")
+//                into an IDP — never scores it (brief §3.4)
 // ENTREPRENEUR — ผู้ประกอบการ / ร้านค้า: own store + own assessment read-only
 // JUDGE        — กรรมการ Pitching: pitching scoring only
 // ME_TEAM      — ทีม M&E: monitor + view all reports, no write

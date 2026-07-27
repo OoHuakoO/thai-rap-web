@@ -138,9 +138,9 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
   if (!assessment) return null;
 
   const locked = isCompletedStatus(assessment.status);
-  // Mentors/entrepreneurs can reach this page (assessment:read) but can't
-  // score — fold both "already submitted" and "no write permission" into
-  // one read-only flag consumed by the table/inputs below.
+  // A MENTOR reaches this page on assessment:read but can't score — fold both
+  // "already submitted" and "no write permission" into one read-only flag
+  // consumed by the table/inputs below.
   const readOnly = locked || !canWrite;
   const scoredCount = assessment.questions.filter((q) => q.rawScore !== null).length;
   const progressPct = Math.round((scoredCount / assessment.questions.length) * 100);

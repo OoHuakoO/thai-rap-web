@@ -21,6 +21,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ROUTES } from '@/constants/routes';
+import { useAuthStore } from '@/stores/auth-store';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { DEFAULT_TOP20_ROUND, TOP20_ROUND_OPTIONS } from '../constants/dashboard-display.constants';
 import { TOP20_TEXT } from '../constants/dashboard-text.constants';
@@ -35,8 +36,13 @@ export function Top20Card() {
   const [round, setRound] = useState<Top20RoundFilter>(DEFAULT_TOP20_ROUND);
   const { data: entries, isLoading, isError, error } = useTop20(round);
   const router = useRouter();
+  // The ranking itself is part of the overview every staff role and VIEWER
+  // sees, but /stores is narrower than that — drilling into a store is only
+  // offered to the roles the route actually admits.
+  const canOpenStore = useAuthStore((s) => s.canRoute(ROUTES.STORES));
 
   const handleRowClick = (storeId: string) => {
+    if (!canOpenStore) return;
     router.push(ROUTES.STORE_DETAIL(storeId));
   };
 
@@ -90,8 +96,8 @@ export function Top20Card() {
                   entries.map((entry) => (
                     <TableRow
                       key={entry.storeId}
-                      tabIndex={0}
-                      className="cursor-pointer"
+                      tabIndex={canOpenStore ? 0 : undefined}
+                      className={canOpenStore ? 'cursor-pointer' : undefined}
                       onClick={() => handleRowClick(entry.storeId)}
                       onKeyDown={(event) => {
                         if (event.key === 'Enter') handleRowClick(entry.storeId);
@@ -129,9 +135,11 @@ export function Top20Card() {
           </div>
         )}
 
-        <div className="mt-auto flex justify-end pt-1">
-          <CardFooterLink href={ROUTES.STORES} label={TOP20_TEXT.footerLink} />
-        </div>
+        {canOpenStore && (
+          <div className="mt-auto flex justify-end pt-1">
+            <CardFooterLink href={ROUTES.STORES} label={TOP20_TEXT.footerLink} />
+          </div>
+        )}
       </CardContent>
     </Card>
   );

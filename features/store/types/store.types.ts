@@ -57,6 +57,11 @@ export interface Store {
   storePhotos: string[];
   documents: StoreDocument[];
   status: StoreStatus;
+  // The User this store belongs to, null for one an admin registered without
+  // naming an owner. Distinct from `ownerName`, which is free text. Every role
+  // browses every store, so this is what decides who may edit/delete one —
+  // the API enforces the same rule in StoreService.assertCanManage.
+  ownerId: string | null;
   latestScore: number | null;
   latestAssessorName: string | null;
   latestAssessedAt: string | null;

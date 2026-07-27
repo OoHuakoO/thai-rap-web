@@ -15,6 +15,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ROUTES } from '@/constants/routes';
+import { useAuthStore } from '@/stores/auth-store';
+import { PERMISSIONS } from '@/types/auth.types';
 import { cn } from '@/utils/cn';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import {
@@ -31,6 +33,10 @@ const COLUMN_COUNT = 5;
 
 export function ReportsStatusCard() {
   const { data: reports, isLoading, isError, error } = useReportsStatus();
+  // Two separate rights: reaching the reports page, and pulling the file down.
+  // A role can hold neither and still see this card on the overview.
+  const canOpenReports = useAuthStore((s) => s.canRoute(ROUTES.REPORTS));
+  const canDownload = useAuthStore((s) => s.can(PERMISSIONS.REPORTS_EXPORT));
 
   return (
     <Card className="flex h-full flex-col shadow-sm">
@@ -95,14 +101,14 @@ export function ReportsStatusCard() {
                       </TableCell>
                       <TableCell className="text-right">
                         <Button
-                          asChild={!!report.downloadUrl}
+                          asChild={!!report.downloadUrl && canDownload}
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-charcoal hover:text-orange"
-                          disabled={!report.downloadUrl}
+                          disabled={!report.downloadUrl || !canDownload}
                           aria-label={REPORTS_STATUS_TEXT.downloadLabel(report.name)}
                         >
-                          {report.downloadUrl ? (
+                          {report.downloadUrl && canDownload ? (
                             <a href={report.downloadUrl} download>
                               <Download className="h-4 w-4" />
                             </a>
@@ -128,9 +134,11 @@ export function ReportsStatusCard() {
           </Table>
         )}
 
-        <div className="mt-auto flex justify-end pt-1">
-          <CardFooterLink href={ROUTES.REPORTS} label={REPORTS_STATUS_TEXT.footerLink} />
-        </div>
+        {canOpenReports && (
+          <div className="mt-auto flex justify-end pt-1">
+            <CardFooterLink href={ROUTES.REPORTS} label={REPORTS_STATUS_TEXT.footerLink} />
+          </div>
+        )}
       </CardContent>
     </Card>
   );

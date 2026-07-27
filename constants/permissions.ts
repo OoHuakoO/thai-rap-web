@@ -39,7 +39,6 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   // STORE_WRITE is absent (the API has always rejected it: StoreService allows
   // writes from admin roles and the owning ENTREPRENEUR only).
   ASSESSOR: [
-    PERMISSIONS.NEWS_READ,
     PERMISSIONS.MANUAL_READ,
     PERMISSIONS.DASHBOARD_READ,
     PERMISSIONS.STORE_READ,
@@ -51,11 +50,15 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.REPORTS_EXPORT,
   ],
 
-  // ที่ปรึกษา / Mentor — brief §3.4 + §16: ประเมิน = "ดูผล", not "ให้คะแนน".
-  // A mentor reads the finished assessment and turns it into an IDP, so it
-  // holds ASSESSMENT_READ and never ASSESSMENT_WRITE.
+  // ที่ปรึกษา / Mentor — "แบบ 50 ข้อ" §3.4 lists eight rights and every one is a
+  // read plus its own IDP work; §3.3 gives "ประเมินร้าน 50 ข้อ / ให้คะแนน T0–T4"
+  // to ผู้ติดตาม/Assessor alone. So ASSESSMENT_READ, never ASSESSMENT_WRITE.
+  //
+  // A mentor does write — ข้อเสนอแนะจาก Mentor on the report, หมายเหตุ Mentor on
+  // the portfolio, the IDP and Mentoring Log (§8) — but all of that lives on
+  // pages this app has not built yet. Granting ASSESSMENT_WRITE is not the way
+  // to give it a text box; those pages are.
   MENTOR: [
-    PERMISSIONS.NEWS_READ,
     PERMISSIONS.MANUAL_READ,
     PERMISSIONS.DASHBOARD_READ,
     PERMISSIONS.STORE_READ,
@@ -66,18 +69,21 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.REPORTS_EXPORT,
   ],
 
-  // ผู้ประกอบการ — manages its own store only (scope OWN), own assessment
-  // read-only, plus everything a VIEWER sees. Reports are included because the
-  // brief gives a store access to its own assessment reports — scoped to OWN
-  // below, so it still never sees another store's.
+  // ผู้ประกอบการ — manages its own store only (scope OWN), plus everything a
+  // VIEWER sees. Reports are included because the brief gives a store access to
+  // its own assessment reports — scoped to OWN below, so it still never sees
+  // another store's, and reports/analytics are where it reads its own result
+  // ("ดูผลประเมินของตนเอง"). dashboard:read is the same deal: the API answers
+  // every /dashboard/* call for an ENTREPRENEUR with the stores it owns, so the
+  // overview page carries no other store's numbers. No assessment:read — the
+  // scoring page itself is staff-only, see ROUTE_PERMISSIONS below.
   ENTREPRENEUR: [
-    PERMISSIONS.NEWS_READ,
     PERMISSIONS.MANUAL_READ,
+    PERMISSIONS.DASHBOARD_READ,
     PERMISSIONS.STORE_READ_PUBLIC,
     PERMISSIONS.STORE_READ,
     PERMISSIONS.STORE_WRITE,
     PERMISSIONS.STORE_DELETE,
-    PERMISSIONS.ASSESSMENT_READ,
     PERMISSIONS.ANALYTICS_READ,
     PERMISSIONS.REPORTS_READ,
     PERMISSIONS.REPORTS_EXPORT,
@@ -85,7 +91,6 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
 
   // กรรมการ Pitching — pitching scoring + view dashboard/store for context
   JUDGE: [
-    PERMISSIONS.NEWS_READ,
     PERMISSIONS.MANUAL_READ,
     PERMISSIONS.DASHBOARD_READ,
     PERMISSIONS.STORE_READ,
@@ -93,21 +98,24 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.PITCHING_WRITE,
   ],
 
-  // ทีม M&E — monitor all, view reports, no write
+  // ทีม M&E — monitor all, view reports, no write. It reads results through
+  // analytics and reports ("วิเคราะห์ผลก่อน–หลัง"), not the scoring page, so no
+  // assessment:read.
   ME_TEAM: [
-    PERMISSIONS.NEWS_READ,
     PERMISSIONS.MANUAL_READ,
     PERMISSIONS.DASHBOARD_READ,
     PERMISSIONS.STORE_READ,
-    PERMISSIONS.ASSESSMENT_READ,
     PERMISSIONS.ANALYTICS_READ,
     PERMISSIONS.PITCHING_READ,
     PERMISSIONS.REPORTS_READ,
     PERMISSIONS.REPORTS_EXPORT,
   ],
 
-  // ผู้ใช้ทั่วไป — announcements plus the store fields the project discloses
-  VIEWER: [PERMISSIONS.NEWS_READ, PERMISSIONS.MANUAL_READ, PERMISSIONS.STORE_READ_PUBLIC],
+  // ผู้ใช้ทั่วไป — the project overview, the manual, and the store fields the
+  // project discloses. dashboard:read is what gives this role a landing page at
+  // all: ข่าวประชาสัมพันธ์ went admin-only, and it was the only other NAV_ITEMS
+  // entry VIEWER had.
+  VIEWER: [PERMISSIONS.DASHBOARD_READ, PERMISSIONS.MANUAL_READ, PERMISSIONS.STORE_READ_PUBLIC],
 };
 
 // ─── Role → Data Scope (defaults) ────────────────────────────────────────────
@@ -206,11 +214,26 @@ export const ROUTE_PERMISSIONS: RoutePermissionConfig[] = [
     requiredPermission: PERMISSIONS.STORE_READ,
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ENTREPRENEUR],
   },
-  { path: ROUTES.ASSESSMENT, requiredPermission: PERMISSIONS.ASSESSMENT_READ },
+  {
+    path: ROUTES.ASSESSMENT,
+    requiredPermission: PERMISSIONS.ASSESSMENT_READ,
+    // Staff only. MENTOR is here on read alone — it opens the same page in
+    // read-only mode. The role gate sits on top of the permission so a saved
+    // matrix handing assessment:read to a store or the M&E team still can't
+    // open the scoring page; they read results via reports/analytics instead.
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ASSESSOR, ROLES.MENTOR],
+  },
   { path: ROUTES.ANALYTICS, requiredPermission: PERMISSIONS.ANALYTICS_READ },
   { path: ROUTES.PITCHING, requiredPermission: PERMISSIONS.PITCHING_READ },
   { path: ROUTES.REPORTS, requiredPermission: PERMISSIONS.REPORTS_READ },
-  { path: ROUTES.NEWS, requiredPermission: PERMISSIONS.NEWS_READ },
+  {
+    path: ROUTES.NEWS,
+    requiredPermission: PERMISSIONS.NEWS_READ,
+    // Admin roles only — publishing and reading announcements both belong to
+    // whoever runs the programme. The role gate sits on top of the permission
+    // so a saved matrix granting news:read to anyone else still can't open it.
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  },
   {
     path: ROUTES.USERS,
     requiredPermission: PERMISSIONS.USERS_READ,

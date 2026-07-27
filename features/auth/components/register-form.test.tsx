@@ -1,8 +1,10 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { ROLES, ROLE_LABELS } from '@/types/auth.types';
 import { RegisterForm } from './register-form';
 import { useRegister } from '../hooks/use-register';
+import { REGISTERABLE_ROLES } from '../schemas/register.schema';
 
 vi.mock('../hooks/use-register');
 
@@ -54,20 +56,21 @@ describe('RegisterForm', () => {
     await waitFor(() => expect(screen.getByText('รหัสผ่านไม่ตรงกัน')).toBeInTheDocument());
   });
 
-  it('only offers self-registerable roles in the dropdown, never a staff role', async () => {
+  // REGISTERABLE_ROLES mirrors SELF_REGISTERABLE_ROLES in thai-rap-api — staff
+  // roles self-register today, only the admin roles are withheld. Asserting
+  // against the list keeps this test honest when that product call changes.
+  it('offers every self-registerable role and never an admin one', async () => {
     mockUseRegister();
     render(<RegisterForm />);
 
     await userEvent.click(screen.getByRole('combobox', { name: 'บทบาท' }));
 
     const listbox = within(await screen.findByRole('listbox'));
-    expect(listbox.getByText('ผู้ใช้ทั่วไป (User)')).toBeInTheDocument();
-    expect(listbox.getByText('ผู้ประกอบการ / ร้านค้า')).toBeInTheDocument();
-    expect(listbox.queryByText('ผู้ประเมิน (Assessor)')).not.toBeInTheDocument();
-    expect(listbox.queryByText('ผู้ดูแลระบบ (Admin / PMO)')).not.toBeInTheDocument();
-    expect(listbox.queryByText('ที่ปรึกษา (Mentor / Coach)')).not.toBeInTheDocument();
-    expect(listbox.queryByText('กรรมการ Pitching')).not.toBeInTheDocument();
-    expect(listbox.queryByText('ทีม M&E')).not.toBeInTheDocument();
+    for (const role of REGISTERABLE_ROLES) {
+      expect(listbox.getByText(ROLE_LABELS[role])).toBeInTheDocument();
+    }
+    expect(listbox.queryByText(ROLE_LABELS[ROLES.ADMIN])).not.toBeInTheDocument();
+    expect(listbox.queryByText(ROLE_LABELS[ROLES.SUPER_ADMIN])).not.toBeInTheDocument();
   });
 
   it('submits with the default role and strips confirmPassword from the payload', async () => {
