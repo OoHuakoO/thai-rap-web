@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Card } from '@/components/ui/card';
 import { Loading } from '@/components/shared/loading';
 import { ROUTES } from '@/constants/routes';
+import { STORE_UNSPECIFIED_LABEL } from '@/constants';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { useAssessmentSummaries } from '@/features/assessment';
 import { useStore } from '../hooks/use-stores';
@@ -107,15 +108,16 @@ export function StoreDetail({ storeId, variant = 'compact' }: StoreDetailProps) 
       {/* Store identity — full-width gradient banner (matches edit-page header) */}
       <div className="p-3 pb-0">
         <div className="rounded-xl border bg-gradient-to-br from-orange to-orange-light px-4 py-3 text-white shadow-sm">
+          <p className="text-xs font-semibold tracking-wide text-white/80">{store.code}</p>
           <h2 className="text-2xl font-extrabold">{store.name}</h2>
           <div className="mt-1.5 flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-0.5 text-sm font-semibold">
               <MapPin className="h-3.5 w-3.5" />
-              {store.province}
+              {store.province ?? STORE_UNSPECIFIED_LABEL}
             </span>
             <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-0.5 text-sm font-semibold">
               <HandPlatter className="h-3.5 w-3.5" />
-              {store.storeType}
+              {store.storeType ?? STORE_UNSPECIFIED_LABEL}
             </span>
           </div>
         </div>

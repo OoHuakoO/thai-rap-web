@@ -19,6 +19,7 @@ export const STORE_LIST_STATUS_VARIANT: Record<StoreStatus, StatusVariant> = {
 };
 
 export const STORE_LIST_TEXT = {
+  codeHeader: 'รหัสร้าน',
   nameHeader: 'ชื่อร้าน',
   provinceHeader: 'จังหวัด',
   storeTypeHeader: 'ประเภท',

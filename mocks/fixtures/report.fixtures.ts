@@ -4,6 +4,7 @@ import type {
   ReportDimensionScore,
   RoundReport,
 } from '@/features/report/types/report.types';
+import { STORE_UNSPECIFIED_LABEL } from '@/constants';
 import { storeDb } from './store.fixtures';
 
 const DIMENSIONS = [
@@ -61,9 +62,9 @@ function reportStore(storeId: string) {
   return {
     id: store.id,
     name: store.name,
-    province: store.province,
-    storeType: store.storeType,
-    ownerName: store.ownerName,
+    province: store.province ?? STORE_UNSPECIFIED_LABEL,
+    storeType: store.storeType ?? STORE_UNSPECIFIED_LABEL,
+    ownerName: store.ownerName ?? STORE_UNSPECIFIED_LABEL,
   };
 }
 

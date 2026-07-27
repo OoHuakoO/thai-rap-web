@@ -1,4 +1,5 @@
 export const STORE_VALIDATION_MESSAGES = {
+  codeRequired: 'กรุณากรอกรหัสร้าน',
   nameRequired: 'กรุณากรอกชื่อร้าน',
   provinceRequired: 'กรุณากรอกจังหวัด',
   storeTypeRequired: 'กรุณากรอกประเภทร้าน',
@@ -17,10 +18,12 @@ export const STORE_FORM_TEXT = {
   optionalLabel: (label: string) => `${label} (ไม่บังคับ)`,
   coverLabel: 'หน้าปกร้าน (ไม่บังคับ)',
   documentsLabel: 'เอกสารแนบ (ไม่บังคับ)',
+  codeLabel: 'รหัสร้าน',
   nameLabel: 'ชื่อร้าน',
   provinceLabel: 'จังหวัด',
   provincePlaceholder: 'เลือกจังหวัด',
   storeTypeLabel: 'ประเภทร้าน',
+  storeTypePlaceholder: 'เลือกประเภทร้าน',
   ownerNameLabel: 'เจ้าของร้าน',
   phoneLabel: 'เบอร์โทร',
   emailLabel: 'อีเมล (ไม่บังคับ)',
@@ -38,8 +41,8 @@ export const STORE_FORM_TEXT = {
 
 export const CREATE_STORE_FORM_TEXT = {
   pageSubtitle: 'กรอกข้อมูลร้านอาหารเพื่อเพิ่มเข้าสู่ระบบ',
+  codePlaceholder: 'RAP69-001',
   namePlaceholder: 'ร้านส้มตำป้าแดง',
-  storeTypePlaceholder: 'อาหารตามสั่ง',
   ownerNamePlaceholder: 'สมศรี ใจดี',
   phonePlaceholder: '0812345678',
   emailPlaceholder: 'somsri@example.com',

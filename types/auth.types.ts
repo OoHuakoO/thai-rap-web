@@ -210,6 +210,7 @@ export type RoleDataScopes = Record<ScopedResource, DataScope>;
 // fields a role scoped to PUBLIC (VIEWER by default) is allowed to see.
 
 export const STORE_FIELDS = {
+  CODE: 'code',
   NAME: 'name',
   PROVINCE: 'province',
   STORE_TYPE: 'storeType',
@@ -231,6 +232,7 @@ export const STORE_FIELDS = {
 export type StoreFieldKey = (typeof STORE_FIELDS)[keyof typeof STORE_FIELDS];
 
 export const STORE_FIELD_LABELS: Record<StoreFieldKey, string> = {
+  code: 'รหัสร้าน',
   name: 'ชื่อร้าน',
   province: 'จังหวัด',
   storeType: 'ประเภทร้าน',

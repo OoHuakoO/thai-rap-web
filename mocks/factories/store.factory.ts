@@ -7,6 +7,7 @@ export function createStore(overrides: Partial<Store> = {}): Store {
   const now = new Date().toISOString();
   return {
     id,
+    code: `RAP69-${id.padStart(3, '0')}`,
     name: `Store ${id}`,
     province: 'ชลบุรี',
     storeType: 'อาหารตามสั่ง',

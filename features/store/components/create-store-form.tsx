@@ -14,6 +14,7 @@ import { useAlert } from '@/components/shared/confirm-dialog';
 import { ROUTES } from '@/constants/routes';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { useProvinces } from '@/features/province';
+import { useStoreTypes } from '@/features/store-type';
 import { CREATE_STORE_FORM_TEXT, STORE_FORM_TEXT } from '../constants/store-form.constants';
 import { STORE_DIALOG_TEXT } from '../constants/store-dialog.constants';
 import { storeFormSchema } from '../schemas/store.schema';
@@ -62,6 +63,7 @@ export function CreateStoreForm() {
   const router = useRouter();
   const { mutate: createStore, isPending, isError, error } = useCreateStore();
   const { data: provinces } = useProvinces();
+  const { data: storeTypes } = useStoreTypes();
   const alert = useAlert();
 
   const [coverFile, setCoverFile] = useState<File | null>(null);
@@ -141,14 +143,25 @@ export function CreateStoreForm() {
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
             <StoreCoverPicker coverFile={coverFile} onCoverChange={setCoverFile} />
-            <div className="flex-1 space-y-1.5">
-              <Label htmlFor="name">{STORE_FORM_TEXT.nameLabel}</Label>
-              <Input
-                id="name"
-                {...register('name')}
-                placeholder={CREATE_STORE_FORM_TEXT.namePlaceholder}
-              />
-              <FieldError message={errors.name?.message} />
+            <div className="flex-1 space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="code">{STORE_FORM_TEXT.codeLabel}</Label>
+                <Input
+                  id="code"
+                  {...register('code')}
+                  placeholder={CREATE_STORE_FORM_TEXT.codePlaceholder}
+                />
+                <FieldError message={errors.code?.message} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="name">{STORE_FORM_TEXT.nameLabel}</Label>
+                <Input
+                  id="name"
+                  {...register('name')}
+                  placeholder={CREATE_STORE_FORM_TEXT.namePlaceholder}
+                />
+                <FieldError message={errors.name?.message} />
+              </div>
             </div>
           </div>
 
@@ -157,8 +170,8 @@ export function CreateStoreForm() {
             control={control}
             errors={errors}
             provinces={provinces}
+            storeTypes={storeTypes}
             placeholders={{
-              storeType: CREATE_STORE_FORM_TEXT.storeTypePlaceholder,
               ownerName: CREATE_STORE_FORM_TEXT.ownerNamePlaceholder,
               phone: CREATE_STORE_FORM_TEXT.phonePlaceholder,
               email: CREATE_STORE_FORM_TEXT.emailPlaceholder,

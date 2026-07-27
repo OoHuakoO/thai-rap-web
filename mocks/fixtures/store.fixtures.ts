@@ -8,6 +8,7 @@ import type {
 const seed: Store[] = [
   {
     id: '1',
+    code: 'RAP69-001',
     name: 'บ้านริมน้ำ จันทบุรี',
     province: 'จันทบุรี',
     storeType: 'อาหารไทย',
@@ -51,6 +52,7 @@ const seed: Store[] = [
   },
   {
     id: '2',
+    code: 'RAP69-002',
     name: 'ครัวทะเลสด',
     province: 'ชลบุรี',
     storeType: 'อาหารทะเล',
@@ -77,6 +79,7 @@ const seed: Store[] = [
   },
   {
     id: '3',
+    code: 'RAP69-003',
     name: 'สวนริมสุข Cafe',
     province: 'ระยอง',
     storeType: 'คาเฟ่',
@@ -103,6 +106,7 @@ const seed: Store[] = [
   },
   {
     id: '4',
+    code: 'RAP69-004',
     name: 'ตราดซีฟู้ด',
     province: 'ตราด',
     storeType: 'อาหารทะเล',
@@ -129,6 +133,7 @@ const seed: Store[] = [
   },
   {
     id: '5',
+    code: 'RAP69-005',
     name: 'ฉะเชิงเทรา กูร์เมต์',
     province: 'ฉะเชิงเทรา',
     storeType: 'อาหารไทย',
@@ -155,6 +160,7 @@ const seed: Store[] = [
   },
   {
     id: '6',
+    code: 'RAP69-006',
     name: 'บ้านสวนเพลินใจ',
     province: 'ปราจีนบุรี',
     storeType: 'อาหารไทย',
@@ -181,6 +187,7 @@ const seed: Store[] = [
   },
   {
     id: '7',
+    code: 'RAP69-007',
     name: 'ครัวบ้านคลอง',
     province: 'สระแก้ว',
     storeType: 'อาหารไทย',
@@ -207,6 +214,7 @@ const seed: Store[] = [
   },
   {
     id: '8',
+    code: 'RAP69-008',
     name: 'เม็ดทราย ซีไซด์',
     province: 'ชลบุรี',
     storeType: 'คาเฟ่/เบเกอรี่',

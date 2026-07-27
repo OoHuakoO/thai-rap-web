@@ -40,13 +40,18 @@ export interface StoreDocument {
 
 export interface Store {
   id: string;
+  // The project-wide RAP69-XXX identifier printed on the offline forms and the
+  // Excel workbook — how a spreadsheet row maps back to this record.
+  code: string;
   name: string;
-  province: string;
-  storeType: string;
-  ownerName: string;
-  phone: string;
+  // Null for a store imported from the intake workbook before its profile is
+  // filled in; the create/edit forms still require every one of these.
+  province: string | null;
+  storeType: string | null;
+  ownerName: string | null;
+  phone: string | null;
   email: string | null;
-  address: string;
+  address: string | null;
   socialLinks: Record<string, string>;
   avgRevenueMin: number | null;
   avgRevenueMax: number | null;
@@ -70,6 +75,7 @@ export interface Store {
 }
 
 export interface CreateStoreDto {
+  code: string;
   name: string;
   province: string;
   storeType: string;

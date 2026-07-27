@@ -1,4 +1,5 @@
 import { Card } from '@/components/ui/card';
+import { STORE_UNSPECIFIED_LABEL } from '@/constants';
 import { FacebookIcon, LineIcon, InstagramIcon } from '@/components/shared/brand-icons';
 import { STORE_DETAIL_TEXT } from '../constants/store-detail.constants';
 import type { Store } from '../types/store.types';
@@ -16,15 +17,21 @@ export function StoreContactCard({ store }: StoreContactCardProps) {
       <p className="text-sm font-bold text-charcoal">{STORE_DETAIL_TEXT.contactInfoTitle}</p>
       <div className="grid grid-cols-[auto_1fr] gap-x-2.5 gap-y-1 text-[13px]">
         <span className="text-muted-foreground">{STORE_DETAIL_TEXT.ownerNameLabel}</span>
-        <span className="font-medium text-charcoal">{store.ownerName}</span>
+        <span className="font-medium text-charcoal">
+          {store.ownerName ?? STORE_UNSPECIFIED_LABEL}
+        </span>
         <span className="text-muted-foreground">{STORE_DETAIL_TEXT.phoneLabel}</span>
-        <span className="font-medium text-charcoal">{store.phone}</span>
+        <span className="font-medium text-charcoal">
+          {store.phone ?? STORE_UNSPECIFIED_LABEL}
+        </span>
         <span className="text-muted-foreground">{STORE_DETAIL_TEXT.emailLabel}</span>
         <span className="break-all font-medium text-charcoal">
           {store.email || STORE_DETAIL_TEXT.emailEmpty}
         </span>
         <span className="text-muted-foreground">{STORE_DETAIL_TEXT.addressLabel}</span>
-        <span className="font-medium leading-relaxed text-charcoal">{store.address}</span>
+        <span className="font-medium leading-relaxed text-charcoal">
+          {store.address ?? STORE_UNSPECIFIED_LABEL}
+        </span>
       </div>
 
       <div>

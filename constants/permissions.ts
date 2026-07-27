@@ -176,6 +176,7 @@ export const ROLE_DATA_SCOPES: Record<Role, RoleDataScopes> = {
 // are opt-in, and the admin page flags them as sensitive when disclosed.
 
 export const PUBLIC_STORE_FIELDS: StoreFieldKey[] = [
+  STORE_FIELDS.CODE,
   STORE_FIELDS.NAME,
   STORE_FIELDS.PROVINCE,
   STORE_FIELDS.STORE_TYPE,

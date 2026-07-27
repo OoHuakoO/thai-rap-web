@@ -13,11 +13,11 @@ import {
 import { TagInput } from '@/components/shared/tag-input';
 import { FieldError } from '@/components/shared/field-error';
 import type { Province } from '@/features/province';
+import type { StoreType } from '@/features/store-type';
 import { STORE_FORM_TEXT } from '../constants/store-form.constants';
 import type { StoreFormValues } from '../schemas/store.schema';
 
 interface StoreGeneralInfoFieldsPlaceholders {
-  storeType?: string;
   ownerName?: string;
   phone?: string;
   email?: string;
@@ -31,6 +31,7 @@ interface StoreGeneralInfoFieldsProps {
   control: Control<StoreFormValues>;
   errors: FieldErrors<StoreFormValues>;
   provinces: Province[] | undefined;
+  storeTypes: StoreType[] | undefined;
   idPrefix?: string;
   placeholders?: StoreGeneralInfoFieldsPlaceholders;
 }
@@ -40,6 +41,7 @@ export function StoreGeneralInfoFields({
   control,
   errors,
   provinces,
+  storeTypes,
   idPrefix = '',
   placeholders,
 }: StoreGeneralInfoFieldsProps) {
@@ -71,10 +73,23 @@ export function StoreGeneralInfoFields({
 
         <div className="space-y-1.5">
           <Label htmlFor={`${idPrefix}storeType`}>{STORE_FORM_TEXT.storeTypeLabel}</Label>
-          <Input
-            id={`${idPrefix}storeType`}
-            {...register('storeType')}
-            placeholder={placeholders?.storeType}
+          <Controller
+            name="storeType"
+            control={control}
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id={`${idPrefix}storeType`}>
+                  <SelectValue placeholder={STORE_FORM_TEXT.storeTypePlaceholder} />
+                </SelectTrigger>
+                <SelectContent>
+                  {(storeTypes ?? []).map((t) => (
+                    <SelectItem key={t.id} value={t.nameTh}>
+                      {t.nameTh}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           />
           <FieldError message={errors.storeType?.message} />
         </div>

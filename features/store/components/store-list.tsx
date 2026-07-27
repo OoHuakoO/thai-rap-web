@@ -62,6 +62,12 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
 
   const columns: TableColumn<Store>[] = [
     {
+      key: 'code',
+      header: STORE_LIST_TEXT.codeHeader,
+      className: 'text-center',
+      cell: (row) => <span className="text-xs font-medium text-muted-foreground">{row.code}</span>,
+    },
+    {
       key: 'name',
       header: STORE_LIST_TEXT.nameHeader,
       className: 'text-left',
@@ -85,8 +91,18 @@ export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
         </div>
       ),
     },
-    { key: 'province', header: STORE_LIST_TEXT.provinceHeader, className: 'text-center' },
-    { key: 'storeType', header: STORE_LIST_TEXT.storeTypeHeader, className: 'text-center' },
+    {
+      key: 'province',
+      header: STORE_LIST_TEXT.provinceHeader,
+      className: 'text-center',
+      cell: (row) => row.province ?? <span className="text-muted-foreground">—</span>,
+    },
+    {
+      key: 'storeType',
+      header: STORE_LIST_TEXT.storeTypeHeader,
+      className: 'text-center',
+      cell: (row) => row.storeType ?? <span className="text-muted-foreground">—</span>,
+    },
     {
       key: 'status',
       header: STORE_LIST_TEXT.statusHeader,

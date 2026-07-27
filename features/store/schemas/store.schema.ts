@@ -3,6 +3,7 @@ import { STORE_VALIDATION_MESSAGES } from '../constants/store-form.constants';
 
 export const storeFormSchema = z
   .object({
+    code: z.string().min(1, STORE_VALIDATION_MESSAGES.codeRequired),
     name: z.string().min(1, STORE_VALIDATION_MESSAGES.nameRequired),
     province: z.string().min(1, STORE_VALIDATION_MESSAGES.provinceRequired),
     storeType: z.string().min(1, STORE_VALIDATION_MESSAGES.storeTypeRequired),

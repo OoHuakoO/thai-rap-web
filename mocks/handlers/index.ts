@@ -7,6 +7,7 @@ import { storeHandlers } from './store.handlers';
 import { assessmentHandlers } from './assessment.handlers';
 import { analyticsHandlers } from './analytics.handlers';
 import { provinceHandlers } from './province.handlers';
+import { storeTypeHandlers } from './store-type.handlers';
 import { uploadHandlers } from './upload.handlers';
 import { accessControlHandlers } from './access-control.handlers';
 
@@ -21,5 +22,6 @@ export const handlers = [
   ...assessmentHandlers,
   ...analyticsHandlers,
   ...provinceHandlers,
+  ...storeTypeHandlers,
   ...uploadHandlers,
 ];

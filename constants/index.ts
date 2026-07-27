@@ -18,5 +18,10 @@ export const QUERY_STALE_TIME_MS = 60_000;
 export const ASSESSMENT_ROUND_STORE_COUNT = 50;
 export const INCUBATION_TARGET_COUNT = 20;
 
+// A store imported from the intake workbook has no province, type or owner name
+// yet. Mirrors STORE_UNSPECIFIED_LABEL in thai-rap-api common/constants/store.const.ts,
+// which the API already substitutes in dashboard aggregates and reports.
+export const STORE_UNSPECIFIED_LABEL = 'ไม่ระบุ';
+
 // Matches MAX_FILE_SIZE in thai-rap-api store.controller.ts
 export const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;

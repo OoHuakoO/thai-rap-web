@@ -6,6 +6,7 @@ import { buildFileUrl } from '@/utils/build-file-url';
 import { STORE_STATUS_VARIANT } from '../constants/store-status-variant.constants';
 import { STORE_STATUS_LABELS } from '@/features/store';
 import type { Store } from '@/features/store';
+import { STORE_UNSPECIFIED_LABEL } from '@/constants';
 
 interface ScoreSummaryStoreHeaderProps {
   store: Store;
@@ -28,7 +29,7 @@ export function ScoreSummaryStoreHeader({ store }: ScoreSummaryStoreHeaderProps)
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-xs font-bold text-charcoal">{store.name}</p>
-        <p className="truncate text-[11.5px] text-muted-foreground">{store.province}</p>
+        <p className="truncate text-[11.5px] text-muted-foreground">{store.province ?? STORE_UNSPECIFIED_LABEL}</p>
       </div>
       <StatusBadge
         status={STORE_STATUS_VARIANT[store.status]}

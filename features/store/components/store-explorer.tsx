@@ -15,13 +15,14 @@ import { Button } from '@/components/ui/button';
 import { PaginationBar } from '@/components/shared/pagination-bar';
 import { ROUTES } from '@/constants/routes';
 import { useProvinces } from '@/features/province';
+import { useStoreTypes } from '@/features/store-type';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useAuthStore } from '@/stores/auth-store';
 import { PERMISSIONS } from '@/types/auth.types';
 import { StoreList } from './store-list';
 import { StoreDetail } from './store-detail';
 import { StoreStatsBar } from './store-stats-bar';
-import { useStores, useStoreStats } from '../hooks/use-stores';
+import { useStores } from '../hooks/use-stores';
 import {
   STORE_EXPLORER_TEXT,
   DEFAULT_STORE_PAGE_LIMIT,
@@ -53,8 +54,8 @@ export function StoreExplorer() {
   };
 
   const { data } = useStores(query);
-  const { data: stats } = useStoreStats();
   const { data: provinces } = useProvinces();
+  const { data: storeTypes } = useStoreTypes();
 
   const handleProvinceChange = (value: string) => {
     setProvince(value);
@@ -125,9 +126,9 @@ export function StoreExplorer() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">{STORE_EXPLORER_TEXT.allOptionLabel}</SelectItem>
-              {(stats?.storeTypes ?? []).map((t) => (
-                <SelectItem key={t} value={t}>
-                  {t}
+              {(storeTypes ?? []).map((t) => (
+                <SelectItem key={t.id} value={t.nameTh}>
+                  {t.nameTh}
                 </SelectItem>
               ))}
             </SelectContent>

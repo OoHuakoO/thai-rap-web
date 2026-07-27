@@ -12,6 +12,7 @@ import { useAlert } from '@/components/shared/confirm-dialog';
 import { ROUTES } from '@/constants/routes';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { useProvinces } from '@/features/province';
+import { useStoreTypes } from '@/features/store-type';
 import { EDIT_STORE_FORM_TEXT, STORE_FORM_TEXT } from '../constants/store-form.constants';
 import { STORE_DIALOG_TEXT } from '../constants/store-dialog.constants';
 import { STORE_MEDIA_TEXT } from '../constants/store-media.constants';
@@ -34,6 +35,7 @@ export function EditStoreForm({ store, onSuccess }: EditStoreFormProps) {
   const router = useRouter();
   const { mutate: updateStore, isPending, isError, error } = useUpdateStore(store.id);
   const { data: provinces } = useProvinces();
+  const { data: storeTypes } = useStoreTypes();
   const alert = useAlert();
 
   const {
@@ -44,12 +46,13 @@ export function EditStoreForm({ store, onSuccess }: EditStoreFormProps) {
   } = useForm<StoreFormValues>({
     resolver: zodResolver(storeFormSchema),
     defaultValues: {
+      code: store.code,
       name: store.name,
-      province: store.province,
-      storeType: store.storeType,
-      ownerName: store.ownerName,
-      phone: store.phone,
-      address: store.address,
+      province: store.province ?? '',
+      storeType: store.storeType ?? '',
+      ownerName: store.ownerName ?? '',
+      phone: store.phone ?? '',
+      address: store.address ?? '',
       email: store.email ?? '',
       avgRevenueMin: store.avgRevenueMin !== null ? String(store.avgRevenueMin) : '',
       avgRevenueMax: store.avgRevenueMax !== null ? String(store.avgRevenueMax) : '',
@@ -113,10 +116,17 @@ export function EditStoreForm({ store, onSuccess }: EditStoreFormProps) {
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
             <StoreCoverManager storeId={store.id} coverUrl={store.coverUrl} />
-            <div className="flex-1 space-y-1.5">
-              <Label htmlFor="edit-name">{STORE_FORM_TEXT.nameLabel}</Label>
-              <Input id="edit-name" {...register('name')} />
-              <FieldError message={errors.name?.message} />
+            <div className="flex-1 space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-code">{STORE_FORM_TEXT.codeLabel}</Label>
+                <Input id="edit-code" {...register('code')} />
+                <FieldError message={errors.code?.message} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-name">{STORE_FORM_TEXT.nameLabel}</Label>
+                <Input id="edit-name" {...register('name')} />
+                <FieldError message={errors.name?.message} />
+              </div>
             </div>
           </div>
 
@@ -125,6 +135,7 @@ export function EditStoreForm({ store, onSuccess }: EditStoreFormProps) {
             control={control}
             errors={errors}
             provinces={provinces}
+            storeTypes={storeTypes}
             idPrefix="edit-"
           />
         </div>

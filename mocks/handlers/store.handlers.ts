@@ -63,7 +63,10 @@ export const storeHandlers = [
     let stores = storeDb.getAll();
     if (search) {
       stores = stores.filter(
-        (s) => s.name.toLowerCase().includes(search) || s.ownerName.toLowerCase().includes(search)
+        (s) =>
+          s.code.toLowerCase().includes(search) ||
+          s.name.toLowerCase().includes(search) ||
+          (s.ownerName?.toLowerCase().includes(search) ?? false)
       );
     }
     if (province) stores = stores.filter((s) => s.province === province);
@@ -109,9 +112,9 @@ export const storeHandlers = [
     ).length;
     const t3CompletedCount = stores.filter((s) => hasReachedStatus(s.status, 'IDP_CREATED')).length;
 
-    const storeTypes = Array.from(new Set(stores.map((s) => s.storeType))).sort((a, b) =>
-      a.localeCompare(b, 'th')
-    );
+    const storeTypes = Array.from(
+      new Set(stores.map((s) => s.storeType).filter((t): t is string => t !== null))
+    ).sort((a, b) => a.localeCompare(b, 'th'));
 
     return HttpResponse.json<StoreStats>({
       total,
