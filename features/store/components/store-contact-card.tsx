@@ -80,7 +80,7 @@ export function StoreContactCard({ store }: StoreContactCardProps) {
 
       <div className="grid grid-cols-[auto_1fr] gap-x-2.5 text-[13px]">
         <span className="text-muted-foreground">{STORE_DETAIL_TEXT.avgRevenueLabel}</span>
-        {store.avgRevenueMin !== null && store.avgRevenueMax !== null ? (
+        {store.avgRevenueMin != null && store.avgRevenueMax != null ? (
           <span className="font-medium text-orange">
             {store.avgRevenueMin.toLocaleString()} {STORE_DETAIL_TEXT.avgRevenueRangeSeparator}{' '}
             {store.avgRevenueMax.toLocaleString()} {STORE_DETAIL_TEXT.currencyUnit}
