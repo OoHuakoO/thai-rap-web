@@ -1,7 +1,5 @@
-// A dimension at or above this percentage is considered to have passed. Set to
-// match the total-score scale's weak band (below 60 is "ระบบยังอ่อน"), so a
-// dimension and a whole assessment are called weak by the same number.
-export const DIMENSION_PASS_THRESHOLD_PCT = 60;
+// How many of the lowest-scored dimensions the "improvement points" list shows.
+export const IMPROVEMENT_POINTS_COUNT = 3;
 
 export type ZoneColor = 'red' | 'orange' | 'yellow' | 'blue' | 'green';
 export type Zone = 'Red Zone' | 'Survival Zone' | 'Improve Zone' | 'Growth Zone' | 'Model Zone';

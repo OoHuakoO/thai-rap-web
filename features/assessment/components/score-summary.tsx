@@ -11,7 +11,7 @@ import {
   useAssessmentSummaries,
   useDimensions,
 } from '../hooks/use-assessment';
-import { getZone, DIMENSION_PASS_THRESHOLD_PCT } from '../utils/zone';
+import { getZone, IMPROVEMENT_POINTS_COUNT } from '../utils/zone';
 import { getLatestCompletedRound, isRoundCompleted } from '../utils/round';
 import { isCompletedStatus } from '../utils/status';
 import { calcScorePercent, sumQuestionScores } from '../utils/dimension-score';
@@ -106,14 +106,14 @@ export function ScoreSummary({
 
   const selectedDim = dimensionScores.find((d) => d.id === selectedDimId);
 
-  // Weak points are the dimensions that fell below the pass mark, not a fixed
-  // top-three — a store with one bad dimension should show one, not three.
-  // A half-scored dimension sits below the mark by arithmetic alone, so it only
-  // qualifies once it is complete; otherwise a round nobody has touched lists
-  // all eight as weak, which is the same misreading the zone gate avoids.
+  // Weak points are always the 3 lowest-scored dimensions, ranked regardless
+  // of the pass mark. A half-scored dimension sits low by arithmetic alone,
+  // so it's excluded until complete — otherwise a round nobody has touched
+  // lists dimensions as weak, which is the same misreading the zone gate avoids.
   const improvementPoints = dimensionScores
-    .filter((dim) => dim.isFullyScored && dim.pct < DIMENSION_PASS_THRESHOLD_PCT)
-    .sort((a, b) => a.pct - b.pct);
+    .filter((dim) => dim.isFullyScored)
+    .sort((a, b) => a.pct - b.pct)
+    .slice(0, IMPROVEMENT_POINTS_COUNT);
 
   // A round that isn't submitted has no frozen totalScore, so it shows the
   // running one instead — same formula, so the number doesn't jump at submit.
