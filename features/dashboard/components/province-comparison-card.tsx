@@ -19,7 +19,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ROUTES } from '@/constants/routes';
+import { useAuthStore } from '@/stores/auth-store';
 import { colors } from '@/styles/tokens';
+import { ROLES } from '@/types/auth.types';
 import { cn } from '@/utils/cn';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import {
@@ -58,6 +60,11 @@ export function ProvinceComparisonCard() {
   const { data: items, isLoading, isError, error } = useProvinceComparison(pair);
   const { data: kpis } = useDashboardKpis();
 
+  // ปิดให้ ENTREPRENEUR — การเทียบคะแนนเฉลี่ยรายจังหวัดเป็นมุมมองภาพรวมของโครงการ
+  // ไม่ใช่ข้อมูลร้านตัวเอง เช่นเดียวกับ Top20Card
+  const hasRole = useAuthStore((s) => s.hasRole);
+  const isHiddenForRole = hasRole(ROLES.ENTREPRENEUR);
+
   const dataDate = formatDataDate(kpis?.lastUpdated);
 
   const fromLabel = PROVINCE_COMPARISON_TEXT.seriesLabel(pair.from);
@@ -72,6 +79,8 @@ export function ProvinceComparisonCard() {
     { key: 'fromScore', label: fromLabel, className: 'bg-orange' },
     { key: 'toScore', label: toLabel, className: 'bg-purple-banner' },
   ];
+
+  if (isHiddenForRole) return null;
 
   return (
     <Card className="flex h-full flex-col shadow-sm">

@@ -66,6 +66,11 @@ export const REPORT_TEXT = {
   provinceColumn: 'จังหวัด',
   redFlagColumn: 'Red Flag',
   criticalDimensionColumn: 'มิติเร่งแก้ไข',
+  overallLevelColumn: 'ระดับรวม',
+  // Eight dimension names in full would push the matrix several screens wide,
+  // so the header carries the number and the full name lives in the tooltip.
+  dimensionShortLabel: (dimensionId: number, weight: number) => `มิติ ${dimensionId} (${weight}%)`,
+  dimensionNumberLabel: (dimensionId: number) => `มิติ ${dimensionId}`,
   averageRow: 'ค่าเฉลี่ย',
   redFlagSection: 'สัญญาณเตือน (Red Flag)',
   redFlagTypeColumn: 'ประเภท',
@@ -85,6 +90,15 @@ export const REPORT_TEXT = {
 export const REPORT_FORMAT_LABEL: Record<ReportFileFormat, string> = {
   xlsx: REPORT_TEXT.downloadExcel,
   pdf: REPORT_TEXT.downloadPdf,
+};
+
+// Matches getOverallLevel() in the API (assessment-scoring.util.ts) — the four
+// ระดับรวม labels of 03_สรุปคะแนน, which are a different scale from Zone below.
+export const OVERALL_LEVEL_BADGE_CLASS: Record<string, string> = {
+  เร่งแก้ไข: 'border-score-red/20 bg-score-red/10 text-score-red',
+  ต้องพัฒนา: 'border-orange/20 bg-orange/10 text-orange',
+  ดี: 'border-score-green/20 bg-score-green/10 text-score-green',
+  ดีมาก: 'border-score-green/20 bg-score-green/10 text-score-green',
 };
 
 // Matches getZone() in the API (assessment-scoring.util.ts) — the colours are

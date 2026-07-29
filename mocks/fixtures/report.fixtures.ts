@@ -102,6 +102,14 @@ function zoneOf(score: number): string {
   return 'Model Zone';
 }
 
+/** ระดับรวม — mirrors getOverallLevel() in the API, a different scale from zoneOf. */
+function overallLevelOf(score: number): string {
+  if (score < 50) return 'เร่งแก้ไข';
+  if (score < 65) return 'ต้องพัฒนา';
+  if (score < 80) return 'ดี';
+  return 'ดีมาก';
+}
+
 /** Which rounds a store has "submitted" — derived from its id so it varies. */
 export function assessedRounds(storeId: string): AssessmentRound[] {
   const seed = [...storeId].reduce((sum, char) => sum + char.charCodeAt(0), 0);
@@ -184,7 +192,7 @@ export function buildRoundMatrix(round: AssessmentRound): RoundMatrixReport {
         rawScore,
         rawScorePct: round2((rawScore / maxScore) * 100),
         weightedScore,
-        zone: zoneOf(weightedScore),
+        overallLevel: overallLevelOf(weightedScore),
         redFlagCount: round === 'T0' ? 1 : 0,
         unresolvedRedFlagCount: round === 'T0' ? 1 : 0,
         criticalDimensionId: critical.dimensionId,

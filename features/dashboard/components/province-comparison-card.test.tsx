@@ -2,6 +2,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useAuthStore } from '@/stores/auth-store';
+import type { Role } from '@/types/auth.types';
+import { ROLES } from '@/types/auth.types';
 import { dashboardService } from '../services/dashboard.service';
 import type { ProvinceComparison } from '../types/dashboard.types';
 import { ProvinceComparisonCard } from './province-comparison-card';
@@ -22,6 +25,13 @@ function comparison(overrides: Partial<ProvinceComparison> = {}): ProvinceCompar
 function renderWithClient(ui: React.ReactElement) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+}
+
+function signInAs(role: Role) {
+  useAuthStore.setState({
+    user: { id: 'u1', name: 'ทดสอบ', email: 'test@example.com', role },
+    isAuthenticated: true,
+  });
 }
 
 beforeAll(() => {
@@ -47,6 +57,7 @@ beforeAll(() => {
 describe('ProvinceComparisonCard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    signInAs(ROLES.ADMIN);
     vi.mocked(dashboardService.getKpis).mockResolvedValue(
       {} as Awaited<ReturnType<typeof dashboardService.getKpis>>
     );
@@ -92,6 +103,14 @@ describe('ProvinceComparisonCard', () => {
     await waitFor(() =>
       expect(screen.getByText('ยังไม่มีข้อมูลเปรียบเทียบคะแนน')).toBeInTheDocument()
     );
+  });
+
+  it('renders nothing for ENTREPRENEUR', () => {
+    signInAs(ROLES.ENTREPRENEUR);
+    vi.mocked(dashboardService.getProvinceComparison).mockResolvedValue([comparison()]);
+    const { container } = renderWithClient(<ProvinceComparisonCard />);
+
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('shows the error message when the API fails', async () => {

@@ -26,7 +26,7 @@ const report: RoundMatrixReport = {
       rawScore: 150,
       rawScorePct: 75,
       weightedScore: 74.1,
-      zone: 'Improve Zone',
+      overallLevel: 'ดี',
       redFlagCount: 2,
       unresolvedRedFlagCount: 1,
       criticalDimensionId: 2,
@@ -56,7 +56,37 @@ describe('RoundMatrixPanel', () => {
     expect(screen.getByText('ครัวริมธารจันทบุรี')).toBeInTheDocument();
     expect(screen.getAllByText('85.70').length).toBeGreaterThan(0);
     expect(screen.getAllByText('60.70').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('การเงินและต้นทุน').length).toBeGreaterThan(0);
+    expect(screen.getByText('มิติ 2')).toBeInTheDocument();
+  });
+
+  it('names the dimension to fix first by number, with the full name in a tooltip', async () => {
+    vi.mocked(reportService.getRoundMatrix).mockResolvedValue(report);
+    renderWithClient(<RoundMatrixPanel round="T0" />);
+
+    await userEvent.hover(await screen.findByText('มิติ 2'));
+
+    await waitFor(() => expect(screen.getAllByText('การเงินและต้นทุน').length).toBeGreaterThan(0));
+  });
+
+  it('shows the overall level of each store and no zone column', async () => {
+    vi.mocked(reportService.getRoundMatrix).mockResolvedValue(report);
+    renderWithClient(<RoundMatrixPanel round="T0" />);
+
+    expect(await screen.findByText('ระดับรวม')).toBeInTheDocument();
+    expect(screen.getByText('ดี')).toBeInTheDocument();
+    expect(screen.queryByText('Zone')).not.toBeInTheDocument();
+  });
+
+  it('numbers the dimension columns and keeps the full name in a tooltip', async () => {
+    vi.mocked(reportService.getRoundMatrix).mockResolvedValue(report);
+    renderWithClient(<RoundMatrixPanel round="T0" />);
+
+    expect(await screen.findByText('มิติ 1 (14%)')).toBeInTheDocument();
+    expect(screen.getByText('มิติ 2 (16%)')).toBeInTheDocument();
+    expect(screen.queryByText('ความปลอดภัยอาหาร')).not.toBeInTheDocument();
+
+    await userEvent.hover(screen.getByText('มิติ 1 (14%)'));
+    await waitFor(() => expect(screen.getAllByText('ความปลอดภัยอาหาร').length).toBeGreaterThan(0));
   });
 
   it('says so when no store submitted the round', async () => {

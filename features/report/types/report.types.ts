@@ -94,7 +94,8 @@ export interface RoundMatrixRow {
   rawScore: number;
   rawScorePct: number;
   weightedScore: number | null;
-  zone: string | null;
+  /** ระดับรวม — a Thai label over the weighted total, on its own scale, not Zone. */
+  overallLevel: string;
   redFlagCount: number;
   unresolvedRedFlagCount: number;
   criticalDimensionId: number | null;
