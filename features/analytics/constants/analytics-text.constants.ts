@@ -18,8 +18,6 @@ export const ANALYTICS_TOOLBAR_TEXT = {
   export: 'ส่งออก (Export)',
   exporting: 'กำลังส่งออก…',
   exportSuccess: 'ส่งออกรายงานวิเคราะห์สำเร็จ',
-  lastUpdated: 'อัปเดตล่าสุด',
-  refresh: 'โหลดข้อมูลใหม่',
 } as const;
 
 export const ANALYTICS_KPI_TEXT = {

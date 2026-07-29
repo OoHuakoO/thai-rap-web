@@ -8,10 +8,12 @@ import type { Store } from '@/features/store/types/store.types';
 import type { PaginatedResponse } from '@/types/api.types';
 
 // Seed users these tests lean on: '5' is an ENTREPRENEUR owning store '1', '2'
-// an ASSESSOR assigned stores 1/3/5, '1' an ADMIN, '8' a VIEWER.
+// an ASSESSOR assigned stores 1/3/5, '3' a MENTOR assigned stores 2/4, '1' an
+// ADMIN, '8' a VIEWER.
 const ENTREPRENEUR_ID = '5';
 const OWNED_STORE_ID = '1';
 const ASSESSOR_ID = '2';
+const MENTOR_ID = '3';
 const ADMIN_ID = '1';
 const VIEWER_ID = '8';
 
@@ -47,6 +49,20 @@ describe('storeHandlers scoping', () => {
     const body = await listStores(ASSESSOR_ID);
 
     expect(body.items.map((s) => s.id).sort()).toEqual(['1', '3', '5']);
+  });
+
+  // A mentor holds the same list for the other reason: it reads a store's
+  // assessment to build the IDP, and only for the stores it was handed.
+  it('lists a mentor only its assignment list', async () => {
+    const body = await listStores(MENTOR_ID);
+
+    expect(body.items.map((s) => s.id).sort()).toEqual(['2', '4']);
+  });
+
+  it('refuses a mentor a store it was not assigned', async () => {
+    const res = await fetch(`${API_URL}/stores/${OWNED_STORE_ID}`, as(MENTOR_ID));
+
+    expect(res.status).toBe(403);
   });
 
   it('lists every store to an admin', async () => {

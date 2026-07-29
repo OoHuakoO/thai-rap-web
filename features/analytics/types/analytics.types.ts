@@ -91,8 +91,6 @@ export interface StoreAnalytics {
   mentorRecommendations: string[];
   incubationStatus: IncubationStatus | null;
   target?: AnalyticsTarget;
-  /** ISO timestamp the figures were computed from. */
-  lastUpdated?: string;
 }
 
 export type IDPPhase = 'D7' | 'D30' | 'D90';

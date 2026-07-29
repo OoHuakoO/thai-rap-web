@@ -73,10 +73,8 @@ export function AnalyticsDashboard() {
   const {
     data: analytics,
     isLoading: isAnalyticsLoading,
-    isFetching: isAnalyticsFetching,
     isError: isAnalyticsError,
     error: analyticsError,
-    refetch,
   } = useStoreAnalytics(storeId ?? undefined, params);
 
   const { mutate: exportAnalytics, isPending: isExporting } = useExportAnalytics();
@@ -97,9 +95,6 @@ export function AnalyticsDashboard() {
         onComparePairChange={setComparePairValue}
         province={province}
         onProvinceChange={setProvince}
-        lastUpdated={analytics?.lastUpdated}
-        onRefresh={() => void refetch()}
-        isRefreshing={isAnalyticsFetching}
         onExport={() => storeId && exportAnalytics({ storeId, params })}
         isExporting={isExporting}
         canExport={Boolean(storeId) && Boolean(analytics)}

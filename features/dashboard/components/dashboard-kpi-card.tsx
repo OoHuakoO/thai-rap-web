@@ -16,8 +16,8 @@ interface DashboardKpiCardProps {
 
 const PERCENTAGE_FRACTION_DIGITS = 2;
 
-// ~82% of the circle's h-11 diameter — the artwork reads too small below this.
-const ICON_CLASS = 'h-11 w-11';
+// ~85% of the circle's h-14 diameter — the artwork reads too small below this.
+const ICON_CLASS = 'h-12 w-12';
 
 function formatPercentage(percentage: number): string {
   const clamped = Math.min(100, Math.max(0, percentage));
@@ -41,7 +41,7 @@ export function DashboardKpiCard({
         <div className="flex items-start gap-3">
           <span
             className={cn(
-              'flex h-11 w-11 shrink-0 items-center justify-center rounded-full',
+              'flex h-14 w-14 shrink-0 items-center justify-center rounded-full',
               accentClass.circle
             )}
           >

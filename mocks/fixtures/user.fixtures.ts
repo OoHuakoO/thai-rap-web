@@ -98,6 +98,9 @@ const seed: User[] = [
     email: 'meknana.p@rbru.ac.th',
     role: ROLES.MENTOR,
     status: USER_STATUSES.ACTIVE,
+    // A mentor reads against the same assignment list an assessor scores
+    // against, so it needs one to see any store at all.
+    assignedStoreIds: ['2', '4'],
     lastLogin: '2024-05-18T11:20:00Z',
     createdAt: '2024-02-14T11:00:00Z',
     updatedAt: '2024-04-11T10:00:00Z',

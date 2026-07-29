@@ -8,23 +8,28 @@ import { useConfirm } from '@/components/shared/confirm-dialog';
 import { useAuthStore } from '@/stores/auth-store';
 import { PERMISSIONS, ROLES } from '@/types/auth.types';
 import { extractErrorMessage } from '@/utils/extract-error-message';
-import { ASSIGN_STORES_TEXT } from '../constants/assign-stores.constants';
+import {
+  ASSIGN_STORES_MODE_TEXT,
+  type AssignStoresMode,
+} from '../constants/assign-stores.constants';
 import { USER_LIST_TEXT } from '../constants/user-list.constants';
 import { useApproveUser, useRejectUser } from '../hooks/use-users';
 import type { User } from '../types/user.types';
 import { USER_STATUSES } from '../types/user.types';
 import { AssignStoresDialog } from './assign-stores-dialog';
-import type { AssignStoresMode } from './assign-stores-dialog';
 
 interface UserRowActionsProps {
   user: User;
 }
 
-// Which assignment a row offers is decided by role, matching the API: only an
-// ASSESSOR takes assigned stores, only an ENTREPRENEUR takes owned ones. Any
-// other role gets no button rather than one that 400s.
+// Which assignment a row offers is decided by role, matching the API: an
+// ASSESSOR and a MENTOR take assigned stores (ASSIGNMENT_SCOPED_ROLES — the
+// list the one scores against and the other reads against), only an
+// ENTREPRENEUR takes owned ones. Any other role gets no button rather than one
+// that 400s.
 const ASSIGN_MODE_BY_ROLE: Partial<Record<User['role'], AssignStoresMode>> = {
   [ROLES.ASSESSOR]: 'assessor',
+  [ROLES.MENTOR]: 'mentor',
   [ROLES.ENTREPRENEUR]: 'owner',
 };
 
@@ -87,9 +92,7 @@ export function UserRowActions({ user }: UserRowActionsProps) {
         <>
           <Button variant="outline" size="sm" onClick={() => setIsAssignOpen(true)}>
             <Store className="mr-1.5 h-4 w-4" />
-            {assignMode === 'assessor'
-              ? ASSIGN_STORES_TEXT.assessorTrigger
-              : ASSIGN_STORES_TEXT.ownerTrigger}
+            {ASSIGN_STORES_MODE_TEXT[assignMode].trigger}
           </Button>
           {/* Mounted only while open so the dialog re-reads the user's store
               ids on every open — see the note on AssignStoresDialog. */}

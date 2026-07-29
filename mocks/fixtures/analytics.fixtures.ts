@@ -8,8 +8,6 @@ import { getZone } from '@/features/assessment/utils/zone';
 import { dimensionSeed } from './assessment.fixtures';
 import { storeDb } from './store.fixtures';
 
-const DATA_DATE = '2026-05-18T10:30:00.000Z';
-
 /** Rounds the analytics mock has data for, in funnel order. */
 const ROUND_ORDER = ['T0', 'T1', 'T2', 'T3'] as const;
 type MockRound = (typeof ROUND_ORDER)[number];
@@ -285,7 +283,6 @@ export function getStoreAnalytics(
       incubationReadiness: TARGET_READINESS,
       topPercentile: TARGET_TOP_PERCENTILE,
     },
-    lastUpdated: DATA_DATE,
   };
 }
 

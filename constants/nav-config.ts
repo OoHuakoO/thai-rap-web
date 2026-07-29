@@ -86,7 +86,16 @@ export const NAV_ITEMS: NavItem[] = [
     labelTh: 'รายงานและส่งออก',
     href: ROUTES.REPORTS,
     icon: NAV_ICONS.reports,
-    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ASSESSOR, ROLES.MENTOR, ROLES.ME_TEAM],
+    // ENTREPRENEUR included: the page scopes itself to the stores it owns, and
+    // the cross-store matrix tab is gated separately on REPORT_DETAIL_ROLES.
+    allowedRoles: [
+      ROLES.SUPER_ADMIN,
+      ROLES.ADMIN,
+      ROLES.ASSESSOR,
+      ROLES.MENTOR,
+      ROLES.ME_TEAM,
+      ROLES.ENTREPRENEUR,
+    ],
   },
   {
     label: 'News & Announcements',

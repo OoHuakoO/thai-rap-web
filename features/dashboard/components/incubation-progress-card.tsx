@@ -22,8 +22,8 @@ const BADGE_CLASS = {
   pending: 'bg-charcoal text-white',
 } as const;
 
-// ~82% of the circle's h-12 diameter — the artwork reads too small below this.
-const ICON_CLASS = 'h-10 w-10';
+// ~87% of the circle's h-16 diameter — the artwork reads too small below this.
+const ICON_CLASS = 'h-14 w-14';
 
 export function IncubationProgressCard() {
   const { data: steps, isLoading, isError, error } = useIncubationProgress();
@@ -48,7 +48,7 @@ export function IncubationProgressCard() {
 
         {!isLoading && !isError && !!steps?.length && (
           <div className="my-auto overflow-x-auto">
-            <div className="flex min-w-[420px] items-start gap-1">
+            <div className="flex min-w-[480px] items-start gap-1">
               {steps.map((step, index) => {
                 const iconSrc = INCUBATION_STEP_ICONS[index % INCUBATION_STEP_ICONS.length];
                 const isLast = index === steps.length - 1;
@@ -60,7 +60,7 @@ export function IncubationProgressCard() {
                     <div className="flex flex-1 flex-col items-center gap-2 text-center">
                       <span
                         className={cn(
-                          'flex h-12 w-12 items-center justify-center rounded-full',
+                          'flex h-16 w-16 items-center justify-center rounded-full',
                           KPI_ACCENT_CLASS[accent].circle
                         )}
                       >
@@ -88,7 +88,7 @@ export function IncubationProgressCard() {
                     </div>
 
                     {!isLast && (
-                      <ArrowRight aria-hidden className="mt-3.5 h-4 w-4 shrink-0 text-orange/60" />
+                      <ArrowRight aria-hidden className="mt-6 h-4 w-4 shrink-0 text-orange/60" />
                     )}
                   </div>
                 );

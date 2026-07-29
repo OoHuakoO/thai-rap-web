@@ -74,6 +74,26 @@ describe('ReportsStatusCard', () => {
     expect(downloadBlob).toHaveBeenCalledWith(blob, 'assessment-report-T1.xlsx');
   });
 
+  it('offers an entrepreneur the link through to the reports page', async () => {
+    signInAs(ROLES.ENTREPRENEUR);
+    vi.mocked(dashboardService.getReportsStatus).mockResolvedValue([report]);
+
+    renderWithClient(<ReportsStatusCard />);
+
+    const link = await screen.findByRole('link', { name: /ดูรายงานทั้งหมด/ });
+    expect(link).toHaveAttribute('href', '/reports');
+  });
+
+  it('hides the link for a role that may not open the reports page', async () => {
+    signInAs(ROLES.VIEWER);
+    vi.mocked(dashboardService.getReportsStatus).mockResolvedValue([report]);
+
+    renderWithClient(<ReportsStatusCard />);
+    await waitFor(() => expect(screen.getByText(report.name)).toBeInTheDocument());
+
+    expect(screen.queryByRole('link', { name: /ดูรายงานทั้งหมด/ })).not.toBeInTheDocument();
+  });
+
   it('disables the download for a role without reports:export', async () => {
     signInAs(ROLES.VIEWER);
     vi.mocked(dashboardService.getReportsStatus).mockResolvedValue([report]);

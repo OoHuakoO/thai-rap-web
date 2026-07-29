@@ -96,6 +96,40 @@ describe('UserRowActions', () => {
     await waitFor(() => expect(screen.getByText('เลือกแล้ว 0 ร้าน')).toBeInTheDocument());
   });
 
+  // A mentor takes the same assignment list an assessor does — it is how it
+  // reaches a store's assessment at all — so the row must offer the dialog and
+  // seed it from assignedStoreIds, not from the owned list.
+  it('assigns stores to a mentor from the assignment list', async () => {
+    vi.mocked(storeService.getAll).mockResolvedValue({
+      items: [createStore({ id: OWNED_STORE_ID, name: 'ร้านทดสอบ' })],
+      meta: { total: 1, page: 1, limit: 100, totalPages: 1 },
+    });
+    const mentor = createUser({
+      id: 'user-3',
+      name: 'ที่ปรึกษา',
+      role: ROLES.MENTOR,
+      status: USER_STATUSES.ACTIVE,
+      assignedStores: [{ id: OWNED_STORE_ID, code: 'S001', name: 'ร้านทดสอบ' }],
+    });
+    vi.mocked(userService.assignStores).mockResolvedValue(mentor);
+
+    renderWithClient(<UserRowActions user={mentor} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /มอบหมายร้าน/ }));
+    await waitFor(() =>
+      expect(screen.getByText('กำหนดร้านที่ให้คำปรึกษา')).toBeInTheDocument()
+    );
+    expect(screen.getByText('เลือกแล้ว 1 ร้าน')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'บันทึก' }));
+
+    await waitFor(() =>
+      expect(userService.assignStores).toHaveBeenCalledWith('user-3', {
+        storeIds: [OWNED_STORE_ID],
+      })
+    );
+  });
+
   it('deletes the account when a pending sign-up is rejected', async () => {
     vi.mocked(userService.remove).mockResolvedValue(null);
 

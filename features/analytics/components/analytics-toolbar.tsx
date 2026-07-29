@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, Download, RefreshCw, Store as StoreIcon } from 'lucide-react';
+import { ChevronDown, Download, Store as StoreIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -16,7 +16,6 @@ import { useProvinces } from '@/features/province';
 import type { Store } from '@/features/store';
 import { buildFileUrl } from '@/utils/build-file-url';
 import { cn } from '@/utils/cn';
-import { formatThaiDateTime } from '@/utils/format-thai-date';
 import {
   ALL_PROVINCES_VALUE,
   COMPARE_PAIR_OPTIONS,
@@ -35,9 +34,6 @@ interface AnalyticsToolbarProps {
   onComparePairChange: (value: string) => void;
   province: string;
   onProvinceChange: (province: string) => void;
-  lastUpdated?: string;
-  onRefresh: () => void;
-  isRefreshing: boolean;
   onExport: () => void;
   isExporting: boolean;
   canExport: boolean;
@@ -53,9 +49,6 @@ export function AnalyticsToolbar({
   onComparePairChange,
   province,
   onProvinceChange,
-  lastUpdated,
-  onRefresh,
-  isRefreshing,
   onExport,
   isExporting,
   canExport,
@@ -174,24 +167,6 @@ export function AnalyticsToolbar({
         {isExporting ? ANALYTICS_TOOLBAR_TEXT.exporting : ANALYTICS_TOOLBAR_TEXT.export}
       </Button>
 
-      <div className="flex items-center gap-1.5">
-        <div className="text-right">
-          <p className="text-[11px] text-muted-foreground">{ANALYTICS_TOOLBAR_TEXT.lastUpdated}</p>
-          <p className="text-[11px] font-medium text-charcoal">
-            {lastUpdated ? formatThaiDateTime(lastUpdated) : '—'}
-          </p>
-        </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={onRefresh}
-          aria-label={ANALYTICS_TOOLBAR_TEXT.refresh}
-          className="h-8 w-8 text-orange hover:text-orange-light"
-        >
-          <RefreshCw className={cn('h-4 w-4', isRefreshing && 'animate-spin')} />
-        </Button>
-      </div>
     </div>
   );
 }

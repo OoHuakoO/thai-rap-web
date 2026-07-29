@@ -58,14 +58,20 @@ describe('permissions', () => {
       expect(canAccessRoute(ROLES.ME_TEAM, ROUTES.REPORTS)).toBe(true);
     });
 
-    // ผู้ประกอบการ gets two pages: the project overview and its own store
-    // profile. Analysis and export are programme-wide staff tooling.
-    it('leaves a store with only the overview and its own store profile', () => {
+    // ผู้ประกอบการ gets the project overview, its own store profile, and its own
+    // reports. วิเคราะห์ศักยภาพ stays programme-wide staff tooling.
+    it('leaves a store with the overview, its own store profile and its own reports', () => {
       expect(canAccessRoute(ROLES.ENTREPRENEUR, ROUTES.HOME)).toBe(true);
       expect(canAccessRoute(ROLES.ENTREPRENEUR, ROUTES.STORES)).toBe(true);
+      expect(canAccessRoute(ROLES.ENTREPRENEUR, ROUTES.REPORTS)).toBe(true);
 
       expect(canAccessRoute(ROLES.ENTREPRENEUR, ROUTES.ANALYTICS)).toBe(false);
-      expect(canAccessRoute(ROLES.ENTREPRENEUR, ROUTES.REPORTS)).toBe(false);
+    });
+
+    // reports:read is granted at scope OWN — the page must never widen into
+    // another store's numbers.
+    it('scopes a store reports to the records it owns', () => {
+      expect(getDataScope(ROLES.ENTREPRENEUR, 'reports')).toBe(DATA_SCOPES.OWN);
     });
 
     it('lets an assessor score, scoped to assigned stores only', () => {

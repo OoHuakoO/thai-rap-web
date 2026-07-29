@@ -21,7 +21,7 @@ export const USER_LIST_TEXT = {
   columnActions: '',
 
   neverLoggedIn: 'ยังไม่เคยเข้าใช้',
-  noStores: 'ยังไม่ได้มอบหมาย',
+  noStores: '-',
   assignedCount: (count: number) => `ประเมินได้ ${count} ร้าน`,
   ownedCount: (count: number) => `เป็นเจ้าของ ${count} ร้าน`,
 

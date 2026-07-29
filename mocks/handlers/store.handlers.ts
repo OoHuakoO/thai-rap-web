@@ -74,11 +74,14 @@ function withOwner(store: Store): Store {
 }
 
 // Mirrors StoreService.listScope / assertVisible: an ENTREPRENEUR sees only the
-// stores it owns and an ASSESSOR only the ones assigned to it, in the list and
-// on a direct id alike. Takes an owner-resolved store, never a raw fixture row.
+// stores it owns, an ASSESSOR and a MENTOR only the ones assigned to them
+// (ASSIGNMENT_SCOPED_ROLES on the API), in the list and on a direct id alike.
+// Takes an owner-resolved store, never a raw fixture row.
 function isVisibleTo(store: Store, caller: User | null): boolean {
   if (caller?.role === ROLES.ENTREPRENEUR) return store.ownerId === caller.id;
-  if (caller?.role === ROLES.ASSESSOR) return caller.assignedStoreIds.includes(store.id);
+  if (caller?.role === ROLES.ASSESSOR || caller?.role === ROLES.MENTOR) {
+    return caller.assignedStoreIds.includes(store.id);
+  }
   return true;
 }
 

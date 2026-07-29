@@ -20,14 +20,13 @@ import { Loading } from '@/components/shared/loading';
 import { useStores } from '@/features/store';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import {
+  ASSIGN_STORES_MODE_TEXT,
   ASSIGN_STORES_PAGE_SIZE,
   ASSIGN_STORES_TEXT,
 } from '../constants/assign-stores.constants';
+import type { AssignStoresMode } from '../constants/assign-stores.constants';
 import { useAssignOwnedStores, useAssignStores } from '../hooks/use-users';
 import type { User } from '../types/user.types';
-
-/** `assessor` sets who may score a store; `owner` sets Store.ownerId. */
-export type AssignStoresMode = 'assessor' | 'owner';
 
 interface AssignStoresDialogProps {
   user: User;
@@ -42,8 +41,11 @@ interface AssignStoresDialogProps {
 // only for its own closes — never on the way in — so there is no callback to
 // re-seed from.
 export function AssignStoresDialog({ user, mode, open, onOpenChange }: AssignStoresDialogProps) {
-  const isAssessorMode = mode === 'assessor';
-  const initialIds = isAssessorMode ? user.assignedStoreIds : user.ownedStoreIds;
+  // ASSESSOR and MENTOR share one list on the API (Store.assignedUsers) and one
+  // endpoint; only the copy differs, so `owner` is the sole branch below.
+  const isOwnerMode = mode === 'owner';
+  const copy = ASSIGN_STORES_MODE_TEXT[mode];
+  const initialIds = isOwnerMode ? user.ownedStoreIds : user.assignedStoreIds;
 
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>(initialIds);
@@ -55,11 +57,9 @@ export function AssignStoresDialog({ user, mode, open, onOpenChange }: AssignSto
     error,
   } = useStores({ limit: ASSIGN_STORES_PAGE_SIZE, search: search || undefined });
 
-  const assignAssessorStores = useAssignStores(user.id);
+  const assignAssignedStores = useAssignStores(user.id);
   const assignOwnedStores = useAssignOwnedStores(user.id);
-  const { mutate: assign, isPending } = isAssessorMode
-    ? assignAssessorStores
-    : assignOwnedStores;
+  const { mutate: assign, isPending } = isOwnerMode ? assignOwnedStores : assignAssignedStores;
 
   const toggle = (storeId: string) => {
     setSelectedIds((prev) =>
@@ -72,9 +72,7 @@ export function AssignStoresDialog({ user, mode, open, onOpenChange }: AssignSto
       { storeIds: selectedIds },
       {
         onSuccess: () => {
-          toast.success(
-            isAssessorMode ? ASSIGN_STORES_TEXT.assessorSuccess : ASSIGN_STORES_TEXT.ownerSuccess
-          );
+          toast.success(copy.success);
           onOpenChange(false);
         },
         onError: (err) => toast.error(extractErrorMessage(err)),
@@ -86,14 +84,8 @@ export function AssignStoresDialog({ user, mode, open, onOpenChange }: AssignSto
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>
-            {isAssessorMode ? ASSIGN_STORES_TEXT.assessorTitle : ASSIGN_STORES_TEXT.ownerTitle}
-          </DialogTitle>
-          <DialogDescription>
-            {isAssessorMode
-              ? ASSIGN_STORES_TEXT.assessorDescription(user.name)
-              : ASSIGN_STORES_TEXT.ownerDescription(user.name)}
-          </DialogDescription>
+          <DialogTitle>{copy.title}</DialogTitle>
+          <DialogDescription>{copy.description(user.name)}</DialogDescription>
         </DialogHeader>
 
         <Input
@@ -131,7 +123,7 @@ export function AssignStoresDialog({ user, mode, open, onOpenChange }: AssignSto
             <ul className="divide-y">
               {stores.items.map((store) => {
                 const isOwnedByOther =
-                  !isAssessorMode && !!store.ownerId && store.ownerId !== user.id;
+                  isOwnerMode && !!store.ownerId && store.ownerId !== user.id;
                 return (
                   <li key={store.id}>
                     <label className="flex cursor-pointer items-center gap-3 p-3 hover:bg-muted/50">

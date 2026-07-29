@@ -4,6 +4,7 @@ import { getScenario, unauthorized, forbidden, serverError } from '../utils/scen
 import { HTTP_STATUS } from '@/constants/http-status';
 import type { AssignStoresDto, User, UserStats } from '@/features/user/types/user.types';
 import { USER_STATUSES } from '@/features/user/types/user.types';
+import { ROLES } from '@/types/auth.types';
 import type { ApiErrorResponse, PaginatedResponse } from '@/types/api.types';
 import { API_URL } from '@/constants';
 
@@ -119,8 +120,10 @@ export const userHandlers = [
 
     const user = userDb.findById(params.id as string);
     if (!user) return notFound('ไม่พบผู้ใช้งาน');
-    if (user.role !== 'ASSESSOR') {
-      return badRequest('USER_006', 'มอบหมายร้านให้ประเมินได้เฉพาะผู้ประเมินเท่านั้น');
+    // ASSIGNMENT_SCOPED_ROLES on the API — an assessor scores against this list,
+    // a mentor reads against it.
+    if (user.role !== ROLES.ASSESSOR && user.role !== ROLES.MENTOR) {
+      return badRequest('USER_006', 'มอบหมายร้านได้เฉพาะผู้ประเมินและที่ปรึกษาเท่านั้น');
     }
 
     const body = (await request.json()) as AssignStoresDto;
@@ -136,7 +139,7 @@ export const userHandlers = [
 
     const user = userDb.findById(params.id as string);
     if (!user) return notFound('ไม่พบผู้ใช้งาน');
-    if (user.role !== 'ENTREPRENEUR') {
+    if (user.role !== ROLES.ENTREPRENEUR) {
       return badRequest('USER_006', 'กำหนดเจ้าของร้านได้เฉพาะผู้ประกอบการเท่านั้น');
     }
 

@@ -27,7 +27,7 @@ describe('nav-config', () => {
 
     it('ignores a path the role may not open', () => {
       expect(resolvePostLoginRoute(ROLES.ENTREPRENEUR, ROUTES.USERS)).toBe(ROUTES.HOME);
-      expect(resolvePostLoginRoute(ROLES.ENTREPRENEUR, ROUTES.REPORTS)).toBe(ROUTES.HOME);
+      expect(resolvePostLoginRoute(ROLES.ENTREPRENEUR, ROUTES.ANALYTICS)).toBe(ROUTES.HOME);
     });
 
     it('ignores an off-site path', () => {

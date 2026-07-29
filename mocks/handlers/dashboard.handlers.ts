@@ -1,23 +1,33 @@
 import { http, HttpResponse } from 'msw';
 import { API_URL } from '@/constants';
+import { ROLES } from '@/types/auth.types';
 import type {
   ActivityItem,
   AssessmentRound,
   Top20RoundFilter,
 } from '@/features/dashboard/types/dashboard.types';
 import type { NewsType } from '@/features/news/types/news.types';
+import type { User } from '@/features/user/types/user.types';
 import {
-  activities,
-  dashboardKpis,
-  getProvinceComparison,
-  getTop20ByRound,
-  incubationProgress,
-  provinceDistribution,
-  reportsStatus,
-  storeRoundScores,
+  buildIncubationProgress,
+  buildKpis,
+  buildProvinceComparison,
+  buildProvinceDistribution,
+  buildReportsStatus,
+  buildStoreRoundScores,
+  buildTop20,
+  dashboardStores,
 } from '../fixtures/dashboard.fixtures';
+import type { DashboardStore } from '../factories/dashboard.factory';
 import { newsDb } from '../fixtures/news.fixtures';
-import { forbidden, getScenario, serverError, unauthorized } from '../utils/scenario';
+import { userDb } from '../fixtures/user.fixtures';
+import {
+  forbidden,
+  getMockUserId,
+  getScenario,
+  serverError,
+  unauthorized,
+} from '../utils/scenario';
 
 const BASE_URL = `${API_URL}/dashboard`;
 
@@ -44,6 +54,32 @@ function checkScenario(request: Request): Response | null {
   return null;
 }
 
+function getCaller(request: Request): User | null {
+  const id = getMockUserId(request);
+  return id ? userDb.findById(id) : null;
+}
+
+// Mirrors DashboardService's resolveStoreScope: an ENTREPRENEUR's overview
+// covers the stores it owns, an ASSESSOR's and a MENTOR's the ones assigned to
+// them, and every staff role keeps the project-wide numbers. Ownership and
+// assignment live on the user record — what the /users dialogs write — so both
+// are read from there rather than copied onto the dashboard rows.
+//
+// A request with no mock token stays unscoped: the handler tests call these
+// endpoints without signing in, and every real call carries a token.
+function scopedStores(request: Request): DashboardStore[] {
+  const caller = getCaller(request);
+  if (!caller) return dashboardStores;
+
+  if (caller.role === ROLES.ENTREPRENEUR) {
+    return dashboardStores.filter((store) => caller.ownedStoreIds.includes(store.storeId));
+  }
+  if (caller.role === ROLES.ASSESSOR || caller.role === ROLES.MENTOR) {
+    return dashboardStores.filter((store) => caller.assignedStoreIds.includes(store.storeId));
+  }
+  return dashboardStores;
+}
+
 function parseRound(request: Request): Top20RoundFilter {
   const raw = new URL(request.url).searchParams.get('round');
   const match = ROUND_FILTERS.find((round) => round === raw);
@@ -54,9 +90,9 @@ function parseAssessmentRound(raw: string | null, fallback: AssessmentRound): As
   return ASSESSMENT_ROUNDS.find((round) => round === raw) ?? fallback;
 }
 
-function toStoreScoresCsv(): string {
+function toStoreScoresCsv(rows: DashboardStore[]): string {
   const header = ['จังหวัด', 'ชื่อร้าน', 'ประเภทอาหาร', ...ASSESSMENT_ROUNDS];
-  const rows = storeRoundScores.map((row) => [
+  const body = buildStoreRoundScores(rows).map((row) => [
     row.province,
     row.storeName,
     row.storeType,
@@ -65,24 +101,31 @@ function toStoreScoresCsv(): string {
 
   // Excel only detects UTF-8 in a CSV when the byte-order mark is present —
   // without it the Thai columns open as mojibake.
-  return `${CSV_BOM}${[header, ...rows].map((cells) => cells.join(',')).join('\n')}`;
+  return `${CSV_BOM}${[header, ...body].map((cells) => cells.join(',')).join('\n')}`;
 }
 
 export const dashboardHandlers = [
   http.get(`${BASE_URL}/kpis`, ({ request }) => {
-    return checkScenario(request) ?? HttpResponse.json(dashboardKpis);
+    return checkScenario(request) ?? HttpResponse.json(buildKpis(scopedStores(request)));
   }),
 
   http.get(`${BASE_URL}/province-distribution`, ({ request }) => {
-    return checkScenario(request) ?? HttpResponse.json(provinceDistribution);
+    return (
+      checkScenario(request) ?? HttpResponse.json(buildProvinceDistribution(scopedStores(request)))
+    );
   }),
 
   http.get(`${BASE_URL}/top20`, ({ request }) => {
-    return checkScenario(request) ?? HttpResponse.json(getTop20ByRound(parseRound(request)));
+    return (
+      checkScenario(request) ??
+      HttpResponse.json(buildTop20(scopedStores(request), parseRound(request)))
+    );
   }),
 
   http.get(`${BASE_URL}/incubation-progress`, ({ request }) => {
-    return checkScenario(request) ?? HttpResponse.json(incubationProgress);
+    return (
+      checkScenario(request) ?? HttpResponse.json(buildIncubationProgress(scopedStores(request)))
+    );
   }),
 
   http.get(`${BASE_URL}/province-comparison`, ({ request }) => {
@@ -91,7 +134,8 @@ export const dashboardHandlers = [
 
     const params = new URL(request.url).searchParams;
     return HttpResponse.json(
-      getProvinceComparison(
+      buildProvinceComparison(
+        scopedStores(request),
         parseAssessmentRound(params.get('from'), DEFAULT_COMPARISON_FROM),
         parseAssessmentRound(params.get('to'), DEFAULT_COMPARISON_TO)
       )
@@ -99,7 +143,9 @@ export const dashboardHandlers = [
   }),
 
   http.get(`${BASE_URL}/store-scores`, ({ request }) => {
-    return checkScenario(request) ?? HttpResponse.json(storeRoundScores);
+    return (
+      checkScenario(request) ?? HttpResponse.json(buildStoreRoundScores(scopedStores(request)))
+    );
   }),
 
   // Mocks ship CSV, not XLSX — generating a real workbook needs a library the
@@ -109,7 +155,7 @@ export const dashboardHandlers = [
     const scenarioResponse = checkScenario(request);
     if (scenarioResponse) return scenarioResponse;
 
-    return new HttpResponse(toStoreScoresCsv(), {
+    return new HttpResponse(toStoreScoresCsv(scopedStores(request)), {
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',
         'Content-Disposition': `attachment; filename="${EXPORT_CSV_FILENAME}"`,
@@ -117,8 +163,9 @@ export const dashboardHandlers = [
     });
   }),
 
-  // Mirrors the API: auto-generated warnings first, then whatever admins have
-  // published — so creating a news item really does change this feed.
+  // Mirrors the API: the feed is whatever admins published on /news, nothing
+  // else — so creating or deleting a news item really does change this card.
+  // Not scoped, matching GET /news: it carries no store to narrow on.
   http.get(`${BASE_URL}/activities`, ({ request }) => {
     const scenarioResponse = checkScenario(request);
     if (scenarioResponse) return scenarioResponse;
@@ -131,10 +178,20 @@ export const dashboardHandlers = [
       urgent: item.urgent,
     }));
 
-    return HttpResponse.json([...activities, ...published]);
+    return HttpResponse.json(published);
   }),
 
+  // JUDGE and VIEWER read no assessment, so no report exists for them — an empty
+  // list, not a 403, keeps the card rendering (ReportService.listAvailableReports).
   http.get(`${BASE_URL}/reports-status`, ({ request }) => {
-    return checkScenario(request) ?? HttpResponse.json(reportsStatus);
+    const scenarioResponse = checkScenario(request);
+    if (scenarioResponse) return scenarioResponse;
+
+    const caller = getCaller(request);
+    if (caller && (caller.role === ROLES.JUDGE || caller.role === ROLES.VIEWER)) {
+      return HttpResponse.json([]);
+    }
+
+    return HttpResponse.json(buildReportsStatus(scopedStores(request)));
   }),
 ];
