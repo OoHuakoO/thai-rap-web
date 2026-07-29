@@ -4,8 +4,7 @@
 // Single source of truth: every hardcoded role elsewhere in the app should
 // reference ROLES.* instead of retyping the string literal.
 // SUPER_ADMIN  — ผู้ดูแลระบบสูงสุด: everything ADMIN has, plus managing user
-//                accounts (users:*) and defining every other role's access
-//                (permissions:manage)
+//                accounts (users:*)
 // ADMIN        — ผู้ดูแลระบบ / PMO: runs the programme — every store/assessment
 //                function, but no user management
 // ASSESSOR     — ผู้ติดตาม / ผู้ประเมิน: the only staff role that scores an
@@ -132,11 +131,6 @@ export const PERMISSIONS = {
   USERS_READ: 'users:read',
   USERS_WRITE: 'users:write',
   USERS_DELETE: 'users:delete',
-  SETTINGS_READ: 'settings:read',
-  SETTINGS_WRITE: 'settings:write',
-  // Editing the role→permission matrix itself — SUPER_ADMIN only, see
-  // SUPER_ADMIN_ONLY_PERMISSIONS below.
-  PERMISSIONS_MANAGE: 'permissions:manage',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -148,20 +142,15 @@ export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
 export const ALL_PERMISSIONS = Object.values(PERMISSIONS);
 
 /**
- * Permissions no role other than SUPER_ADMIN may hold. The access-control
- * matrix renders these locked for every other role: ADMIN runs the programme,
- * but only SUPER_ADMIN decides who may access what (brief §5).
- *
- * The whole `users:*` set sits here, not just permissions:manage — user
- * management (`/users`) is SUPER_ADMIN-only, so listing/creating/deleting
- * accounts must be unreachable for every other role even if a saved matrix
- * ticks the box.
+ * Permissions no role other than SUPER_ADMIN may hold. ADMIN runs the
+ * programme, but only SUPER_ADMIN owns the accounts (brief §5) — `hasPermission`
+ * re-checks this list independently of ROLE_PERMISSIONS, so user management
+ * stays unreachable for every other role even if the table says otherwise.
  */
 export const SUPER_ADMIN_ONLY_PERMISSIONS: Permission[] = [
   PERMISSIONS.USERS_READ,
   PERMISSIONS.USERS_WRITE,
   PERMISSIONS.USERS_DELETE,
-  PERMISSIONS.PERMISSIONS_MANAGE,
 ];
 
 // ─── Data Scope ──────────────────────────────────────────────────────────────
@@ -179,14 +168,6 @@ export const DATA_SCOPES = {
 
 export type DataScope = (typeof DATA_SCOPES)[keyof typeof DATA_SCOPES];
 
-export const DATA_SCOPE_LABELS: Record<DataScope, string> = {
-  ALL: 'ทุกร้าน',
-  ASSIGNED: 'เฉพาะร้านที่ได้รับมอบหมาย',
-  OWN: 'เฉพาะร้านของตนเอง',
-  PUBLIC: 'เฉพาะข้อมูลที่เปิดเผย',
-  NONE: 'ไม่มีสิทธิ์',
-};
-
 export const SCOPED_RESOURCES = {
   STORE: 'store',
   ASSESSMENT: 'assessment',
@@ -196,18 +177,11 @@ export const SCOPED_RESOURCES = {
 
 export type ScopedResource = (typeof SCOPED_RESOURCES)[keyof typeof SCOPED_RESOURCES];
 
-export const SCOPED_RESOURCE_LABELS: Record<ScopedResource, string> = {
-  store: 'ข้อมูลร้านค้า',
-  assessment: 'ผลการประเมิน',
-  analytics: 'วิเคราะห์ศักยภาพ',
-  reports: 'รายงาน',
-};
-
 export type RoleDataScopes = Record<ScopedResource, DataScope>;
 
 // ─── Disclosable Store Fields ────────────────────────────────────────────────
-// "ข้อมูลที่ทางโครงการพิจารณาได้ว่าเปิดเผยได้" — SUPER_ADMIN picks which store
-// fields a role scoped to PUBLIC (VIEWER by default) is allowed to see.
+// "ข้อมูลที่ทางโครงการพิจารณาได้ว่าเปิดเผยได้" — the store fields a role scoped
+// to PUBLIC (VIEWER) is allowed to see, listed in PUBLIC_STORE_FIELDS.
 
 export const STORE_FIELDS = {
   CODE: 'code',
@@ -230,57 +204,6 @@ export const STORE_FIELDS = {
 } as const;
 
 export type StoreFieldKey = (typeof STORE_FIELDS)[keyof typeof STORE_FIELDS];
-
-export const STORE_FIELD_LABELS: Record<StoreFieldKey, string> = {
-  code: 'รหัสร้าน',
-  name: 'ชื่อร้าน',
-  province: 'จังหวัด',
-  storeType: 'ประเภทร้าน',
-  ownerName: 'ชื่อเจ้าของร้าน',
-  phone: 'เบอร์โทรศัพท์',
-  email: 'อีเมล',
-  address: 'ที่อยู่',
-  socialLinks: 'ช่องทางโซเชียล',
-  avgRevenue: 'รายได้เฉลี่ยต่อเดือน',
-  mainProblems: 'ปัญหาหลักของร้าน',
-  goals: 'เป้าหมายของร้าน',
-  menuPhotos: 'รูปเมนู',
-  storePhotos: 'รูปร้าน',
-  documents: 'เอกสารแนบ',
-  status: 'สถานะในโครงการ',
-  latestScore: 'คะแนนประเมินล่าสุด',
-};
-
-/**
- * Personal or evaluative fields — never public by default. SUPER_ADMIN can
- * still disclose them deliberately; the UI warns before that happens.
- */
-export const SENSITIVE_STORE_FIELDS: StoreFieldKey[] = [
-  STORE_FIELDS.PHONE,
-  STORE_FIELDS.EMAIL,
-  STORE_FIELDS.ADDRESS,
-  STORE_FIELDS.AVG_REVENUE,
-  STORE_FIELDS.MAIN_PROBLEMS,
-  STORE_FIELDS.DOCUMENTS,
-  STORE_FIELDS.LATEST_SCORE,
-];
-
-// ─── Access Control Config ───────────────────────────────────────────────────
-// The editable RBAC state SUPER_ADMIN maintains on /users/permissions —
-// served by GET /access-control, saved by PUT /access-control.
-
-export interface AccessControlConfig {
-  rolePermissions: Record<Role, Permission[]>;
-  roleScopes: Record<Role, RoleDataScopes>;
-  publicStoreFields: StoreFieldKey[];
-  updatedAt: string;
-  updatedBy: string | null;
-}
-
-export type UpdateAccessControlDto = Pick<
-  AccessControlConfig,
-  'rolePermissions' | 'roleScopes' | 'publicStoreFields'
->;
 
 // ─── Auth User ────────────────────────────────────────────────────────────────
 export interface AuthUser {

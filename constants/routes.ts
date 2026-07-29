@@ -31,15 +31,14 @@ export const ROUTES = {
   NEWS: '/news',
   NEWS_NEW: '/news/new',
   NEWS_EDIT: (id: string) => `/news/${id}/edit`,
+  // The edit path with its id left as a `:param` placeholder — ROUTE_PERMISSIONS
+  // needs a static string to match a visited path against, which the function
+  // above cannot give it.
+  NEWS_EDIT_PATTERN: '/news/:id/edit',
 
   // User management
   USERS: '/users',
   USER_DETAIL: (id: string) => `/users/${id}`,
-  // Access-control matrix — SUPER_ADMIN only
-  USER_PERMISSIONS: '/users/permissions',
-
-  // Settings
-  SETTINGS: '/settings',
 
   // Help
   MANUAL: '/manual',

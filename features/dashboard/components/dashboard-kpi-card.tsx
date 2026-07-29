@@ -17,7 +17,7 @@ interface DashboardKpiCardProps {
 const PERCENTAGE_FRACTION_DIGITS = 2;
 
 // ~82% of the circle's h-11 diameter — the artwork reads too small below this.
-const ICON_CLASS = 'h-9 w-9';
+const ICON_CLASS = 'h-11 w-11';
 
 function formatPercentage(percentage: number): string {
   const clamped = Math.min(100, Math.max(0, percentage));

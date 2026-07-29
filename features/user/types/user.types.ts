@@ -64,10 +64,6 @@ export interface CreateUserDto {
   status?: UserStatus;
 }
 
-export interface UpdateUserRoleDto {
-  role: Role;
-}
-
 /** The complete assignment list — an omitted store is revoked, `[]` clears every one. */
 export interface AssignStoresDto {
   storeIds: string[];

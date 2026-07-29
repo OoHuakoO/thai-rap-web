@@ -3,7 +3,6 @@ import type {
   AssignStoresDto,
   CreateUserDto,
   PaginatedUsers,
-  UpdateUserRoleDto,
   User,
   UserQueryParams,
   UserStats,
@@ -12,6 +11,10 @@ import type {
 // Accounts are normally made by registering and then being approved here —
 // that is what the PENDING status is for. `create` has no endpoint behind it
 // (see CreateUserDto) and no caller in the UI.
+//
+// No `suspend`, `remove` or `updateRole` wrapper: /users neither suspends nor
+// deletes an account, and a user keeps the role they registered with. The API
+// still exposes those endpoints; nothing in this app calls them.
 export const userService = {
   getAll: (params?: UserQueryParams) =>
     api.get<PaginatedUsers>('/users', { params }).then((res) => res.data),
@@ -24,16 +27,9 @@ export const userService = {
 
   approve: (id: string) => api.patch<User>(`/users/${id}/approve`).then((res) => res.data),
 
-  suspend: (id: string) => api.patch<User>(`/users/${id}/suspend`).then((res) => res.data),
-
-  updateRole: (id: string, data: UpdateUserRoleDto) =>
-    api.patch<User>(`/users/${id}/role`, data).then((res) => res.data),
-
   assignStores: (id: string, data: AssignStoresDto) =>
     api.patch<User>(`/users/${id}/assigned-stores`, data).then((res) => res.data),
 
   assignOwnedStores: (id: string, data: AssignStoresDto) =>
     api.patch<User>(`/users/${id}/owned-stores`, data).then((res) => res.data),
-
-  remove: (id: string) => api.delete(`/users/${id}`),
 };

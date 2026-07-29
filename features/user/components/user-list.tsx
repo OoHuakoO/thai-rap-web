@@ -13,9 +13,8 @@ import { AlertCard } from '@/components/shared/alert-card';
 import { DataTable } from '@/components/shared/data-table';
 import { PaginationBar } from '@/components/shared/pagination-bar';
 import { StatusBadge } from '@/components/shared/status-badge';
-import { useAuthStore } from '@/stores/auth-store';
 import type { Role } from '@/types/auth.types';
-import { PERMISSIONS, ROLES, ROLE_LABELS } from '@/types/auth.types';
+import { ROLE_LABELS } from '@/types/auth.types';
 import type { TableColumn } from '@/types';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { formatThaiDateTime } from '@/utils/format-thai-date';
@@ -29,7 +28,6 @@ import {
 import { useUsers } from '../hooks/use-users';
 import type { User, UserStatus } from '../types/user.types';
 import { USER_STATUSES, USER_STATUS_LABELS } from '../types/user.types';
-import { UserRoleSelect } from './user-role-select';
 import { UserRowActions } from './user-row-actions';
 
 const STATUS_VARIANT: Record<UserStatus, 'active' | 'pending' | 'inactive'> = {
@@ -58,9 +56,6 @@ export function UserList() {
     limit,
   });
 
-  const can = useAuthStore((s) => s.can);
-  const canWrite = can(PERMISSIONS.USERS_WRITE);
-
   // Any filter change re-slices the result set, so the current page number no
   // longer means anything — landing on an out-of-range page renders an empty
   // table that looks like "no results".
@@ -80,14 +75,10 @@ export function UserList() {
     {
       key: 'role',
       header: USER_LIST_TEXT.columnRole,
-      // SUPER_ADMIN's role is never editable here, so the account that grants
-      // access can't be demoted by accident. The API enforces the same rule.
-      cell: (user) =>
-        canWrite && user.role !== ROLES.SUPER_ADMIN ? (
-          <UserRoleSelect user={user} />
-        ) : (
-          <span className="text-charcoal">{ROLE_LABELS[user.role]}</span>
-        ),
+      // Read-only on purpose: the role a user registered with is the role they
+      // keep. Changing it is not a correction of a mistake, it is handing out a
+      // different access level, and that belongs to the account itself.
+      cell: (user) => <span className="text-charcoal">{ROLE_LABELS[user.role]}</span>,
     },
     {
       key: 'assignedStores',

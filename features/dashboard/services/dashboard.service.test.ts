@@ -87,6 +87,23 @@ describe('dashboardService', () => {
     expect(api.get).toHaveBeenCalledWith('/dashboard/reports-status');
   });
 
+  it('downloads a report through the api client so the bearer token is sent', async () => {
+    const blob = new Blob(['x']);
+    vi.mocked(api.get).mockResolvedValue({
+      data: blob,
+      headers: { 'content-disposition': 'attachment; filename="assessment-report-T1.xlsx"' },
+    });
+
+    const result = await dashboardService.downloadReport(
+      '/reports/stores/store-1/rounds/T1/export?format=xlsx'
+    );
+
+    expect(api.get).toHaveBeenCalledWith('/reports/stores/store-1/rounds/T1/export?format=xlsx', {
+      responseType: 'blob',
+    });
+    expect(result).toEqual({ blob, filename: 'assessment-report-T1.xlsx' });
+  });
+
   it('returns the unwrapped response payload', async () => {
     vi.mocked(api.get).mockResolvedValue({ data: [{ rank: 1 }] });
     await expect(dashboardService.getTop20('all')).resolves.toEqual([{ rank: 1 }]);

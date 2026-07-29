@@ -163,38 +163,49 @@ export const activities: ActivityItem[] = [
   },
 ];
 
+// Reports are derived from submitted rounds, not stored: the API builds one row
+// per round plus one overview per store, in each format, and downloadUrl is the
+// route that renders it. Ids mirror the API's `store:round:format` shape.
 export const reportsStatus: ReportStatusItem[] = [
   {
-    id: 'rpt-01',
-    name: 'รายงานสรุปภาพรวมโครงการ',
-    format: 'PDF',
-    createdAt: '2026-05-20T00:00:00.000Z',
-    status: 'DONE',
-    downloadUrl: '/reports/rpt-01/download',
-  },
-  {
-    id: 'rpt-02',
-    name: 'รายงานผลการประเมิน T1',
+    id: 'store-001:T1:xlsx',
+    name: 'รายงานผลการประเมิน T1 - ครัวริมธาร',
     format: 'XLSX',
     createdAt: '2026-05-20T00:00:00.000Z',
     status: 'DONE',
-    downloadUrl: '/reports/rpt-02/download',
+    downloadUrl: '/reports/stores/store-001/rounds/T1/export?format=xlsx',
   },
   {
-    id: 'rpt-03',
-    name: 'รายงานคะแนนพิชชิงรอบคัดเลือก',
+    id: 'store-001:T1:pdf',
+    name: 'รายงานผลการประเมิน T1 - ครัวริมธาร',
+    format: 'PDF',
+    createdAt: '2026-05-20T00:00:00.000Z',
+    status: 'DONE',
+    downloadUrl: '/reports/stores/store-001/rounds/T1/export?format=pdf',
+  },
+  {
+    id: 'store-001:overview:xlsx',
+    name: 'รายงานสรุปผลทุกรอบ - ครัวริมธาร',
+    format: 'XLSX',
+    createdAt: '2026-05-20T00:00:00.000Z',
+    status: 'DONE',
+    downloadUrl: '/reports/stores/store-001/overview/export?format=xlsx',
+  },
+  {
+    id: 'store-001:overview:pdf',
+    name: 'รายงานสรุปผลทุกรอบ - ครัวริมธาร',
+    format: 'PDF',
+    createdAt: '2026-05-20T00:00:00.000Z',
+    status: 'DONE',
+    downloadUrl: '/reports/stores/store-001/overview/export?format=pdf',
+  },
+  {
+    id: 'store-002:T0:pdf',
+    name: 'รายงานผลการประเมิน T0 - ครัวคุณย่า',
     format: 'PDF',
     createdAt: '2026-05-19T00:00:00.000Z',
     status: 'DONE',
-    downloadUrl: '/reports/rpt-03/download',
-  },
-  {
-    id: 'rpt-04',
-    name: 'รายงานพัฒนาการรายจังหวัด',
-    format: 'XLSX',
-    createdAt: '2026-05-18T00:00:00.000Z',
-    status: 'DONE',
-    downloadUrl: '/reports/rpt-04/download',
+    downloadUrl: '/reports/stores/store-002/rounds/T0/export?format=pdf',
   },
 ];
 

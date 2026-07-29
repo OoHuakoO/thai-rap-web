@@ -24,6 +24,7 @@ import {
   REPORT_STATUS_DISPLAY,
 } from '../constants/dashboard-display.constants';
 import { REPORTS_STATUS_TEXT } from '../constants/dashboard-text.constants';
+import { useDownloadReport } from '../hooks/use-download-report';
 import { useReportsStatus } from '../hooks/use-reports-status';
 import { formatShortDataDate } from '../utils/format-data-date';
 import { CardFooterLink } from './card-footer-link';
@@ -33,6 +34,7 @@ const COLUMN_COUNT = 5;
 
 export function ReportsStatusCard() {
   const { data: reports, isLoading, isError, error } = useReportsStatus();
+  const { mutate: downloadReport, isPending: isDownloading } = useDownloadReport();
   // Two separate rights: reaching the reports page, and pulling the file down.
   // A role can hold neither and still see this card on the overview.
   const canOpenReports = useAuthStore((s) => s.canRoute(ROUTES.REPORTS));
@@ -101,20 +103,16 @@ export function ReportsStatusCard() {
                       </TableCell>
                       <TableCell className="text-right">
                         <Button
-                          asChild={!!report.downloadUrl && canDownload}
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-charcoal hover:text-orange"
-                          disabled={!report.downloadUrl || !canDownload}
+                          disabled={!report.downloadUrl || !canDownload || isDownloading}
                           aria-label={REPORTS_STATUS_TEXT.downloadLabel(report.name)}
+                          onClick={() => {
+                            if (report.downloadUrl) downloadReport(report.downloadUrl);
+                          }}
                         >
-                          {report.downloadUrl && canDownload ? (
-                            <a href={report.downloadUrl} download>
-                              <Download className="h-4 w-4" />
-                            </a>
-                          ) : (
-                            <Download className="h-4 w-4" />
-                          )}
+                          <Download className="h-4 w-4" />
                         </Button>
                       </TableCell>
                     </TableRow>

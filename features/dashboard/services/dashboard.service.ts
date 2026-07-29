@@ -54,4 +54,13 @@ export const dashboardService = {
 
   getReportsStatus: () =>
     api.get<ReportStatusItem[]>('/dashboard/reports-status').then((res) => res.data),
+
+  // downloadUrl is an API route, not a link: the access token lives in memory,
+  // so an <a href> would reach the endpoint unauthenticated. The server owns the
+  // path — it came from the report row — and regenerates the file on request.
+  downloadReport: (downloadUrl: string): Promise<DownloadedFile> =>
+    api.get<Blob>(downloadUrl, { responseType: 'blob' }).then((res) => ({
+      blob: res.data,
+      filename: parseFilename(res.headers['content-disposition']),
+    })),
 };

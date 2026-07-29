@@ -9,11 +9,9 @@ import { analyticsHandlers } from './analytics.handlers';
 import { provinceHandlers } from './province.handlers';
 import { storeTypeHandlers } from './store-type.handlers';
 import { uploadHandlers } from './upload.handlers';
-import { accessControlHandlers } from './access-control.handlers';
 
 export const handlers = [
   ...authHandlers,
-  ...accessControlHandlers,
   ...dashboardHandlers,
   ...newsHandlers,
   ...reportHandlers,

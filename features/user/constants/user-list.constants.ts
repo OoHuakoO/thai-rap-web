@@ -6,7 +6,6 @@ import type { UserStatus } from '../types/user.types';
 export const USER_LIST_TEXT = {
   pageTitle: 'ผู้ใช้งานและสิทธิ์',
   pageDescription: 'อนุมัติผู้สมัครใหม่ มอบหมายร้านให้ผู้ประเมิน และกำหนดเจ้าของร้านให้ผู้ประกอบการ',
-  managePermissions: 'กำหนดสิทธิ์การเข้าถึง',
   searchPlaceholder: 'ค้นหาชื่อหรืออีเมล',
   filterAllRoles: 'ทุกระดับผู้ใช้',
   filterAllStatuses: 'ทุกสถานะ',
@@ -32,23 +31,6 @@ export const USER_LIST_TEXT = {
     `อนุมัติให้ "${name}" เข้าใช้งานระบบใช่หรือไม่? หลังอนุมัติจะเข้าสู่ระบบได้ทันที`,
   approveConfirmLabel: 'อนุมัติ',
   approveSuccess: 'อนุมัติผู้ใช้งานแล้ว',
-
-  suspendAction: 'ระงับการใช้งาน',
-  rejectAction: 'ปฏิเสธคำขอ',
-  suspendTitle: 'ระงับการใช้งาน',
-  suspendDescription: (name: string) =>
-    `ระงับบัญชี "${name}" ใช่หรือไม่? ผู้ใช้จะถูกออกจากระบบทันทีและเข้าสู่ระบบไม่ได้อีก`,
-  rejectDescription: (name: string) =>
-    `ปฏิเสธคำขอสมัครของ "${name}" ใช่หรือไม่? บัญชีจะถูกระงับและเข้าสู่ระบบไม่ได้`,
-  suspendConfirmLabel: 'ยืนยัน',
-  suspendSuccess: 'ระงับบัญชีแล้ว',
-
-  deleteTitle: 'ลบผู้ใช้งาน',
-  deleteDescription: (name: string) =>
-    `ต้องการลบผู้ใช้ "${name}" ใช่หรือไม่? การลบไม่สามารถกู้คืนได้`,
-  deleteConfirmLabel: 'ลบ',
-  deleteSuccess: 'ลบผู้ใช้งานแล้ว',
-  roleChangeSuccess: 'เปลี่ยนระดับผู้ใช้แล้ว',
 
   pendingBannerTitle: (count: number) => `มีผู้สมัคร ${count} คนรออนุมัติ`,
   pendingBannerMessage: 'ผู้สมัครใหม่จะเข้าสู่ระบบไม่ได้จนกว่าผู้ดูแลระบบสูงสุดจะอนุมัติ',

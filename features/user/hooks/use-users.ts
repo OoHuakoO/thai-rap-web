@@ -1,12 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { storeKeys } from '@/features/store';
 import { userService } from '../services/user.service';
-import type {
-  AssignStoresDto,
-  CreateUserDto,
-  UpdateUserRoleDto,
-  UserQueryParams,
-} from '../types/user.types';
+import type { AssignStoresDto, CreateUserDto, UserQueryParams } from '../types/user.types';
 
 export const userKeys = {
   all: ['users'] as const,
@@ -54,22 +49,6 @@ export function useApproveUser() {
   });
 }
 
-export function useSuspendUser() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => userService.suspend(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeys.all }),
-  });
-}
-
-export function useUpdateUserRole(id: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: UpdateUserRoleDto) => userService.updateRole(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeys.all }),
-  });
-}
-
 export function useAssignStores(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -88,13 +67,5 @@ export function useAssignOwnedStores(id: string) {
       queryClient.invalidateQueries({ queryKey: userKeys.all });
       queryClient.invalidateQueries({ queryKey: storeKeys.all });
     },
-  });
-}
-
-export function useDeleteUser() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => userService.remove(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeys.all }),
   });
 }

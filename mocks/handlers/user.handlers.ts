@@ -2,12 +2,7 @@ import { http, HttpResponse } from 'msw';
 import { userDb } from '../fixtures/user.fixtures';
 import { getScenario, unauthorized, forbidden, serverError } from '../utils/scenario';
 import { HTTP_STATUS } from '@/constants/http-status';
-import type {
-  AssignStoresDto,
-  UpdateUserRoleDto,
-  User,
-  UserStats,
-} from '@/features/user/types/user.types';
+import type { AssignStoresDto, User, UserStats } from '@/features/user/types/user.types';
 import { USER_STATUSES } from '@/features/user/types/user.types';
 import type { ApiErrorResponse, PaginatedResponse } from '@/types/api.types';
 import { API_URL } from '@/constants';
@@ -115,37 +110,6 @@ export const userHandlers = [
     );
   }),
 
-  // PATCH /users/:id/suspend
-  http.patch(`${BASE_URL}/:id/suspend`, ({ request, params }) => {
-    const scenario = getScenario(request);
-    if (scenario === 'unauthorized') return unauthorized();
-    if (scenario === 'forbidden') return forbidden();
-    if (scenario === 'server-error') return serverError();
-
-    const user = userDb.findById(params.id as string);
-    if (!user) return notFound('ไม่พบผู้ใช้งาน');
-    if (user.status === USER_STATUSES.SUSPENDED) {
-      return conflict('USER_004', 'บัญชีนี้ถูกระงับอยู่แล้ว');
-    }
-
-    return HttpResponse.json<User>(
-      userDb.update(user.id, { status: USER_STATUSES.SUSPENDED }) as User
-    );
-  }),
-
-  // PATCH /users/:id/role
-  http.patch(`${BASE_URL}/:id/role`, async ({ request, params }) => {
-    const scenario = getScenario(request);
-    if (scenario === 'unauthorized') return unauthorized();
-    if (scenario === 'forbidden') return forbidden();
-    if (scenario === 'server-error') return serverError();
-
-    const body = (await request.json()) as UpdateUserRoleDto;
-    const updated = userDb.update(params.id as string, { role: body.role });
-    if (!updated) return notFound('ไม่พบผู้ใช้งาน');
-    return HttpResponse.json<User>(updated);
-  }),
-
   // PATCH /users/:id/assigned-stores — the full list, not a delta.
   http.patch(`${BASE_URL}/:id/assigned-stores`, async ({ request, params }) => {
     const scenario = getScenario(request);
@@ -178,22 +142,5 @@ export const userHandlers = [
 
     const body = (await request.json()) as AssignStoresDto;
     return HttpResponse.json<User>(userDb.setOwnedStores(user.id, body.storeIds) as User);
-  }),
-
-  // DELETE /users/:id
-  http.delete(`${BASE_URL}/:id`, ({ request, params }) => {
-    const scenario = getScenario(request);
-    if (scenario === 'unauthorized') return unauthorized();
-    if (scenario === 'forbidden') return forbidden();
-    if (scenario === 'server-error') return serverError();
-
-    const user = userDb.findById(params.id as string);
-    if (!user) return notFound('ไม่พบผู้ใช้งาน');
-    if (user.ownedStores.length > 0) {
-      return conflict('USER_004', 'ต้องย้ายร้านที่ผู้ใช้นี้เป็นเจ้าของออกก่อนลบบัญชี');
-    }
-
-    userDb.remove(user.id);
-    return new HttpResponse(null, { status: HTTP_STATUS.NO_CONTENT });
   }),
 ];

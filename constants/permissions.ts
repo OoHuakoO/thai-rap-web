@@ -1,5 +1,4 @@
 import type {
-  AccessControlConfig,
   DataScope,
   Permission,
   Role,
@@ -15,13 +14,11 @@ import {
   STORE_FIELDS,
   SUPER_ADMIN_ONLY_PERMISSIONS,
 } from '@/types/auth.types';
-import { useAccessControlStore } from '@/stores/access-control-store';
 import { ROUTES } from './routes';
 
-// ─── Role → Permissions (defaults) ───────────────────────────────────────────
-// The factory matrix — what every role holds before SUPER_ADMIN customises it
-// on /users/permissions. Reads go through getRolePermissions() below, which
-// prefers the saved config and falls back here.
+// ─── Role → Permissions ──────────────────────────────────────────────────────
+// What every role holds. Fixed in code — there is no runtime editor for this
+// matrix; changing a role's access is a code change, reviewed like any other.
 
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   // Spread the single source of truth (types/auth.types.ts) instead of
@@ -41,6 +38,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   ASSESSOR: [
     PERMISSIONS.MANUAL_READ,
     PERMISSIONS.DASHBOARD_READ,
+    PERMISSIONS.NEWS_READ,
     PERMISSIONS.STORE_READ,
     PERMISSIONS.ASSESSMENT_READ,
     PERMISSIONS.ASSESSMENT_WRITE,
@@ -61,6 +59,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   MENTOR: [
     PERMISSIONS.MANUAL_READ,
     PERMISSIONS.DASHBOARD_READ,
+    PERMISSIONS.NEWS_READ,
     PERMISSIONS.STORE_READ,
     PERMISSIONS.ASSESSMENT_READ,
     PERMISSIONS.ANALYTICS_READ,
@@ -82,6 +81,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   ENTREPRENEUR: [
     PERMISSIONS.MANUAL_READ,
     PERMISSIONS.DASHBOARD_READ,
+    PERMISSIONS.NEWS_READ,
     PERMISSIONS.STORE_READ_PUBLIC,
     PERMISSIONS.STORE_READ,
     PERMISSIONS.STORE_WRITE,
@@ -92,6 +92,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   JUDGE: [
     PERMISSIONS.MANUAL_READ,
     PERMISSIONS.DASHBOARD_READ,
+    PERMISSIONS.NEWS_READ,
     PERMISSIONS.STORE_READ,
     PERMISSIONS.PITCHING_READ,
     PERMISSIONS.PITCHING_WRITE,
@@ -103,6 +104,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   ME_TEAM: [
     PERMISSIONS.MANUAL_READ,
     PERMISSIONS.DASHBOARD_READ,
+    PERMISSIONS.NEWS_READ,
     PERMISSIONS.STORE_READ,
     PERMISSIONS.ANALYTICS_READ,
     PERMISSIONS.PITCHING_READ,
@@ -110,14 +112,19 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.REPORTS_EXPORT,
   ],
 
-  // ผู้ใช้ทั่วไป — the project overview, the manual, and the store fields the
-  // project discloses. dashboard:read is what gives this role a landing page at
-  // all: ข่าวประชาสัมพันธ์ went admin-only, and it was the only other NAV_ITEMS
-  // entry VIEWER had.
-  VIEWER: [PERMISSIONS.DASHBOARD_READ, PERMISSIONS.MANUAL_READ, PERMISSIONS.STORE_READ_PUBLIC],
+  // ผู้ใช้ทั่วไป — the project overview, ข่าวประชาสัมพันธ์, the manual, and the
+  // store fields the project discloses. news:read is read-only for every role
+  // below the admin pair: news:write / news:delete stay with SUPER_ADMIN and
+  // ADMIN, so this role sees announcements and cannot publish one.
+  VIEWER: [
+    PERMISSIONS.DASHBOARD_READ,
+    PERMISSIONS.MANUAL_READ,
+    PERMISSIONS.NEWS_READ,
+    PERMISSIONS.STORE_READ_PUBLIC,
+  ],
 };
 
-// ─── Role → Data Scope (defaults) ────────────────────────────────────────────
+// ─── Role → Data Scope ───────────────────────────────────────────────────────
 // Which records a role's permissions apply to. `assessment: ASSIGNED` is what
 // makes "ประเมินได้เฉพาะร้านที่ตนเองได้รับมอบหมาย" true for MENTOR/ASSESSOR/ADMIN.
 
@@ -171,9 +178,10 @@ export const ROLE_DATA_SCOPES: Record<Role, RoleDataScopes> = {
   },
 };
 
-// ─── Public store fields (defaults) ──────────────────────────────────────────
-// Deliberately excludes contact details, revenue, documents and scores — those
-// are opt-in, and the admin page flags them as sensitive when disclosed.
+// ─── Public store fields ─────────────────────────────────────────────────────
+// Deliberately excludes contact details, revenue, documents and scores. Mirrors
+// PublicStoreResult in the API (store/types/store-result.type.ts) — the two must
+// change together.
 
 export const PUBLIC_STORE_FIELDS: StoreFieldKey[] = [
   STORE_FIELDS.CODE,
@@ -186,16 +194,6 @@ export const PUBLIC_STORE_FIELDS: StoreFieldKey[] = [
   STORE_FIELDS.SOCIAL_LINKS,
   STORE_FIELDS.STATUS,
 ];
-
-/** The factory config — what "รีเซ็ตเป็นค่าเริ่มต้น" on the admin page restores. */
-export const DEFAULT_ACCESS_CONTROL: Pick<
-  AccessControlConfig,
-  'rolePermissions' | 'roleScopes' | 'publicStoreFields'
-> = {
-  rolePermissions: ROLE_PERMISSIONS,
-  roleScopes: ROLE_DATA_SCOPES,
-  publicStoreFields: PUBLIC_STORE_FIELDS,
-};
 
 // ─── Route → Required Permission ─────────────────────────────────────────────
 
@@ -218,50 +216,37 @@ export const ROUTE_PERMISSIONS: RoutePermissionConfig[] = [
     path: ROUTES.ASSESSMENT,
     requiredPermission: PERMISSIONS.ASSESSMENT_READ,
     // Staff only. MENTOR is here on read alone — it opens the same page in
-    // read-only mode. The role gate sits on top of the permission so a saved
-    // matrix handing assessment:read to a store or the M&E team still can't
-    // open the scoring page; they read results via reports/analytics instead.
+    // read-only mode. The role gate sits on top of the permission because
+    // ME_TEAM reads results via reports/analytics, not the scoring page.
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ASSESSOR, ROLES.MENTOR],
   },
   { path: ROUTES.ANALYTICS, requiredPermission: PERMISSIONS.ANALYTICS_READ },
   { path: ROUTES.PITCHING, requiredPermission: PERMISSIONS.PITCHING_READ },
   { path: ROUTES.REPORTS, requiredPermission: PERMISSIONS.REPORTS_READ },
-  {
-    path: ROUTES.NEWS,
-    requiredPermission: PERMISSIONS.NEWS_READ,
-    // Admin roles only — publishing and reading announcements both belong to
-    // whoever runs the programme. The role gate sits on top of the permission
-    // so a saved matrix granting news:read to anyone else still can't open it.
-    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-  },
+  // Announcements are readable by every role — no allowedRoles gate. Publishing
+  // is not: the two pages that write one require news:write, which only
+  // SUPER_ADMIN and ADMIN hold, and they sit below /news so their longer paths
+  // win the match below.
+  { path: ROUTES.NEWS, requiredPermission: PERMISSIONS.NEWS_READ },
+  { path: ROUTES.NEWS_NEW, requiredPermission: PERMISSIONS.NEWS_WRITE },
+  { path: ROUTES.NEWS_EDIT_PATTERN, requiredPermission: PERMISSIONS.NEWS_WRITE },
   {
     path: ROUTES.USERS,
     requiredPermission: PERMISSIONS.USERS_READ,
     allowedRoles: [ROLES.SUPER_ADMIN],
   },
-  {
-    path: ROUTES.USER_PERMISSIONS,
-    requiredPermission: PERMISSIONS.PERMISSIONS_MANAGE,
-    allowedRoles: [ROLES.SUPER_ADMIN],
-  },
-  { path: ROUTES.SETTINGS, requiredPermission: PERMISSIONS.SETTINGS_READ },
   { path: ROUTES.MANUAL, requiredPermission: PERMISSIONS.MANUAL_READ },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/**
- * Effective permissions for a role: the SUPER_ADMIN-defined matrix once one has
- * been loaded, the defaults above otherwise. Reading the store through
- * getState() keeps this a plain function usable from route guards.
- */
 export function getRolePermissions(role: Role): Permission[] {
-  return useAccessControlStore.getState().rolePermissions?.[role] ?? ROLE_PERMISSIONS[role];
+  return ROLE_PERMISSIONS[role];
 }
 
 export function hasPermission(role: Role, permission: Permission): boolean {
-  // permissions:manage stays SUPER_ADMIN-only whatever the saved matrix says —
-  // a bad config must never be able to hand out the keys.
+  // users:* stays SUPER_ADMIN-only independently of the table above, so a bad
+  // edit to ROLE_PERMISSIONS can never hand out account management.
   if (SUPER_ADMIN_ONLY_PERMISSIONS.includes(permission) && role !== ROLES.SUPER_ADMIN) {
     return false;
   }
@@ -269,7 +254,7 @@ export function hasPermission(role: Role, permission: Permission): boolean {
 }
 
 export function getRoleScopes(role: Role): RoleDataScopes {
-  return useAccessControlStore.getState().roleScopes?.[role] ?? ROLE_DATA_SCOPES[role];
+  return ROLE_DATA_SCOPES[role];
 }
 
 export function getDataScope(role: Role, resource: ScopedResource): DataScope {
@@ -277,17 +262,35 @@ export function getDataScope(role: Role, resource: ScopedResource): DataScope {
 }
 
 export function getPublicStoreFields(): StoreFieldKey[] {
-  return useAccessControlStore.getState().publicStoreFields ?? PUBLIC_STORE_FIELDS;
+  return PUBLIC_STORE_FIELDS;
 }
 
 /**
- * Whether `role` may see a given store field. Roles scoped to PUBLIC (VIEWER by
- * default) see only the fields the project discloses; any wider scope sees the
- * full record.
+ * Whether `role` may see a given store field. Roles scoped to PUBLIC (VIEWER)
+ * see only the fields the project discloses; any wider scope sees the full
+ * record.
  */
 export function canViewStoreField(role: Role, field: StoreFieldKey): boolean {
   if (getDataScope(role, 'store') !== DATA_SCOPES.PUBLIC) return true;
   return getPublicStoreFields().includes(field);
+}
+
+/**
+ * Whether a visited path is covered by a ROUTE_PERMISSIONS entry. A plain entry
+ * covers itself and everything under it (/users also covers /users/42); an entry
+ * carrying `:param` segments (/news/:id/edit) matches segment by segment and
+ * only at its own depth, since a placeholder has no fixed prefix to grow from.
+ */
+function matchesRoutePath(configPath: string, path: string): boolean {
+  if (!configPath.includes(':')) {
+    return path === configPath || path.startsWith(`${configPath}/`);
+  }
+  const configSegments = configPath.split('/');
+  const pathSegments = path.split('/');
+  if (configSegments.length !== pathSegments.length) return false;
+  return configSegments.every(
+    (segment, i) => segment.startsWith(':') || segment === pathSegments[i]
+  );
 }
 
 export function canAccessRoute(role: Role, path: string): boolean {
@@ -295,7 +298,7 @@ export function canAccessRoute(role: Role, path: string): boolean {
   // against its own entry instead of its parent's (/users).
   const config = ROUTE_PERMISSIONS.filter((r) => {
     if (r.path === ROUTES.HOME) return path === ROUTES.HOME;
-    return path === r.path || path.startsWith(`${r.path}/`);
+    return matchesRoutePath(r.path, path);
   }).sort((a, b) => b.path.length - a.path.length)[0];
 
   if (!config) return false;

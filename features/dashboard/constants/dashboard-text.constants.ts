@@ -76,6 +76,7 @@ export const REPORTS_STATUS_TEXT = {
   statusColumn: 'สถานะ',
   actionColumn: 'จัดการ',
   downloadLabel: (name: string) => `ดาวน์โหลด ${name}`,
+  downloadSuccess: 'ดาวน์โหลดรายงานสำเร็จ',
   footerLink: 'ดูรายงานทั้งหมด',
   empty: 'ยังไม่มีรายงานที่ส่งออก',
 } as const;

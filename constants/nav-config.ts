@@ -1,4 +1,4 @@
-import { Megaphone, Settings, UserCog } from 'lucide-react';
+import { Megaphone, UserCog } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { Role } from '@/types/auth.types';
 import { ROLES } from '@/types/auth.types';
@@ -93,8 +93,18 @@ export const NAV_ITEMS: NavItem[] = [
     labelTh: 'ข่าวประชาสัมพันธ์',
     href: ROUTES.NEWS,
     icon: Megaphone,
-    // Admin roles only — the route guard enforces it too, this just hides the link.
-    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+    // Every role — announcements are read-only for all but the admin pair, who
+    // are the only ones news:write lets past the create/edit pages.
+    allowedRoles: [
+      ROLES.SUPER_ADMIN,
+      ROLES.ADMIN,
+      ROLES.ASSESSOR,
+      ROLES.MENTOR,
+      ROLES.ENTREPRENEUR,
+      ROLES.JUDGE,
+      ROLES.ME_TEAM,
+      ROLES.VIEWER,
+    ],
   },
   {
     label: 'Users & Roles',
@@ -102,21 +112,6 @@ export const NAV_ITEMS: NavItem[] = [
     href: ROUTES.USERS,
     icon: UserCog,
     allowedRoles: [ROLES.SUPER_ADMIN],
-  },
-  // Access Control (/users/permissions) is still deliberately absent: the
-  // `users` controller shipped, but thai-rap-api registers no `access-control`
-  // controller, so that page's saved matrix still lives only in localStorage.
-  // Its ROUTE_PERMISSIONS entry stays in place, and UserPageHeader still links
-  // to it, so restoring the sidebar link is one entry here once the endpoint
-  // ships:
-  //   { label: 'Access Control', labelTh: 'กำหนดสิทธิ์การเข้าถึง',
-  //     href: ROUTES.USER_PERMISSIONS, icon: ShieldCheck, allowedRoles: [ROLES.SUPER_ADMIN] }
-  {
-    label: 'Settings',
-    labelTh: 'ตั้งค่า',
-    href: ROUTES.SETTINGS,
-    icon: Settings,
-    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   },
 ];
 

@@ -13,8 +13,9 @@ Eight roles (`Role`, `types/auth.types.ts`) across the five access levels in
 the project brief, and permissions (`Permission`, same file) in the shape
 `<resource>:<action>` — `store:read`, `assessment:write`, `users:delete`, etc.
 
-`constants/permissions.ts` holds the **defaults**; SUPER_ADMIN can override
-them at runtime on `/users/permissions`:
+`constants/permissions.ts` holds the matrix. It is **fixed in code** — there is
+no runtime editor, so changing a role's access is a code change, reviewed like
+any other:
 
 ```ts
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
@@ -32,15 +33,15 @@ Three things make up a role's access:
 | Data scope | `ROLE_DATA_SCOPES` | over which records — `ALL` / `ASSIGNED` / `OWN` / `PUBLIC` / `NONE`? |
 | Public fields | `PUBLIC_STORE_FIELDS` | which store fields a `PUBLIC`-scoped role (VIEWER) may see |
 
-Never read those tables directly — the saved config wins over them. Read
-through `getRolePermissions()`, `getDataScope()`, `getPublicStoreFields()`
-and `canViewStoreField()`, all in `constants/permissions.ts`.
+Read through `getRolePermissions()`, `getDataScope()`,
+`getPublicStoreFields()` and `canViewStoreField()` (all in
+`constants/permissions.ts`) rather than indexing the tables at every call
+site — the helpers are what `hasPermission()` and `canAccessRoute()` build on.
 
 `SUPER_ADMIN_ONLY_PERMISSIONS` (`types/auth.types.ts`) — `users:read`,
-`users:write`, `users:delete` and `permissions:manage` — is re-checked by
-`hasPermission()` independently of the saved matrix, so a bad config can never
-hand out user management or the right to edit access itself. `/users` and
-`/users/permissions` also carry `allowedRoles: [SUPER_ADMIN]` in
+`users:write`, `users:delete` — is re-checked by `hasPermission()`
+independently of `ROLE_PERMISSIONS`, so a bad edit to that table can never hand
+out user management. `/users` also carries `allowedRoles: [SUPER_ADMIN]` in
 `ROUTE_PERMISSIONS`.
 
 Never hardcode a role check like `user.role === 'ADMIN'` anywhere in the
@@ -61,13 +62,9 @@ if (user.role === 'ADMIN' || user.role === 'ASSESSOR') { ... }
 ```
 
 Adding a new permission means: add it to the `Permission` union
-(`types/auth.types.ts`), add it to every role's array in `ROLE_PERMISSIONS`
-that should have it (explicit, not opt-out — a role not listed for a
-permission does not have it), then label it in `PERMISSION_LABELS` and place
-it in a `PERMISSION_GROUPS` section
-(`features/access-control/constants/permission-group.constants.ts`) so it
-shows up in the SUPER_ADMIN matrix. `PERMISSION_LABELS` is a
-`Record<Permission, string>`, so a missing label is a compile error.
+(`types/auth.types.ts`), then add it to every role's array in
+`ROLE_PERMISSIONS` that should have it — explicit, not opt-out; a role not
+listed for a permission does not have it.
 
 ---
 
@@ -91,19 +88,13 @@ payload is produced before this guard ever runs.
   (`canAccessRoute(role, pathname)`), redirect to the role's default route.
 
 ```tsx
-const isReady = hasHydrated && accessControlHasHydrated
-// Subscribed only so the guard re-runs when SUPER_ADMIN saves a new matrix —
-// canAccessRoute() reads it through getState(), which React cannot track.
-const rolePermissions = useAccessControlStore((s) => s.rolePermissions)
-
 const isAllowed = useMemo(
   () => (isAuthenticated && role ? canAccessRoute(role, pathname) : false),
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  [isAuthenticated, role, pathname, rolePermissions]
+  [isAuthenticated, role, pathname]
 )
 
 useEffect(() => {
-  if (!isReady) return
+  if (!hasHydrated) return
   if (!isAuthenticated || !role) {
     router.replace(`${ROUTES.LOGIN}?next=${encodeURIComponent(pathname)}`)
     return
@@ -111,7 +102,7 @@ useEffect(() => {
   if (!isAllowed) { router.replace(getDefaultRouteForRole(role)) }
 }, [...])
 
-if (!isReady) return <Loading className="min-h-screen" />
+if (!hasHydrated) return <Loading className="min-h-screen" />
 if (!isAuthenticated || !role || !isAllowed) return null
 ```
 
@@ -158,17 +149,14 @@ verified against the same check that will run on arrival.
 
 ### `hasHydrated` gate
 
-Every route guard must wait on **both** `useHasHydrated()` (auth) and
-`useAccessControlHasHydrated()` (the saved permission matrix) before making a
-redirect decision or rendering protected content. Zustand's `persist`
-middleware rehydrates from `localStorage` asynchronously — checking
-`isAuthenticated` before hydration finishes reads a false `false` and
-redirects a logged-in user to login on every reload, and judging a route
-before the matrix lands evaluates it against the built-in defaults instead of
-the config SUPER_ADMIN saved.
+Every route guard must wait on `useHasHydrated()` before making a redirect
+decision or rendering protected content. Zustand's `persist` middleware
+rehydrates from `localStorage` asynchronously — checking `isAuthenticated`
+before hydration finishes reads a false `false` and redirects a logged-in user
+to login on every reload.
 
 ```tsx
-if (!hasHydrated || !accessControlHasHydrated) return <Loading className="min-h-screen" />
+if (!hasHydrated) return <Loading className="min-h-screen" />
 ```
 
 ---

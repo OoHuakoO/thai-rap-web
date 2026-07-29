@@ -8,18 +8,14 @@ export {
   useUserStats,
   useCreateUser,
   useApproveUser,
-  useSuspendUser,
-  useUpdateUserRole,
   useAssignStores,
   useAssignOwnedStores,
-  useDeleteUser,
 } from './hooks/use-users';
 export type {
   User,
   UserStats,
   UserStoreLink,
   CreateUserDto,
-  UpdateUserRoleDto,
   AssignStoresDto,
   UserStatus,
 } from './types/user.types';
