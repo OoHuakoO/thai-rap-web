@@ -39,9 +39,10 @@ export interface StoreDocument {
 }
 
 // GET /stores and GET /stores/:id return a narrowed object (the API's
-// PublicStoreResult) to a VIEWER on every store, and to an ENTREPRENEUR on a
-// store it does not own — contact details, revenue, mainProblems, documents
-// and every score key are absent from the payload, not null. The fields below
+// PublicStoreResult) to a VIEWER on every store — contact details, revenue,
+// mainProblems, documents and every score key are absent from the payload,
+// not null. (An ENTREPRENEUR needs no narrowing: it is only ever handed the
+// stores it owns, and another owner's store 403s.) The fields below
 // are still typed as present because most callers see the full record; guard
 // with `!= null` / `?? fallback` rather than `!== null` when reading any of
 // them, or an omitted key reaches the render as undefined.

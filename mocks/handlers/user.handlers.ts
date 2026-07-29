@@ -143,4 +143,25 @@ export const userHandlers = [
     const body = (await request.json()) as AssignStoresDto;
     return HttpResponse.json<User>(userDb.setOwnedStores(user.id, body.storeIds) as User);
   }),
+
+  // DELETE /users/:id — what "ไม่อนุมัติ" does to a pending sign-up. The API's
+  // third guard (an assessor who has already scored something) has no mock
+  // equivalent: assessmentDb starts empty and exposes no by-assessor query, and
+  // the only row this route is offered for is PENDING, which has scored nothing.
+  http.delete(`${BASE_URL}/:id`, ({ request, params }) => {
+    const scenario = getScenario(request);
+    if (scenario === 'unauthorized') return unauthorized();
+    if (scenario === 'forbidden') return forbidden();
+    if (scenario === 'server-error') return serverError();
+
+    const user = userDb.findById(params.id as string);
+    if (!user) return notFound('ไม่พบผู้ใช้งาน');
+    if (user.role === 'SUPER_ADMIN') return forbidden('ลบบัญชี super admin ไม่ได้');
+    if (user.ownedStores.length > 0) {
+      return conflict('USER_004', 'ต้องย้ายร้านที่ผู้ใช้นี้เป็นเจ้าของออกก่อนลบบัญชี');
+    }
+
+    userDb.remove(user.id);
+    return HttpResponse.json(null);
+  }),
 ];

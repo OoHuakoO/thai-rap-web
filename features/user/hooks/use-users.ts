@@ -49,6 +49,18 @@ export function useApproveUser() {
   });
 }
 
+// Rejecting a sign-up deletes the row outright rather than suspending it: a
+// PENDING account has never logged in, owns nothing and has scored nothing, so
+// there is no history to keep attributable — and leaving it behind would hold
+// its email hostage against a second, genuine registration.
+export function useRejectUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => userService.remove(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: userKeys.all }),
+  });
+}
+
 export function useAssignStores(id: string) {
   const queryClient = useQueryClient();
   return useMutation({

@@ -64,7 +64,7 @@ backend ห่อ response สำเร็จเป็น `{ success: true, data
 ### refresh token flow
 - **`matchesAuthEndpoint(url, endpoints)`** *(private)* — เช็คว่า url อยู่ใน list ที่ให้มามั้ย ใช้ 2 list แยกกัน:
   - `AUTH_ENDPOINTS_WITHOUT_RETRY` (`/auth/login`, `/auth/register`, `/auth/refresh`) — ไม่ retry ตอนโดน 401 (กัน infinite loop เช่น login ผิดรหัสแล้วดันไป trigger refresh)
-  - `AUTH_ENDPOINTS_WITHOUT_REDIRECT` (`/auth/login`, `/auth/register`) — ไม่ trigger global logout + redirect ตอนโดน 401 เพราะ error ควรโชว์ inline ในฟอร์มเอง (login/register ผิดรหัสไม่ควรเด้งทับหน้าฟอร์ม), ตัด `/auth/refresh` ออกจาก list นี้เพราะถ้า refresh เองพัง แปลว่า session หมดจริง ต้อง logout+redirect ตามปกติ
+  - `AUTH_ENDPOINTS_WITHOUT_REDIRECT` (`/auth/login`, `/auth/register`) — ไม่ trigger global logout + redirect ตอนโดน 401 และไม่เด้งหน้า 403 ตอนโดน 403 เพราะ error ควรโชว์ inline ในฟอร์มเอง (login/register ผิดรหัสไม่ควรเด้งทับหน้าฟอร์ม), ตัด `/auth/refresh` ออกจาก list นี้เพราะถ้า refresh เองพัง แปลว่า session หมดจริง ต้อง logout+redirect ตามปกติ
 - **`doRefreshAccessToken()`** *(private)* — ยิง `POST /auth/refresh` ด้วย `axios.post` ตรงๆ (ไม่ผ่าน `api` instance หลัก) เพื่อไม่ให้เข้า interceptor ตัวเองซ้ำ (loop) ไม่ส่ง refreshToken ใน body เลย เพราะมันอยู่ใน cookie ให้ browser แนบให้อัตโนมัติ ถ้าสำเร็จ เอา token ใหม่ไปเซฟใน store (`setTokens`) แล้วคืน accessToken ใหม่ ถ้า fail (cookie หมดอายุ/ไม่มี) คืน `null`
 - **`refreshAccessToken()`** *(export)* — wrapper กัน concurrent refresh: ถ้ามี request refresh ที่กำลังทำอยู่แล้ว (`refreshPromise`) จะ return promise เดิมแทนที่จะยิงซ้ำ กันเคส 401 หลาย request พร้อมกันแล้วแต่ละอันไปเรียก `/auth/refresh` ของตัวเอง ไฟล์นี้ export ตัวนี้ให้ `app/auth-bootstrap.tsx` เรียกใช้ตอน reload หน้าเว็บด้วย (silent refresh ตอนเปิดแอปใหม่)
 
@@ -76,7 +76,7 @@ backend ห่อ response สำเร็จเป็น `{ success: true, data
 3. **401 + ยังไม่เคย retry + ไม่ใช่ auth endpoint** → ลอง `refreshAccessToken()` ถ้าได้ token ใหม่ → แนบ header ใหม่แล้วยิง request เดิมซ้ำอีกรอบ (`return api(originalRequest)`) โดย mark `_retry = true` กันวนซ้ำไม่รู้จบ
 4. ถ้า refresh ไม่สำเร็จ หรือ status อื่นๆ → เข้า `switch (apiError.statusCode)` (ใช้ constant `HTTP_STATUS` ทั้งหมด ไม่ hardcode เลข):
    - `UNAUTHORIZED` → logout จาก store + redirect ไปหน้า login พร้อม `returnUrl` (ยกเว้น auth endpoint ใน `AUTH_ENDPOINTS_WITHOUT_REDIRECT` — ปล่อย error ให้ฟอร์ม login/register จัดการเอง)
-   - `FORBIDDEN` → redirect หน้า 403
+   - `FORBIDDEN` → redirect หน้า 403 (ยกเว้น auth endpoint ใน `AUTH_ENDPOINTS_WITHOUT_REDIRECT` — `POST /auth/login` ตอบ 403 `AUTH_006` เมื่อบัญชียังรอ admin อนุมัติ ต้องโชว์เป็น error ในฟอร์ม login ไม่ใช่เด้งไปหน้า 403)
    - `RATE_LIMITED` → toast แจ้งจำนวนวินาทีที่ต้องรอ (จาก `retryAfter` ถ้ามี)
    - `SERVER_ERROR` / `BAD_GATEWAY` / `GATEWAY_TIMEOUT` → redirect หน้า 500
    - `SERVICE_UNAVAILABLE` → redirect หน้า 503

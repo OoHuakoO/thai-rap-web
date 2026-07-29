@@ -32,12 +32,18 @@ export const USER_LIST_TEXT = {
   approveConfirmLabel: 'อนุมัติ',
   approveSuccess: 'อนุมัติผู้ใช้งานแล้ว',
 
+  rejectAction: 'ไม่อนุมัติ',
+  rejectTitle: 'ไม่อนุมัติผู้สมัคร',
+  rejectDescription: (name: string) =>
+    `ไม่อนุมัติ "${name}" ใช่หรือไม่? บัญชีนี้จะถูกลบออกจากระบบและกู้คืนไม่ได้ ผู้สมัครต้องสมัครใหม่หากต้องการเข้าใช้งาน`,
+  rejectConfirmLabel: 'ไม่อนุมัติและลบบัญชี',
+  rejectSuccess: 'ไม่อนุมัติและลบบัญชีแล้ว',
+
   pendingBannerTitle: (count: number) => `มีผู้สมัคร ${count} คนรออนุมัติ`,
   pendingBannerMessage: 'ผู้สมัครใหม่จะเข้าสู่ระบบไม่ได้จนกว่าผู้ดูแลระบบสูงสุดจะอนุมัติ',
   statTotal: 'ผู้ใช้งานทั้งหมด',
   statPending: 'รออนุมัติ',
   statActive: 'ใช้งานอยู่',
-  statSuspended: 'ถูกระงับ',
 } as const;
 
 export const USER_ROLE_FILTER_OPTIONS: { value: Role; label: string }[] = ROLE_DISPLAY_ORDER.map(

@@ -1,9 +1,18 @@
 import type { AssessmentRound } from '@/features/dashboard/types/dashboard.types';
+import { ROLES, type Role } from '@/types/auth.types';
 import type { ReportFileFormat } from '../types/report.types';
 
 export const REPORT_ROUNDS: readonly AssessmentRound[] = ['T0', 'T1', 'T2', 'T3'];
 
+// The cross-store matrix and the per-question breakdown are admin-only, matching
+// the API: ReportService.getRoundMatrixReport 403s everyone else. Every other
+// role keeps the report exactly as it was — its own store, scores per dimension.
+export const REPORT_DETAIL_ROLES: Role[] = [ROLES.SUPER_ADMIN, ROLES.ADMIN];
+
 export const OVERVIEW_TAB = 'overview';
+
+export const STORE_SCOPE_TAB = 'store';
+export const MATRIX_SCOPE_TAB = 'matrix';
 
 export const REPORT_TEXT = {
   pageTitle: 'รายงานผลการประเมิน',
@@ -11,6 +20,9 @@ export const REPORT_TEXT = {
   storeLabel: 'เลือกร้าน',
   storePlaceholder: 'เลือกร้านที่ต้องการดูรายงาน',
   overviewTab: 'ภาพรวมทุกรอบ',
+  storeScopeTab: 'รายงานรายร้าน',
+  matrixScopeTab: 'รายงานทุกร้าน (รายมิติ)',
+  roundLabel: 'เลือกรอบการประเมิน',
   downloadExcel: 'ดาวน์โหลด Excel',
   downloadPdf: 'ดาวน์โหลด PDF',
   downloading: 'กำลังสร้างไฟล์...',
@@ -25,10 +37,36 @@ export const REPORT_TEXT = {
   assessor: 'ผู้ประเมิน',
   submittedAt: 'วันที่ส่งผล',
   notes: 'บันทึกเพิ่มเติม',
-  dimensionSection: 'คะแนนรายมิติ',
+  dimensionSection: 'คะแนนรายมิติ และการคำนวณตามค่าถ่วงน้ำหนัก',
+  dimensionSectionBasic: 'คะแนนรายมิติ',
   dimensionColumn: 'มิติ',
   weightColumn: 'น้ำหนัก (%)',
   scoreColumn: 'คะแนน (%)',
+  rawScoreColumn: 'คะแนนดิบ',
+  maxScoreColumn: 'คะแนนเต็ม',
+  weightedScoreColumn: 'คะแนนถ่วงน้ำหนัก',
+  rawScorePctLabel: 'คะแนนรวม %',
+  completionLabel: 'ความครบถ้วน',
+  grandTotalRow: 'รวมทั้งหมด',
+  // Per-question section
+  questionSection: 'ผลการให้คะแนนรายข้อ',
+  questionSectionHint: 'กดที่มิติเพื่อดูคะแนนรายข้อ และวิธีคิดคะแนนถ่วงน้ำหนักของมิตินั้น',
+  questionNoColumn: 'ข้อ',
+  questionTextColumn: 'คำถาม',
+  questionScoreColumn: 'คะแนน',
+  dimensionSubtotal: 'รวมมิติ',
+  weightedFormula: (scorePct: number, weight: number, weighted: number) =>
+    `${scorePct.toFixed(2)}% × ${weight}% = ${weighted.toFixed(2)}`,
+  // All-stores matrix
+  matrixSection: (round: string) => `คะแนนรายมิติของทุกร้าน รอบ ${round}`,
+  matrixStoreCount: (count: number) => `ร้านที่ส่งผลการประเมินรอบนี้ ${count} ร้าน`,
+  matrixEmpty: 'ยังไม่มีร้านที่ส่งผลการประเมินรอบนี้',
+  storeCodeColumn: 'รหัสร้าน',
+  storeNameColumn: 'ชื่อร้าน',
+  provinceColumn: 'จังหวัด',
+  redFlagColumn: 'Red Flag',
+  criticalDimensionColumn: 'มิติเร่งแก้ไข',
+  averageRow: 'ค่าเฉลี่ย',
   redFlagSection: 'สัญญาณเตือน (Red Flag)',
   redFlagTypeColumn: 'ประเภท',
   redFlagSeverityColumn: 'ระดับ',

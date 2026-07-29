@@ -153,6 +153,39 @@ const limit = Number(url.searchParams.get('limit') ?? 10)
 
 ---
 
+## Role-Aware Handlers
+
+When the real endpoint narrows its answer by role, the handler does too —
+otherwise mock mode shows a page the API would never serve. The caller comes
+from the mock bearer token, never from a request body or a header the client
+picks:
+
+```ts
+import { getMockUserId } from '../utils/scenario'
+import { userDb } from '../fixtures/user.fixtures'
+
+function getCaller(request: Request): User | null {
+  const id = getMockUserId(request)
+  return id ? userDb.findById(id) : null
+}
+```
+
+`mocks/handlers/store.handlers.ts` is the reference: it scopes the list, 403s a
+record outside the caller's scope, gates the aggregate endpoint on the same
+roles the API does, and strips the payload for a `PUBLIC`-scoped role.
+
+- A request with **no** mock token stays unscoped — handler tests call these
+  endpoints without signing in, and every real call carries a token.
+- Relationships (ownership, assignment) live on **one** fixture. Derive them at
+  request time rather than copying the link into a second fixture, or the two
+  disagree the moment the app writes one of them.
+- `X-Mock-Scenario: forbidden` stays as the manual override; role gating is in
+  addition to it, not a replacement.
+- Role-aware behaviour needs a `mocks/handlers/<domain>.handlers.test.ts` —
+  it is logic now, not fixture data (see `store.handlers.test.ts`).
+
+---
+
 ## Environment Toggle
 
 Mocks are active when `NEXT_PUBLIC_ENABLE_MOCKS=true` in `.env`.

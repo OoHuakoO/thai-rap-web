@@ -29,11 +29,10 @@ export function UserPageHeader() {
       )}
 
       {stats && (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <StatCard title={USER_LIST_TEXT.statTotal} value={stats.total} />
           <StatCard title={USER_LIST_TEXT.statPending} value={stats.pending} />
           <StatCard title={USER_LIST_TEXT.statActive} value={stats.active} />
-          <StatCard title={USER_LIST_TEXT.statSuspended} value={stats.suspended} />
         </div>
       )}
     </div>

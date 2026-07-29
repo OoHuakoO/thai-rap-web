@@ -195,6 +195,29 @@ describe('response interceptor — error handling', () => {
     expect(window.location.href).toBe(ROUTES.ERROR_403);
   });
 
+  it('does not redirect on a login 403 — a pending account is shown inline on the form', async () => {
+    server.use(
+      http.post(
+        `${API_URL}/auth/login`,
+        () =>
+          new HttpResponse(
+            JSON.stringify({
+              success: false,
+              error: { code: 'AUTH_006', message: 'บัญชีกำลังรอการเปิดใช้งาน' },
+            }),
+            { status: 403, headers: { 'Content-Type': 'application/json' } }
+          )
+      )
+    );
+
+    await expect(api.post('/auth/login', {})).rejects.toMatchObject({
+      statusCode: 403,
+      message: 'บัญชีกำลังรอการเปิดใช้งาน',
+    });
+
+    expect(window.location.href).toBe('http://localhost/dashboard');
+  });
+
   it('shows a rate-limit toast with the retry-after seconds on 429', async () => {
     server.use(
       http.get(

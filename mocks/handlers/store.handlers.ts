@@ -6,15 +6,20 @@ import {
   nextMockFileId,
 } from '../fixtures/store.fixtures';
 import { assessmentDb } from '../fixtures/assessment.fixtures';
+import { userDb } from '../fixtures/user.fixtures';
 import { createStoreFromDto } from '../factories/store.factory';
 import {
   getScenario,
+  getMockUserId,
   unauthorized,
   forbidden,
   serverError,
   validationError,
 } from '../utils/scenario';
 import { HTTP_STATUS } from '@/constants/http-status';
+import { ROLES } from '@/types/auth.types';
+import type { Role } from '@/types/auth.types';
+import type { User } from '@/features/user/types/user.types';
 import type {
   Store,
   CreateStoreDto,
@@ -46,6 +51,63 @@ function inUse(message: string): Response {
   );
 }
 
+const STATS_ROLES: Role[] = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ENTREPRENEUR];
+
+// Who is asking, resolved from the mock bearer token. Ownership and assignment
+// links live on the user record — userDb is what the /users dialogs write — so
+// everything below reads them from there. A request with no mock token stays
+// unscoped: the handler tests call these endpoints without signing in.
+function getCaller(request: Request): User | null {
+  const id = getMockUserId(request);
+  return id ? userDb.findById(id) : null;
+}
+
+// The seed stores carry no ownerId of their own — the link lives on the user
+// record, which is what the /users assignment dialog writes. Resolving it here
+// on every read keeps the two from drifting apart. A store created through
+// POST /stores sets its own ownerId and wins, because STORE_LINKS in
+// user.fixtures.ts only knows the five seed stores.
+function withOwner(store: Store): Store {
+  if (store.ownerId) return store;
+  const owner = userDb.getAll().find((u) => u.ownedStoreIds.includes(store.id));
+  return { ...store, ownerId: owner?.id ?? null };
+}
+
+// Mirrors StoreService.listScope / assertVisible: an ENTREPRENEUR sees only the
+// stores it owns and an ASSESSOR only the ones assigned to it, in the list and
+// on a direct id alike. Takes an owner-resolved store, never a raw fixture row.
+function isVisibleTo(store: Store, caller: User | null): boolean {
+  if (caller?.role === ROLES.ENTREPRENEUR) return store.ownerId === caller.id;
+  if (caller?.role === ROLES.ASSESSOR) return caller.assignedStoreIds.includes(store.id);
+  return true;
+}
+
+// What a VIEWER gets — the API's PublicStoreResult, where the private keys are
+// absent rather than null (StoreService.applyFieldScope). Written out field by
+// field, like the API, so a key added to Store later is private until it is
+// named here. Same list as PUBLIC_STORE_FIELDS in constants/permissions.ts plus
+// the three the API keeps that are not display fields: id, ownerId, coverUrl.
+function toPublicStore(store: Store): Partial<Store> {
+  return {
+    id: store.id,
+    ownerId: store.ownerId,
+    code: store.code,
+    name: store.name,
+    province: store.province,
+    storeType: store.storeType,
+    socialLinks: store.socialLinks,
+    goals: store.goals,
+    menuPhotos: store.menuPhotos,
+    coverUrl: store.coverUrl,
+    storePhotos: store.storePhotos,
+    status: store.status,
+  };
+}
+
+function toPayload(store: Store, caller: User | null): Store | Partial<Store> {
+  return caller?.role === ROLES.VIEWER ? toPublicStore(store) : store;
+}
+
 const REQUIRED_STORE_FIELDS: { field: keyof CreateStoreDto; message: string }[] = [
   { field: 'name', message: 'Name is required' },
   { field: 'province', message: 'Province is required' },
@@ -68,7 +130,10 @@ export const storeHandlers = [
     const storeType = url.searchParams.get('storeType');
     const status = url.searchParams.get('status');
 
-    let stores = storeDb.getAll();
+    const caller = getCaller(request);
+
+    let stores = storeDb.getAll().map(withOwner);
+    stores = stores.filter((s) => isVisibleTo(s, caller));
     if (search) {
       stores = stores.filter(
         (s) =>
@@ -87,20 +152,25 @@ export const storeHandlers = [
     const totalPages = Math.ceil(total / limit) || 1;
     const start = (page - 1) * limit;
 
-    return HttpResponse.json<PaginatedResponse<Store>>({
-      items: stores.slice(start, start + limit),
+    return HttpResponse.json<PaginatedResponse<Store | Partial<Store>>>({
+      items: stores.slice(start, start + limit).map((s) => toPayload(s, caller)),
       meta: { page, limit, total, totalPages },
     });
   }),
 
   http.get(`${BASE_URL}/stats`, ({ request }) => {
     const scenario = getScenario(request);
-    // API forbids ENTREPRENEUR from this endpoint (403 PERM_001) — simulate via
-    // X-Mock-Scenario: forbidden, same as every other write/read gate below.
     if (scenario === 'unauthorized') return unauthorized();
     if (scenario === 'forbidden') return forbidden();
     if (scenario === 'server-error') return serverError();
 
+    // Only the roles that can open the web /stores page may read this
+    // (StoreService.getStats): admin roles and ENTREPRENEUR, everyone else 403.
+    const caller = getCaller(request);
+    if (caller && !STATS_ROLES.includes(caller.role)) return forbidden();
+
+    // Deliberately not narrowed to the caller's stores, matching the API: this
+    // is a programme-wide aggregate, not a listing of anyone's records.
     const stores = storeDb.getAll();
     const total = stores.length;
     // The real API counts a store as "assessed Tn" when it has a submitted Tn
@@ -140,9 +210,16 @@ export const storeHandlers = [
     if (scenario === 'unauthorized') return unauthorized();
     if (scenario === 'server-error') return serverError();
 
-    const store = storeDb.findById(params.id as string);
-    if (!store) return notFound();
-    return HttpResponse.json<Store>(store);
+    const found = storeDb.findById(params.id as string);
+    if (!found) return notFound();
+
+    const caller = getCaller(request);
+    const store = withOwner(found);
+    // 403, not 404: the store exists, this caller is simply outside its scope —
+    // the same answer StoreService.assertVisible gives.
+    if (!isVisibleTo(store, caller)) return forbidden();
+
+    return HttpResponse.json<Store | Partial<Store>>(toPayload(store, caller));
   }),
 
   http.post(BASE_URL, async ({ request }) => {
@@ -158,7 +235,13 @@ export const storeHandlers = [
       return validationError(missing.map(({ field, message }) => ({ field, message })));
     }
 
-    const store = createStoreFromDto(body);
+    // StoreService.create forces ownership to the caller for an ENTREPRENEUR —
+    // without it a store would vanish from its own creator's list on the next
+    // GET /stores, which is now ownership-scoped.
+    const caller = getCaller(request);
+    const created = createStoreFromDto(body);
+    const store =
+      caller?.role === ROLES.ENTREPRENEUR ? { ...created, ownerId: caller.id } : created;
     storeDb.create(store);
     return HttpResponse.json<Store>(store, { status: HTTP_STATUS.CREATED });
   }),

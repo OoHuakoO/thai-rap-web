@@ -16,11 +16,13 @@ import type { AssessmentRound } from '@/features/dashboard/types/dashboard.types
 import { cn } from '@/utils/cn';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { formatThaiDate } from '@/utils/format-thai-date';
-import { REPORT_TEXT, ZONE_BADGE_CLASS } from '../constants/report.constants';
+import { useAuthStore } from '@/stores/auth-store';
+import { REPORT_DETAIL_ROLES, REPORT_TEXT, ZONE_BADGE_CLASS } from '../constants/report.constants';
 import { useExportRoundReport } from '../hooks/use-export-report';
 import { useRoundReport } from '../hooks/use-round-report';
 import type { ReportFileFormat } from '../types/report.types';
 import { ReportDownloadButtons } from './report-download-buttons';
+import { RoundQuestionDetail } from './round-question-detail';
 
 interface RoundReportPanelProps {
   storeId: string;
@@ -30,6 +32,9 @@ interface RoundReportPanelProps {
 export function RoundReportPanel({ storeId, round }: RoundReportPanelProps) {
   const { data: report, isLoading, isError, error } = useRoundReport(storeId, round);
   const { mutate: exportReport, isPending: isExporting } = useExportRoundReport();
+  // The weighting breakdown and the 50-question detail are admin-only; every
+  // other role keeps the summary this panel has always shown.
+  const showDetail = useAuthStore((state) => state.hasRole)(REPORT_DETAIL_ROLES);
 
   const handleDownload = (format: ReportFileFormat) => exportReport({ storeId, round, format });
 
@@ -61,6 +66,22 @@ export function RoundReportPanel({ storeId, round }: RoundReportPanelProps) {
               <span className="text-charcoal">{REPORT_TEXT.noData}</span>
             )}
           </div>
+          {showDetail && (
+            <>
+              <ReportField
+                label={REPORT_TEXT.rawScoreColumn}
+                value={`${report.rawScore} / ${report.maxScore}`}
+              />
+              <ReportField
+                label={REPORT_TEXT.rawScorePctLabel}
+                value={`${report.rawScorePct.toFixed(2)}%`}
+              />
+              <ReportField
+                label={REPORT_TEXT.completionLabel}
+                value={`${report.completionPct.toFixed(2)}%`}
+              />
+            </>
+          )}
           <ReportField label={REPORT_TEXT.assessor} value={report.assessorName} />
           <ReportField
             label={REPORT_TEXT.submittedAt}
@@ -72,31 +93,73 @@ export function RoundReportPanel({ storeId, round }: RoundReportPanelProps) {
 
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle className="text-sm font-semibold">{REPORT_TEXT.dimensionSection}</CardTitle>
+          <CardTitle className="text-sm font-semibold">
+            {showDetail ? REPORT_TEXT.dimensionSection : REPORT_TEXT.dimensionSectionBasic}
+          </CardTitle>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>{REPORT_TEXT.dimensionColumn}</TableHead>
-                <TableHead className="text-right">{REPORT_TEXT.weightColumn}</TableHead>
+                {showDetail && (
+                  <>
+                    <TableHead className="text-right">{REPORT_TEXT.rawScoreColumn}</TableHead>
+                    <TableHead className="text-right">{REPORT_TEXT.maxScoreColumn}</TableHead>
+                  </>
+                )}
                 <TableHead className="text-right">{REPORT_TEXT.scoreColumn}</TableHead>
+                <TableHead className="text-right">{REPORT_TEXT.weightColumn}</TableHead>
+                {showDetail && (
+                  <TableHead className="text-right">{REPORT_TEXT.weightedScoreColumn}</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
               {report.dimensions.map((dimension) => (
                 <TableRow key={dimension.dimensionId}>
                   <TableCell>{dimension.dimensionName}</TableCell>
-                  <TableCell className="text-right tabular-nums">{dimension.weight}</TableCell>
+                  {showDetail && (
+                    <>
+                      <TableCell className="text-right tabular-nums">
+                        {dimension.rawScore}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {dimension.maxScore}
+                      </TableCell>
+                    </>
+                  )}
                   <TableCell className="text-right tabular-nums">
                     {dimension.scorePct.toFixed(2)}
                   </TableCell>
+                  <TableCell className="text-right tabular-nums">{dimension.weight}</TableCell>
+                  {showDetail && (
+                    <TableCell className="text-right tabular-nums">
+                      {dimension.weightedScore.toFixed(2)}
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
+              {showDetail && (
+                <TableRow className="font-medium">
+                  <TableCell>{REPORT_TEXT.grandTotalRow}</TableCell>
+                  <TableCell className="text-right tabular-nums">{report.rawScore}</TableCell>
+                  <TableCell className="text-right tabular-nums">{report.maxScore}</TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {report.rawScorePct.toFixed(2)}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">100</TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {formatScore(report.totalScore)}
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+
+      {showDetail && <RoundQuestionDetail dimensions={report.dimensions} />}
 
       <Card className="shadow-sm">
         <CardHeader>

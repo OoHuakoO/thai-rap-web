@@ -58,8 +58,9 @@ api.interceptors.response.use((response) => {
 const AUTH_ENDPOINTS_WITHOUT_RETRY = ['/auth/login', '/auth/register', '/auth/refresh'];
 
 // Login/register failures are shown inline on the auth form — a global
-// logout+redirect on their 401 would blow away that form before the user
-// ever sees why (e.g. wrong password).
+// logout+redirect on their 401, or a bounce to /errors/403 on their 403
+// (AUTH_006, a sign-up still waiting for approval), would blow away that form
+// before the user ever sees why.
 const AUTH_ENDPOINTS_WITHOUT_REDIRECT = ['/auth/login', '/auth/register'];
 
 function matchesAuthEndpoint(url: string | undefined, endpoints: string[]): boolean {
@@ -136,7 +137,9 @@ api.interceptors.response.use(
           break;
 
         case HTTP_STATUS.FORBIDDEN:
-          window.location.href = ROUTES.ERROR_403;
+          if (!matchesAuthEndpoint(originalRequest?.url, AUTH_ENDPOINTS_WITHOUT_REDIRECT)) {
+            window.location.href = ROUTES.ERROR_403;
+          }
           break;
 
         case HTTP_STATUS.RATE_LIMITED: {

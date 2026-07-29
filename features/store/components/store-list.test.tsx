@@ -43,8 +43,9 @@ describe('StoreList', () => {
     });
   });
 
-  // An entrepreneur browses the whole directory but manages only its own store,
-  // so store:write alone must not put an edit button on every row.
+  // The API no longer lists another owner's store to an entrepreneur, but a
+  // cached row from before a reassignment still can — store:write alone must
+  // not put an edit button on it.
   it('offers edit and delete to an entrepreneur on its own store only', async () => {
     signInAs(ROLES.ENTREPRENEUR);
     renderWithClient(<StoreList />);
@@ -53,7 +54,8 @@ describe('StoreList', () => {
 
     expect(screen.getAllByTitle('แก้ไขร้าน')).toHaveLength(1);
     expect(screen.getAllByTitle('ลบร้าน')).toHaveLength(1);
-    // Both rows stay readable — browsing is not gated on ownership.
+    // The view button is not ownership-gated in the component — whichever rows
+    // the API returned stay openable.
     expect(screen.getAllByTitle('ดูรายละเอียดเต็ม')).toHaveLength(2);
   });
 

@@ -36,6 +36,11 @@ interface AssignStoresDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// The row mounts this only while it is open, so the draft selection below is
+// seeded on every open. Keeping it mounted across opens would freeze the first
+// seed forever: `open` is driven from the row, and Radix fires `onOpenChange`
+// only for its own closes — never on the way in — so there is no callback to
+// re-seed from.
 export function AssignStoresDialog({ user, mode, open, onOpenChange }: AssignStoresDialogProps) {
   const isAssessorMode = mode === 'assessor';
   const initialIds = isAssessorMode ? user.assignedStoreIds : user.ownedStoreIds;
@@ -55,17 +60,6 @@ export function AssignStoresDialog({ user, mode, open, onOpenChange }: AssignSto
   const { mutate: assign, isPending } = isAssessorMode
     ? assignAssessorStores
     : assignOwnedStores;
-
-  // The dialog is mounted by the row and kept alive across opens, so the draft
-  // selection has to be re-seeded from the user each time it opens — otherwise
-  // a save made in another row's dialog shows stale ticks here.
-  const handleOpenChange = (nextOpen: boolean) => {
-    if (nextOpen) {
-      setSelectedIds(initialIds);
-      setSearch('');
-    }
-    onOpenChange(nextOpen);
-  };
 
   const toggle = (storeId: string) => {
     setSelectedIds((prev) =>
@@ -89,7 +83,7 @@ export function AssignStoresDialog({ user, mode, open, onOpenChange }: AssignSto
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>

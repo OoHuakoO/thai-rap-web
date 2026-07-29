@@ -86,8 +86,8 @@ export function StoreDetail({ storeId, variant = 'compact' }: StoreDetailProps) 
   const hiddenStripCount = stripPhotos.length - visibleStrip.length;
 
   // The API omits documents entirely on a store whose private data is not the
-  // caller's — a VIEWER's rows, and someone else's store for an ENTREPRENEUR
-  // (StoreService.applyFieldScope). Typed as required on Store, so this is the
+  // caller's — every row a VIEWER reads (StoreService.applyFieldScope).
+  // Typed as required on Store, so this is the
   // one place the narrowed shape has to be absorbed rather than crash on slice.
   const documents = store.documents ?? [];
   const visibleDocs = isCompact ? documents.slice(0, COMPACT_DOC_LIMIT) : documents;

@@ -1,7 +1,12 @@
 import api from '@/services/api';
 import type { AssessmentRound } from '@/features/dashboard/types/dashboard.types';
 import type { DownloadedFile } from '@/features/dashboard/types/dashboard.types';
-import type { OverviewReport, ReportFileFormat, RoundReport } from '../types/report.types';
+import type {
+  OverviewReport,
+  ReportFileFormat,
+  RoundMatrixReport,
+  RoundReport,
+} from '../types/report.types';
 
 const FILENAME_PATTERN = /filename="?([^";]+)"?/;
 
@@ -25,6 +30,17 @@ export const reportService = {
   exportRoundReport: (storeId: string, round: AssessmentRound, format: ReportFileFormat) =>
     api
       .get<Blob>(`/reports/stores/${storeId}/rounds/${round}/export`, {
+        params: { format },
+        responseType: 'blob',
+      })
+      .then(toDownloadedFile),
+
+  getRoundMatrix: (round: AssessmentRound) =>
+    api.get<RoundMatrixReport>(`/reports/rounds/${round}/stores`).then((res) => res.data),
+
+  exportRoundMatrix: (round: AssessmentRound, format: ReportFileFormat) =>
+    api
+      .get<Blob>(`/reports/rounds/${round}/stores/export`, {
         params: { format },
         responseType: 'blob',
       })

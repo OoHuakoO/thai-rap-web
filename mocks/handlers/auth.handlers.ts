@@ -5,6 +5,7 @@ import { MOCK_OTP, passwordResetDb } from '../fixtures/password-reset.fixtures';
 import { createUser } from '../factories/user.factory';
 import { getScenario, serverError } from '../utils/scenario';
 import { HTTP_STATUS } from '@/constants/http-status';
+import { USER_STATUSES } from '@/features/user/types/user.types';
 import type {
   ForgotPasswordDto,
   LoginDto,
@@ -28,6 +29,16 @@ function unauthorized(message = 'อีเมลหรือรหัสผ่�
   return HttpResponse.json<ApiErrorResponse>(
     { success: false, error: { code: 'AUTH_001', message } },
     { status: HTTP_STATUS.UNAUTHORIZED }
+  );
+}
+
+// A sign-up sits PENDING until a SUPER_ADMIN approves it, and the real API
+// answers login with this 403 until then. The axios interceptor deliberately
+// does not bounce a login 403 to /errors/403, so the form renders this message.
+function accountPending(): Response {
+  return HttpResponse.json<ApiErrorResponse>(
+    { success: false, error: { code: 'AUTH_006', message: 'บัญชีกำลังรอการเปิดใช้งาน' } },
+    { status: HTTP_STATUS.FORBIDDEN }
   );
 }
 
@@ -79,6 +90,7 @@ export const authHandlers = [
 
     const found = userDb.getAll().find((u) => u.email === body.email);
     if (!found) return unauthorized();
+    if (found.status === USER_STATUSES.PENDING) return accountPending();
 
     authSession.set(found.id);
     const user: AuthUser = { id: found.id, name: found.name, email: found.email, role: found.role };

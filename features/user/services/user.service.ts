@@ -12,9 +12,10 @@ import type {
 // that is what the PENDING status is for. `create` has no endpoint behind it
 // (see CreateUserDto) and no caller in the UI.
 //
-// No `suspend`, `remove` or `updateRole` wrapper: /users neither suspends nor
-// deletes an account, and a user keeps the role they registered with. The API
-// still exposes those endpoints; nothing in this app calls them.
+// No `suspend` or `updateRole` wrapper: /users never suspends an account, and a
+// user keeps the role they registered with. The API still exposes those
+// endpoints; nothing in this app calls them. `remove` is called for exactly one
+// case — rejecting a sign-up that is still PENDING (see UserRowActions).
 export const userService = {
   getAll: (params?: UserQueryParams) =>
     api.get<PaginatedUsers>('/users', { params }).then((res) => res.data),
@@ -26,6 +27,8 @@ export const userService = {
   create: (data: CreateUserDto) => api.post<User>('/users', data).then((res) => res.data),
 
   approve: (id: string) => api.patch<User>(`/users/${id}/approve`).then((res) => res.data),
+
+  remove: (id: string) => api.delete<null>(`/users/${id}`).then((res) => res.data),
 
   assignStores: (id: string, data: AssignStoresDto) =>
     api.patch<User>(`/users/${id}/assigned-stores`, data).then((res) => res.data),

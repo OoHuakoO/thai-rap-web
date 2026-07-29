@@ -30,9 +30,10 @@ interface StoreListProps {
 
 export function StoreList({ query, selectedId, onSelect }: StoreListProps) {
   const can = useAuthStore((s) => s.can);
-  // An entrepreneur browses the whole directory but manages only its own store,
-  // so store:write/delete alone is no longer enough to show the row actions —
-  // without the ownership test every row offers an edit button the API rejects.
+  // GET /stores already hands an entrepreneur only the stores it owns, so this
+  // ownership test normally passes on every row. It stays as the second gate:
+  // a cached page from before a store was reassigned would otherwise offer an
+  // edit button the API rejects.
   const userId = useAuthStore((s) => s.user?.id);
   const isEntrepreneur = useAuthStore((s) => s.hasRole(ROLES.ENTREPRENEUR));
   const canManage = (store: Store) => !isEntrepreneur || store.ownerId === userId;

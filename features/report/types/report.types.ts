@@ -17,6 +17,22 @@ export interface ReportDimensionScore {
   scorePct: number;
 }
 
+export interface ReportQuestionScore {
+  questionNo: number;
+  questionText: string;
+  /** null when the assessor left the question unanswered. */
+  rawScore: number | null;
+  maxScore: number;
+}
+
+/** A dimension plus the arithmetic behind its weighted contribution. */
+export interface ReportDimensionDetail extends ReportDimensionScore {
+  rawScore: number;
+  maxScore: number;
+  weightedScore: number;
+  questions: ReportQuestionScore[];
+}
+
 export interface ReportRedFlag {
   type: string;
   severity: 'WARNING' | 'CRITICAL';
@@ -27,12 +43,17 @@ export interface ReportRedFlag {
 export interface RoundReport {
   store: ReportStore;
   round: AssessmentRound;
+  /** The weighted total — คะแนนถ่วงน้ำหนัก. */
   totalScore: number | null;
   zone: string | null;
   assessorName: string;
   submittedAt: string | null;
   notes: string | null;
-  dimensions: ReportDimensionScore[];
+  rawScore: number;
+  maxScore: number;
+  rawScorePct: number;
+  completionPct: number;
+  dimensions: ReportDimensionDetail[];
   redFlags: ReportRedFlag[];
 }
 
@@ -56,4 +77,36 @@ export interface OverviewReport {
   rounds: OverviewRoundSummary[];
   dimensionTrends: OverviewDimensionTrend[];
   unresolvedRedFlagCount: number;
+}
+
+export interface RoundMatrixDimension {
+  dimensionId: number;
+  dimensionName: string;
+  weight: number;
+}
+
+export interface RoundMatrixRow {
+  storeId: string;
+  storeCode: string;
+  storeName: string;
+  province: string;
+  completionPct: number;
+  rawScore: number;
+  rawScorePct: number;
+  weightedScore: number | null;
+  zone: string | null;
+  redFlagCount: number;
+  unresolvedRedFlagCount: number;
+  criticalDimensionId: number | null;
+  criticalDimensionName: string | null;
+  scoresByDimension: Record<number, number>;
+}
+
+/** Every accessible store's dimension scores for one round, side by side. */
+export interface RoundMatrixReport {
+  round: AssessmentRound;
+  dimensions: RoundMatrixDimension[];
+  rows: RoundMatrixRow[];
+  averageByDimension: Record<number, number>;
+  averageWeightedScore: number | null;
 }

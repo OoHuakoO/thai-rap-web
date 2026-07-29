@@ -12,8 +12,9 @@ vi.mock('next/navigation', () => ({
 }));
 vi.mock('../services/auth.service');
 
+let queryClient: QueryClient;
+
 function wrapper({ children }: { children: React.ReactNode }) {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }
 
@@ -27,6 +28,7 @@ const loggedInUser = {
 describe('useLogout', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     useAuthStore.setState({
       user: loggedInUser,
       accessToken: 'token-123',
@@ -55,5 +57,17 @@ describe('useLogout', () => {
     await waitFor(() => expect(useAuthStore.getState().isAuthenticated).toBe(false));
     expect(useAuthStore.getState().user).toBeNull();
     expect(mockReplace).toHaveBeenCalledWith(ROUTES.LOGIN);
+  });
+
+  // The next account to sign in must not be served the previous one's data
+  // from cache while its own refetch is still in flight.
+  it('empties the query cache so no data outlives the session', async () => {
+    vi.mocked(authService.logout).mockResolvedValue(undefined);
+    queryClient.setQueryData(['users'], [loggedInUser]);
+
+    const { result } = renderHook(() => useLogout(), { wrapper });
+    result.current.mutate();
+
+    await waitFor(() => expect(queryClient.getQueryData(['users'])).toBeUndefined());
   });
 });

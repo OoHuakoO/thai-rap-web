@@ -18,12 +18,29 @@ interface ExportOverviewInput {
   format: ReportFileFormat;
 }
 
+interface ExportMatrixInput {
+  round: AssessmentRound;
+  format: ReportFileFormat;
+}
+
 const FALLBACK_FILENAME = (format: ReportFileFormat) => `assessment-report.${format}`;
 
 export function useExportRoundReport() {
   return useMutation({
     mutationFn: ({ storeId, round, format }: ExportRoundInput) =>
       reportService.exportRoundReport(storeId, round, format).then((file) => ({ ...file, format })),
+    onSuccess: ({ blob, filename, format }) => {
+      downloadBlob(blob, filename ?? FALLBACK_FILENAME(format));
+      toast.success(REPORT_TEXT.downloadSuccess);
+    },
+    onError: (error) => toast.error(extractErrorMessage(error)),
+  });
+}
+
+export function useExportRoundMatrix() {
+  return useMutation({
+    mutationFn: ({ round, format }: ExportMatrixInput) =>
+      reportService.exportRoundMatrix(round, format).then((file) => ({ ...file, format })),
     onSuccess: ({ blob, filename, format }) => {
       downloadBlob(blob, filename ?? FALLBACK_FILENAME(format));
       toast.success(REPORT_TEXT.downloadSuccess);
