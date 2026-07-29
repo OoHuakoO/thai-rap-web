@@ -5,10 +5,6 @@ import { useRegister } from './use-register';
 import { authService } from '../services/auth.service';
 import { useAuthStore } from '@/stores/auth-store';
 
-const mockReplace = vi.fn();
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({ replace: mockReplace }),
-}));
 vi.mock('../services/auth.service');
 
 function wrapper({ children }: { children: React.ReactNode }) {
@@ -27,10 +23,9 @@ describe('useRegister', () => {
     });
   });
 
-  it('logs the new user in and redirects to the role default route on success', async () => {
+  it('leaves the store unauthenticated on success — the account is pending approval', async () => {
     const user = { id: '2', name: 'Bob', email: 'bob@example.com', role: 'ENTREPRENEUR' as const };
-    const tokens = { accessToken: 'token-456', expiresIn: 3600 };
-    vi.mocked(authService.register).mockResolvedValue({ user, tokens });
+    vi.mocked(authService.register).mockResolvedValue({ user });
 
     const { result } = renderHook(() => useRegister(), { wrapper });
     result.current.mutate({
@@ -41,9 +36,9 @@ describe('useRegister', () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(useAuthStore.getState().user).toEqual(user);
-    expect(useAuthStore.getState().isAuthenticated).toBe(true);
-    expect(mockReplace).toHaveBeenCalledTimes(1);
+    expect(result.current.data?.user).toEqual(user);
+    expect(useAuthStore.getState().isAuthenticated).toBe(false);
+    expect(useAuthStore.getState().accessToken).toBeNull();
   });
 
   it('surfaces an error and leaves the store unauthenticated when registration fails', async () => {
@@ -59,6 +54,5 @@ describe('useRegister', () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(useAuthStore.getState().isAuthenticated).toBe(false);
-    expect(mockReplace).not.toHaveBeenCalled();
   });
 });

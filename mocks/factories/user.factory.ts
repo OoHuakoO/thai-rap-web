@@ -8,20 +8,25 @@ let idCounter = 100;
 export function createUser(overrides: Partial<User> = {}): User {
   const id = String(++idCounter);
   const now = new Date().toISOString();
+  const assignedStores = overrides.assignedStores ?? [];
+  const ownedStores = overrides.ownedStores ?? [];
   return {
     id,
     name: `User ${id}`,
     email: `user${id}@example.com`,
     role: ROLES.ENTREPRENEUR,
+    // Matches the API: POST /auth/register lands every account here and it
+    // stays unusable until a SUPER_ADMIN approves it.
     status: USER_STATUSES.PENDING,
-    phone: null,
-    organization: null,
-    assignedStoreIds: [],
-    ownedStoreId: null,
     lastLogin: null,
     createdAt: now,
     updatedAt: now,
     ...overrides,
+    assignedStores,
+    ownedStores,
+    // Derived, never passed in — the two lists must not be able to disagree.
+    assignedStoreIds: assignedStores.map((store) => store.id),
+    ownedStoreIds: ownedStores.map((store) => store.id),
   };
 }
 
@@ -30,8 +35,6 @@ export function createUserFromDto(dto: CreateUserDto): User {
     name: dto.name,
     email: dto.email,
     role: dto.role,
-    phone: dto.phone ?? null,
-    organization: dto.organization ?? null,
     status: dto.status ?? USER_STATUSES.PENDING,
   });
 }

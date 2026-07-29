@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ScoreSummary } from './score-summary';
+import { IMPROVEMENT_POINTS_COUNT } from '../utils/zone';
 import {
   useAssessmentByRound,
   useAssessmentRank,
@@ -133,7 +134,10 @@ describe('ScoreSummary', () => {
     expect(screen.queryByText('ยังไม่มีคะแนน')).not.toBeInTheDocument();
   });
 
-  it('lists every dimension below the pass threshold as a weak point', () => {
+  // There is no pass mark here: a dimension is a weak point by being one of the
+  // lowest, not by falling under a threshold. A high-scoring dimension still
+  // shows while there are fewer than IMPROVEMENT_POINTS_COUNT to rank.
+  it('ranks the lowest-scored dimensions first, whatever they scored', () => {
     vi.mocked(useAssessmentSummaries).mockReturnValue({
       data: [{ round: 'T0', status: 'SUBMITTED' }],
     } as unknown as ReturnType<typeof useAssessmentSummaries>);
@@ -143,23 +147,41 @@ describe('ScoreSummary', () => {
 
     renderSummary({ round: 'T1' });
 
-    // dim 1 scores 25%, dim 2 scores 100% — only the first is below 60.
-    expect(screen.getByText('คุณภาพอาหาร (มิติ 1)')).toBeInTheDocument();
-    expect(screen.getByText('25.0%')).toBeInTheDocument();
-    expect(screen.queryByText('ความปลอดภัย (มิติ 2)')).not.toBeInTheDocument();
+    // dim 1 scores 25%, dim 2 scores 100% — both listed, weakest first.
+    const weakPoints = screen.getAllByRole('listitem').map((li) => li.textContent);
+    expect(weakPoints).toEqual([
+      'คุณภาพอาหาร (มิติ 1)25.0%',
+      'ความปลอดภัย (มิติ 2)100.0%',
+    ]);
   });
 
-  it('says every dimension passed when none is below the threshold', () => {
+  it(`lists at most ${IMPROVEMENT_POINTS_COUNT} weak points, dropping the highest`, () => {
+    vi.mocked(useDimensions).mockReturnValue({
+      data: [
+        ...dimensions,
+        { id: 3, name: 'การตลาด', nameEn: 'Marketing', weight: 0, questionCount: 1 },
+        { id: 4, name: 'การเงิน', nameEn: 'Finance', weight: 0, questionCount: 1 },
+      ],
+    } as unknown as ReturnType<typeof useDimensions>);
     vi.mocked(useAssessmentSummaries).mockReturnValue({
       data: [{ round: 'T0', status: 'SUBMITTED' }],
     } as unknown as ReturnType<typeof useAssessmentSummaries>);
     vi.mocked(useAssessmentByRound).mockReturnValue({
-      data: makeAssessment({ questions: [makeQuestion(1, 3), makeQuestion(2, 4)] }),
+      data: makeAssessment({
+        // 25% / 100% / 50% / 75% — the 100% dimension is the one left out.
+        questions: [makeQuestion(1, 1), makeQuestion(2, 4), makeQuestion(3, 2), makeQuestion(4, 3)],
+      }),
     } as unknown as ReturnType<typeof useAssessmentByRound>);
 
     renderSummary({ round: 'T1' });
 
-    expect(screen.getByText('ทุกมิติผ่านเกณฑ์แล้ว')).toBeInTheDocument();
+    const weakPoints = screen.getAllByRole('listitem').map((li) => li.textContent);
+    expect(weakPoints).toHaveLength(IMPROVEMENT_POINTS_COUNT);
+    expect(weakPoints).toEqual([
+      'คุณภาพอาหาร (มิติ 1)25.0%',
+      'การตลาด (มิติ 3)50.0%',
+      'การเงิน (มิติ 4)75.0%',
+    ]);
   });
 
   // An unscored dimension reads 0% by arithmetic, not by weakness — listing it
@@ -185,7 +207,7 @@ describe('ScoreSummary', () => {
     });
 
     expect(screen.getByText('ยังให้คะแนนไม่ครบสักมิติ')).toBeInTheDocument();
-    expect(screen.queryByText('ทุกมิติผ่านเกณฑ์แล้ว')).not.toBeInTheDocument();
+    expect(screen.queryAllByRole('listitem')).toHaveLength(0);
   });
 
   it('shows the running score, flagged as provisional, before the round is submitted', () => {

@@ -37,7 +37,6 @@ export const SCORE_SUMMARY_TEXT = {
   provisional: 'ระหว่างประเมิน',
   scoringProgress: (scored: number, total: number) => `ให้คะแนนแล้ว ${scored}/${total} ข้อ`,
   zonePendingDescription: 'โซนจะแสดงเมื่อให้คะแนนครบทุกข้อ',
-  improvementNone: 'ทุกมิติผ่านเกณฑ์แล้ว',
   improvementPending: 'ยังให้คะแนนไม่ครบสักมิติ',
   dimensionPercent: (pct: number) => `${pct.toFixed(1)}%`,
   selectedDimScore: 'คะแนนมิติที่เลือก',

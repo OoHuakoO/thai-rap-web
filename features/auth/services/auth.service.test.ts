@@ -36,4 +36,31 @@ describe('authService', () => {
     await authService.logout();
     expect(api.post).toHaveBeenCalledWith('/auth/logout');
   });
+
+  it('calls POST /auth/forgot-password with the email', async () => {
+    vi.mocked(api.post).mockResolvedValue({ data: null });
+    await authService.forgotPassword({ email: 'alice@example.com' });
+    expect(api.post).toHaveBeenCalledWith('/auth/forgot-password', {
+      email: 'alice@example.com',
+    });
+  });
+
+  it('calls POST /auth/verify-otp with the email and code', async () => {
+    vi.mocked(api.post).mockResolvedValue({ data: { resetToken: 'token', expiresIn: 600 } });
+    const result = await authService.verifyOtp({ email: 'alice@example.com', otp: '123456' });
+    expect(api.post).toHaveBeenCalledWith('/auth/verify-otp', {
+      email: 'alice@example.com',
+      otp: '123456',
+    });
+    expect(result.resetToken).toBe('token');
+  });
+
+  it('calls POST /auth/reset-password with the reset token and new password', async () => {
+    vi.mocked(api.post).mockResolvedValue({ data: null });
+    await authService.resetPassword({ resetToken: 'token', password: 'newpassword1' });
+    expect(api.post).toHaveBeenCalledWith('/auth/reset-password', {
+      resetToken: 'token',
+      password: 'newpassword1',
+    });
+  });
 });

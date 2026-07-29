@@ -12,7 +12,7 @@ import type { Role } from '@/types/auth.types';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { CREATE_USER_ROLE_OPTIONS } from '../constants/create-user-form.constants';
 import { USER_LIST_TEXT } from '../constants/user-list.constants';
-import { useUpdateUser } from '../hooks/use-users';
+import { useUpdateUserRole } from '../hooks/use-users';
 import type { User } from '../types/user.types';
 
 interface UserRoleSelectProps {
@@ -21,10 +21,10 @@ interface UserRoleSelectProps {
 
 /** Inline role change from the user table — the level is the only field edited often enough to warrant it. */
 export function UserRoleSelect({ user }: UserRoleSelectProps) {
-  const { mutate: updateUser, isPending } = useUpdateUser(user.id);
+  const { mutate: updateRole, isPending } = useUpdateUserRole(user.id);
 
   const handleChange = (role: string) => {
-    updateUser(
+    updateRole(
       { role: role as Role },
       {
         onSuccess: () => toast.success(USER_LIST_TEXT.roleChangeSuccess),

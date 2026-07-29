@@ -1,14 +1,19 @@
 import { http, HttpResponse } from 'msw';
 import { userDb } from '../fixtures/user.fixtures';
 import { authSession } from '../fixtures/auth.fixtures';
+import { MOCK_OTP, passwordResetDb } from '../fixtures/password-reset.fixtures';
 import { createUser } from '../factories/user.factory';
 import { getScenario, serverError } from '../utils/scenario';
 import { HTTP_STATUS } from '@/constants/http-status';
 import type {
+  ForgotPasswordDto,
   LoginDto,
   LoginResponse,
   RegisterDto,
   RegisterResponse,
+  ResetPasswordDto,
+  VerifyOtpDto,
+  VerifyOtpResponse,
   AuthTokens,
 } from '@/features/auth/types/auth-response.types';
 import type { ApiErrorResponse } from '@/types/api.types';
@@ -30,6 +35,23 @@ function conflict(message: string): Response {
   return HttpResponse.json<ApiErrorResponse>(
     { success: false, error: { code: 'USER_002', message } },
     { status: HTTP_STATUS.CONFLICT }
+  );
+}
+
+function badRequest(code: string, message: string): Response {
+  return HttpResponse.json<ApiErrorResponse>(
+    { success: false, error: { code, message } },
+    { status: HTTP_STATUS.BAD_REQUEST }
+  );
+}
+
+function resetTokenInvalid(): Response {
+  return HttpResponse.json<ApiErrorResponse>(
+    {
+      success: false,
+      error: { code: 'AUTH_010', message: 'ลิงก์ตั้งรหัสผ่านใหม่ไม่ถูกต้องหรือหมดอายุแล้ว' },
+    },
+    { status: HTTP_STATUS.UNAUTHORIZED }
   );
 }
 
@@ -73,20 +95,19 @@ export const authHandlers = [
       return conflict('อีเมลนี้ถูกใช้งานแล้ว');
     }
 
+    // createUser defaults to PENDING, and no session is opened: the account is
+    // unusable until a SUPER_ADMIN approves it on /users. Signing the caller in
+    // here would mock away the entire approval gate.
     const created = createUser({ name: body.name, email: body.email, role: body.role });
     userDb.create(created);
 
-    authSession.set(created.id);
     const user: AuthUser = {
       id: created.id,
       name: created.name,
       email: created.email,
       role: created.role,
     };
-    return HttpResponse.json<RegisterResponse>(
-      { user, tokens: mockTokens(created.id) },
-      { status: HTTP_STATUS.CREATED }
-    );
+    return HttpResponse.json<RegisterResponse>({ user }, { status: HTTP_STATUS.CREATED });
   }),
 
   // Envelope, unlike the other handlers: refresh is the one call that bypasses
@@ -103,6 +124,56 @@ export const authHandlers = [
   }),
 
   http.post(`${BASE_URL}/logout`, () => {
+    authSession.clear();
+    return HttpResponse.json(null);
+  }),
+
+  // Answers 200 for any address, registered or not — same non-enumerable
+  // behaviour as the real endpoint.
+  http.post(`${BASE_URL}/forgot-password`, async ({ request }) => {
+    const scenario = getScenario(request);
+    if (scenario === 'server-error') return serverError();
+
+    const body = (await request.json()) as ForgotPasswordDto;
+    if (userDb.getAll().some((u) => u.email === body.email)) {
+      passwordResetDb.request(body.email);
+    }
+    return HttpResponse.json(null);
+  }),
+
+  http.post(`${BASE_URL}/verify-otp`, async ({ request }) => {
+    const scenario = getScenario(request);
+    if (scenario === 'server-error') return serverError();
+
+    const body = (await request.json()) as VerifyOtpDto;
+    const found = passwordResetDb.find(body.email);
+
+    if (!found || found.consumed) return badRequest('AUTH_007', 'รหัส OTP ไม่ถูกต้อง');
+    if (scenario === 'otp-expired') return badRequest('AUTH_008', 'รหัส OTP หมดอายุแล้ว');
+    if (passwordResetDb.isExhausted(body.email)) {
+      return badRequest('AUTH_009', 'กรอกรหัส OTP ผิดเกินจำนวนครั้งที่กำหนด กรุณาขอรหัสใหม่');
+    }
+
+    if (body.otp !== MOCK_OTP) {
+      passwordResetDb.countAttempt(body.email);
+      return badRequest('AUTH_007', 'รหัส OTP ไม่ถูกต้อง');
+    }
+
+    return HttpResponse.json<VerifyOtpResponse>({
+      resetToken: passwordResetDb.consume(body.email),
+      expiresIn: 600,
+    });
+  }),
+
+  http.post(`${BASE_URL}/reset-password`, async ({ request }) => {
+    const scenario = getScenario(request);
+    if (scenario === 'server-error') return serverError();
+
+    const body = (await request.json()) as ResetPasswordDto;
+    const found = passwordResetDb.findByResetToken(body.resetToken);
+    if (!found) return resetTokenInvalid();
+
+    passwordResetDb.clear(found.email);
     authSession.clear();
     return HttpResponse.json(null);
   }),

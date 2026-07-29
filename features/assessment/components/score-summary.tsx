@@ -249,10 +249,12 @@ export function ScoreSummary({
             )}
           </p>
           {improvementPoints.length === 0 ? (
+            // The list is empty only when no dimension is complete: any fully
+            // scored dimension is ranked, however high it scored. So there is
+            // no "every dimension passed" case to word — that copy belonged to
+            // an earlier pass-mark rule and would be unreachable here.
             <p className="text-[12.5px] text-muted-foreground">
-              {dimensionScores.some((dim) => dim.isFullyScored)
-                ? SCORE_SUMMARY_TEXT.improvementNone
-                : SCORE_SUMMARY_TEXT.improvementPending}
+              {SCORE_SUMMARY_TEXT.improvementPending}
             </p>
           ) : (
             <ul className="space-y-1">

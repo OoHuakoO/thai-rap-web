@@ -1,15 +1,14 @@
 import { http, HttpResponse } from 'msw';
 import { userDb } from '../fixtures/user.fixtures';
-import { createUserFromDto } from '../factories/user.factory';
-import {
-  getScenario,
-  unauthorized,
-  forbidden,
-  serverError,
-  validationError,
-} from '../utils/scenario';
+import { getScenario, unauthorized, forbidden, serverError } from '../utils/scenario';
 import { HTTP_STATUS } from '@/constants/http-status';
-import type { User, CreateUserDto } from '@/features/user/types/user.types';
+import type {
+  AssignStoresDto,
+  UpdateUserRoleDto,
+  User,
+  UserStats,
+} from '@/features/user/types/user.types';
+import { USER_STATUSES } from '@/features/user/types/user.types';
 import type { ApiErrorResponse, PaginatedResponse } from '@/types/api.types';
 import { API_URL } from '@/constants';
 
@@ -22,11 +21,23 @@ function notFound(message = 'ไม่พบข้อมูล'): Response {
   );
 }
 
+function conflict(code: string, message: string): Response {
+  return HttpResponse.json<ApiErrorResponse>(
+    { success: false, error: { code, message } },
+    { status: HTTP_STATUS.CONFLICT }
+  );
+}
+
+function badRequest(code: string, message: string): Response {
+  return HttpResponse.json<ApiErrorResponse>(
+    { success: false, error: { code, message } },
+    { status: HTTP_STATUS.BAD_REQUEST }
+  );
+}
+
 export const userHandlers = [
-  // GET /users
-  // Returns User[] when no pagination params are present (backward-compatible
-  // with existing userService.getAll).
-  // Returns PaginatedResponse<User> when ?page= or ?limit= params are present.
+  // GET /users — always paginated, matching the API's PaginatedResult envelope.
+  // Fixture order stands in for the API's createdAt-desc sort.
   http.get(BASE_URL, ({ request }) => {
     const scenario = getScenario(request);
     if (scenario === 'unauthorized') return unauthorized();
@@ -47,20 +58,30 @@ export const userHandlers = [
       );
     }
 
-    const hasPagination = url.searchParams.has('page') || url.searchParams.has('limit');
-    if (!hasPagination) {
-      return HttpResponse.json<User[]>(users);
-    }
-
     const page = Number(url.searchParams.get('page') ?? 1);
     const limit = Number(url.searchParams.get('limit') ?? 10);
     const total = users.length;
-    const totalPages = Math.ceil(total / limit);
     const start = (page - 1) * limit;
 
     return HttpResponse.json<PaginatedResponse<User>>({
       items: users.slice(start, start + limit),
-      meta: { page, limit, total, totalPages },
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
+  }),
+
+  // GET /users/stats — declared before /users/:id so "stats" isn't read as an id.
+  http.get(`${BASE_URL}/stats`, ({ request }) => {
+    const scenario = getScenario(request);
+    if (scenario === 'unauthorized') return unauthorized();
+    if (scenario === 'forbidden') return forbidden();
+    if (scenario === 'server-error') return serverError();
+
+    const users = userDb.getAll();
+    return HttpResponse.json<UserStats>({
+      total: users.length,
+      pending: users.filter((u) => u.status === USER_STATUSES.PENDING).length,
+      active: users.filter((u) => u.status === USER_STATUSES.ACTIVE).length,
+      suspended: users.filter((u) => u.status === USER_STATUSES.SUSPENDED).length,
     });
   }),
 
@@ -76,38 +97,87 @@ export const userHandlers = [
     return HttpResponse.json<User>(user);
   }),
 
-  // POST /users
-  http.post(BASE_URL, async ({ request }) => {
+  // PATCH /users/:id/approve
+  http.patch(`${BASE_URL}/:id/approve`, ({ request, params }) => {
     const scenario = getScenario(request);
     if (scenario === 'unauthorized') return unauthorized();
     if (scenario === 'forbidden') return forbidden();
     if (scenario === 'server-error') return serverError();
 
-    const body = (await request.json()) as CreateUserDto;
-
-    if (scenario === 'validation-error' || !body.name || !body.email) {
-      return validationError([
-        ...(!body.name ? [{ field: 'name', message: 'Name is required' }] : []),
-        ...(!body.email ? [{ field: 'email', message: 'Email is required' }] : []),
-      ]);
+    const user = userDb.findById(params.id as string);
+    if (!user) return notFound('ไม่พบผู้ใช้งาน');
+    if (user.status === USER_STATUSES.ACTIVE) {
+      return conflict('USER_004', 'บัญชีนี้เปิดใช้งานอยู่แล้ว');
     }
 
-    const user = createUserFromDto(body);
-    userDb.create(user);
-    return HttpResponse.json<User>(user, { status: HTTP_STATUS.CREATED });
+    return HttpResponse.json<User>(
+      userDb.update(user.id, { status: USER_STATUSES.ACTIVE }) as User
+    );
   }),
 
-  // PATCH /users/:id
-  http.patch(`${BASE_URL}/:id`, async ({ request, params }) => {
+  // PATCH /users/:id/suspend
+  http.patch(`${BASE_URL}/:id/suspend`, ({ request, params }) => {
     const scenario = getScenario(request);
     if (scenario === 'unauthorized') return unauthorized();
     if (scenario === 'forbidden') return forbidden();
     if (scenario === 'server-error') return serverError();
 
-    const body = (await request.json()) as Partial<CreateUserDto>;
-    const updated = userDb.update(params.id as string, body);
+    const user = userDb.findById(params.id as string);
+    if (!user) return notFound('ไม่พบผู้ใช้งาน');
+    if (user.status === USER_STATUSES.SUSPENDED) {
+      return conflict('USER_004', 'บัญชีนี้ถูกระงับอยู่แล้ว');
+    }
+
+    return HttpResponse.json<User>(
+      userDb.update(user.id, { status: USER_STATUSES.SUSPENDED }) as User
+    );
+  }),
+
+  // PATCH /users/:id/role
+  http.patch(`${BASE_URL}/:id/role`, async ({ request, params }) => {
+    const scenario = getScenario(request);
+    if (scenario === 'unauthorized') return unauthorized();
+    if (scenario === 'forbidden') return forbidden();
+    if (scenario === 'server-error') return serverError();
+
+    const body = (await request.json()) as UpdateUserRoleDto;
+    const updated = userDb.update(params.id as string, { role: body.role });
     if (!updated) return notFound('ไม่พบผู้ใช้งาน');
     return HttpResponse.json<User>(updated);
+  }),
+
+  // PATCH /users/:id/assigned-stores — the full list, not a delta.
+  http.patch(`${BASE_URL}/:id/assigned-stores`, async ({ request, params }) => {
+    const scenario = getScenario(request);
+    if (scenario === 'unauthorized') return unauthorized();
+    if (scenario === 'forbidden') return forbidden();
+    if (scenario === 'server-error') return serverError();
+
+    const user = userDb.findById(params.id as string);
+    if (!user) return notFound('ไม่พบผู้ใช้งาน');
+    if (user.role !== 'ASSESSOR') {
+      return badRequest('USER_006', 'มอบหมายร้านให้ประเมินได้เฉพาะผู้ประเมินเท่านั้น');
+    }
+
+    const body = (await request.json()) as AssignStoresDto;
+    return HttpResponse.json<User>(userDb.setAssignedStores(user.id, body.storeIds) as User);
+  }),
+
+  // PATCH /users/:id/owned-stores — the full list, not a delta.
+  http.patch(`${BASE_URL}/:id/owned-stores`, async ({ request, params }) => {
+    const scenario = getScenario(request);
+    if (scenario === 'unauthorized') return unauthorized();
+    if (scenario === 'forbidden') return forbidden();
+    if (scenario === 'server-error') return serverError();
+
+    const user = userDb.findById(params.id as string);
+    if (!user) return notFound('ไม่พบผู้ใช้งาน');
+    if (user.role !== 'ENTREPRENEUR') {
+      return badRequest('USER_006', 'กำหนดเจ้าของร้านได้เฉพาะผู้ประกอบการเท่านั้น');
+    }
+
+    const body = (await request.json()) as AssignStoresDto;
+    return HttpResponse.json<User>(userDb.setOwnedStores(user.id, body.storeIds) as User);
   }),
 
   // DELETE /users/:id
@@ -117,8 +187,13 @@ export const userHandlers = [
     if (scenario === 'forbidden') return forbidden();
     if (scenario === 'server-error') return serverError();
 
-    const removed = userDb.remove(params.id as string);
-    if (!removed) return notFound('ไม่พบผู้ใช้งาน');
+    const user = userDb.findById(params.id as string);
+    if (!user) return notFound('ไม่พบผู้ใช้งาน');
+    if (user.ownedStores.length > 0) {
+      return conflict('USER_004', 'ต้องย้ายร้านที่ผู้ใช้นี้เป็นเจ้าของออกก่อนลบบัญชี');
+    }
+
+    userDb.remove(user.id);
     return new HttpResponse(null, { status: HTTP_STATUS.NO_CONTENT });
   }),
 ];

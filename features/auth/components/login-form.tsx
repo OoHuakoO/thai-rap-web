@@ -66,6 +66,12 @@ export function LoginForm() {
             <FieldError message={errors.password?.message} />
           </div>
 
+          <p className="text-right text-sm">
+            <Link href={ROUTES.FORGOT_PASSWORD} className="font-medium text-orange hover:underline">
+              {LOGIN_FORM_TEXT.forgotPasswordLink}
+            </Link>
+          </p>
+
           <Button type="submit" className="w-full" disabled={isPending}>
             {isPending ? LOGIN_FORM_TEXT.submitting : LOGIN_FORM_TEXT.submit}
           </Button>

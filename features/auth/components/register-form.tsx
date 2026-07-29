@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { AlertCard } from '@/components/shared/alert-card';
 import { FieldError } from '@/components/shared/field-error';
 import { ROUTES } from '@/constants/routes';
 import { ROLE_LABELS, ROLES } from '@/types/auth.types';
@@ -25,7 +26,7 @@ import { useRegister } from '../hooks/use-register';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 
 export function RegisterForm() {
-  const { mutate: registerUser, isPending, isError, error } = useRegister();
+  const { mutate: registerUser, isPending, isError, isSuccess, error } = useRegister();
 
   const {
     register,
@@ -36,6 +37,26 @@ export function RegisterForm() {
     resolver: zodResolver(registerSchema),
     defaultValues: { role: ROLES.ENTREPRENEUR },
   });
+
+  // Registration hands back no session — the account is PENDING until a
+  // SUPER_ADMIN approves it, so there is nowhere to redirect to.
+  if (isSuccess) {
+    return (
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1 text-center">
+          <AuthBrandLogo />
+          <CardTitle className="text-xl">{REGISTER_FORM_TEXT.pendingTitle}</CardTitle>
+          <CardDescription>{REGISTER_FORM_TEXT.pendingDescription}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <AlertCard variant="info" message={REGISTER_FORM_TEXT.pendingMessage} />
+          <Button asChild className="w-full">
+            <Link href={ROUTES.LOGIN}>{REGISTER_FORM_TEXT.pendingBackToLogin}</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full max-w-md">

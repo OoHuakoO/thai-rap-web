@@ -1,5 +1,9 @@
 export { LoginForm } from './components/login-form';
 export { RegisterForm } from './components/register-form';
+export { ForgotPasswordForm } from './components/forgot-password-form';
 export { useLogin } from './hooks/use-login';
 export { useRegister } from './hooks/use-register';
 export { useLogout } from './hooks/use-logout';
+export { useForgotPassword } from './hooks/use-forgot-password';
+export { useVerifyOtp } from './hooks/use-verify-otp';
+export { useResetPassword } from './hooks/use-reset-password';

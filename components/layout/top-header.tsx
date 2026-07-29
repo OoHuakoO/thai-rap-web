@@ -5,7 +5,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/utils/cn';
-import { Bell, ChevronDown, LogOut } from 'lucide-react';
+import { ChevronDown, LogOut } from 'lucide-react';
 import { ROLE_LABELS } from '@/types/auth.types';
 import { useLogout } from '@/features/auth';
 import { getInitials } from '@/utils/get-initials';
@@ -37,10 +37,6 @@ export function TopHeader({ className }: TopHeaderProps) {
       </div>
 
       <div className="flex shrink-0 items-center gap-3">
-        <Button variant="ghost" size="icon" aria-label="Notifications" className="h-8 w-8">
-          <Bell className="h-4 w-4" />
-        </Button>
-
         {user && (
           <>
             <div className="flex items-center gap-2">

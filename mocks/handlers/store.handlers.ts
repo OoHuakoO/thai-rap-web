@@ -5,6 +5,7 @@ import {
   hasReachedStatus,
   nextMockFileId,
 } from '../fixtures/store.fixtures';
+import { assessmentDb } from '../fixtures/assessment.fixtures';
 import { createStoreFromDto } from '../factories/store.factory';
 import {
   getScenario,
@@ -36,6 +37,13 @@ function notFound(): Response {
 
 function fileRequired(): Response {
   return validationError([{ field: 'file', message: 'File is required' }]);
+}
+
+function inUse(message: string): Response {
+  return HttpResponse.json<ApiErrorResponse>(
+    { success: false, error: { code: 'STORE_010', message } },
+    { status: HTTP_STATUS.CONFLICT }
+  );
 }
 
 const REQUIRED_STORE_FIELDS: { field: keyof CreateStoreDto; message: string }[] = [
@@ -189,8 +197,22 @@ export const storeHandlers = [
     if (scenario === 'forbidden') return forbidden();
     if (scenario === 'server-error') return serverError();
 
-    const removed = storeDb.remove(params.id as string);
-    if (!removed) return notFound();
+    const store = storeDb.findById(params.id as string);
+    if (!store) return notFound();
+
+    // Mirrors StoreService.assertDeletable — neither relation cascades on the API
+    // side, so a store carrying either is a 409, not a successful delete.
+    const assessments = assessmentDb.findAllByStore(store.id);
+    if (assessments.length > 0) {
+      return inUse(`ไม่สามารถลบร้านนี้ได้ เพราะมีข้อมูลการประเมินอยู่ ${assessments.length} รายการ`);
+    }
+    if (store.documents.length > 0) {
+      return inUse(
+        `ไม่สามารถลบร้านนี้ได้ เพราะมีเอกสารแนบอยู่ ${store.documents.length} รายการ กรุณาลบเอกสารก่อน`
+      );
+    }
+
+    storeDb.remove(store.id);
     return new HttpResponse(null, { status: HTTP_STATUS.NO_CONTENT });
   }),
 

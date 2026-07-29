@@ -1,4 +1,4 @@
-import { Megaphone, Settings } from 'lucide-react';
+import { Megaphone, Settings, UserCog } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { Role } from '@/types/auth.types';
 import { ROLES } from '@/types/auth.types';
@@ -96,16 +96,19 @@ export const NAV_ITEMS: NavItem[] = [
     // Admin roles only — the route guard enforces it too, this just hides the link.
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   },
-  // Users & Roles (/users) and Access Control (/users/permissions) are
-  // deliberately absent. Both pages are built and both are SUPER_ADMIN-only,
-  // but the API they call does not exist yet — thai-rap-api registers no
-  // `users` and no `access-control` controller, so opening either one 404s.
-  // Linking them from the sidebar would only advertise a dead end.
-  //
-  // Their ROUTE_PERMISSIONS entries stay in place, so restoring the links is
-  // just re-adding two NAV_ITEMS entries here once the endpoints ship:
-  //   { label: 'Users & Roles', labelTh: 'ผู้ใช้งานและสิทธิ์',
-  //     href: ROUTES.USERS, icon: UserCog, allowedRoles: [ROLES.SUPER_ADMIN] }
+  {
+    label: 'Users & Roles',
+    labelTh: 'ผู้ใช้งานและสิทธิ์',
+    href: ROUTES.USERS,
+    icon: UserCog,
+    allowedRoles: [ROLES.SUPER_ADMIN],
+  },
+  // Access Control (/users/permissions) is still deliberately absent: the
+  // `users` controller shipped, but thai-rap-api registers no `access-control`
+  // controller, so that page's saved matrix still lives only in localStorage.
+  // Its ROUTE_PERMISSIONS entry stays in place, and UserPageHeader still links
+  // to it, so restoring the sidebar link is one entry here once the endpoint
+  // ships:
   //   { label: 'Access Control', labelTh: 'กำหนดสิทธิ์การเข้าถึง',
   //     href: ROUTES.USER_PERMISSIONS, icon: ShieldCheck, allowedRoles: [ROLES.SUPER_ADMIN] }
   {

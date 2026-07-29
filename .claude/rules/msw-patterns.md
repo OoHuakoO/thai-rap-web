@@ -155,7 +155,7 @@ const limit = Number(url.searchParams.get('limit') ?? 10)
 
 ## Environment Toggle
 
-Mocks are active when `NEXT_PUBLIC_ENABLE_MOCKS=true` in `.env.local`.
+Mocks are active when `NEXT_PUBLIC_ENABLE_MOCKS=true` in `.env`.
 Production is always off (hard `NODE_ENV` guard in `mocks/index.ts`).
 Never set `NEXT_PUBLIC_ENABLE_MOCKS=true` in `.env.example` — keep it `false`.
 
