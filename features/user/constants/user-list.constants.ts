@@ -50,9 +50,14 @@ export const USER_ROLE_FILTER_OPTIONS: { value: Role; label: string }[] = ROLE_D
   (role) => ({ value: role, label: ROLE_LABELS[role] })
 );
 
-export const USER_STATUS_FILTER_OPTIONS: { value: UserStatus; label: string }[] = Object.values(
-  USER_STATUSES
-).map((status) => ({ value: status, label: USER_STATUS_LABELS[status] }));
+// SUSPENDED is deliberately absent: /users offers no way to suspend an account
+// (see UserRowActions), so filtering by it would always return an empty table.
+// The status itself still exists — a row suspended at the database level keeps
+// rendering its badge under "ทุกสถานะ".
+const FILTERABLE_USER_STATUSES: UserStatus[] = [USER_STATUSES.ACTIVE, USER_STATUSES.PENDING];
+
+export const USER_STATUS_FILTER_OPTIONS: { value: UserStatus; label: string }[] =
+  FILTERABLE_USER_STATUSES.map((status) => ({ value: status, label: USER_STATUS_LABELS[status] }));
 
 /** Filter selects can't hold an empty string as a value, so "all" needs a sentinel. */
 export const FILTER_ALL_VALUE = 'ALL';

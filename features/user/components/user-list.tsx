@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AlertCard } from '@/components/shared/alert-card';
 import { DataTable } from '@/components/shared/data-table';
 import { PaginationBar } from '@/components/shared/pagination-bar';
@@ -84,23 +85,40 @@ export function UserList() {
       key: 'assignedStores',
       header: USER_LIST_TEXT.columnStores,
       cell: (user) => {
-        const links = [
-          ...(user.assignedStores.length > 0
-            ? [USER_LIST_TEXT.assignedCount(user.assignedStores.length)]
-            : []),
-          ...(user.ownedStores.length > 0
-            ? [USER_LIST_TEXT.ownedCount(user.ownedStores.length)]
-            : []),
-        ];
-        if (links.length === 0) {
+        // The count is what fits in the column; the names behind it live in the
+        // tooltip, so a row stays readable whether the user has one store or ten.
+        const groups = [
+          {
+            label: USER_LIST_TEXT.assignedCount(user.assignedStores.length),
+            stores: user.assignedStores,
+          },
+          { label: USER_LIST_TEXT.ownedCount(user.ownedStores.length), stores: user.ownedStores },
+        ].filter((group) => group.stores.length > 0);
+
+        if (groups.length === 0) {
           return <span className="text-xs text-muted-foreground">{USER_LIST_TEXT.noStores}</span>;
         }
         return (
-          <div className="text-xs text-charcoal">
-            {links.map((label) => (
-              <p key={label}>{label}</p>
-            ))}
-          </div>
+          <TooltipProvider delayDuration={150}>
+            <div className="text-xs text-charcoal">
+              {groups.map((group) => (
+                <Tooltip key={group.label}>
+                  <TooltipTrigger asChild>
+                    <p className="w-fit cursor-default underline decoration-dotted underline-offset-4">
+                      {group.label}
+                    </p>
+                  </TooltipTrigger>
+                  <TooltipContent align="start" className="max-w-xs">
+                    <ul className="space-y-0.5 text-xs">
+                      {group.stores.map((store) => (
+                        <li key={store.id}>{store.name}</li>
+                      ))}
+                    </ul>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
+          </TooltipProvider>
         );
       },
     },

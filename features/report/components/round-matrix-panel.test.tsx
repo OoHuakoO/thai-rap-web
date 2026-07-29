@@ -36,6 +36,7 @@ const report: RoundMatrixReport = {
   ],
   averageByDimension: { 1: 85.7, 2: 60.7 },
   averageWeightedScore: 74.1,
+  meta: { page: 1, limit: 25, total: 1, totalPages: 1 },
 };
 
 function renderWithClient(ui: React.ReactElement) {
@@ -95,22 +96,57 @@ describe('RoundMatrixPanel', () => {
       rows: [],
       averageByDimension: {},
       averageWeightedScore: null,
+      meta: { page: 1, limit: 25, total: 0, totalPages: 0 },
     });
     renderWithClient(<RoundMatrixPanel round="T3" />);
 
     expect(await screen.findByText('ยังไม่มีร้านที่ส่งผลการประเมินรอบนี้')).toBeInTheDocument();
+    expect(screen.queryByLabelText('หน้าถัดไป')).not.toBeInTheDocument();
   });
 
-  it('downloads the all-stores matrix as Excel', async () => {
+  it('asks for one page of stores and counts the whole round', async () => {
+    vi.mocked(reportService.getRoundMatrix).mockResolvedValue({
+      ...report,
+      meta: { page: 1, limit: 25, total: 120, totalPages: 5 },
+    });
+    renderWithClient(<RoundMatrixPanel round="T0" />);
+
+    expect(await screen.findByText('ร้านที่ส่งผลการประเมินรอบนี้ 120 ร้าน')).toBeInTheDocument();
+    expect(reportService.getRoundMatrix).toHaveBeenCalledWith('T0', { page: 1, limit: 25 });
+  });
+
+  it('fetches the next page when the reader pages forward', async () => {
+    vi.mocked(reportService.getRoundMatrix).mockResolvedValue({
+      ...report,
+      meta: { page: 1, limit: 25, total: 120, totalPages: 5 },
+    });
+    renderWithClient(<RoundMatrixPanel round="T0" />);
+
+    await userEvent.click(await screen.findByLabelText('หน้าถัดไป'));
+
+    await waitFor(() =>
+      expect(reportService.getRoundMatrix).toHaveBeenCalledWith('T0', { page: 2, limit: 25 })
+    );
+  });
+
+  // The table pages; the file must not. Downloading page 3 of 5 would hand back
+  // a document nobody can work from.
+  it('downloads every store of the round, not the page on screen', async () => {
     const blob = new Blob(['x']);
-    vi.mocked(reportService.getRoundMatrix).mockResolvedValue(report);
+    vi.mocked(reportService.getRoundMatrix).mockResolvedValue({
+      ...report,
+      meta: { page: 2, limit: 25, total: 120, totalPages: 5 },
+    });
     vi.mocked(reportService.exportRoundMatrix).mockResolvedValue({
       blob,
       filename: 'assessment-report-stores-T0.xlsx',
     });
     renderWithClient(<RoundMatrixPanel round="T0" />);
 
-    await userEvent.click(await screen.findByRole('button', { name: 'ดาวน์โหลด Excel' }));
+    expect(
+      await screen.findByText('ไฟล์ที่ดาวน์โหลดมีครบทุกร้านในรอบนี้ (120 ร้าน)')
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'ดาวน์โหลด Excel' }));
 
     await waitFor(() => expect(reportService.exportRoundMatrix).toHaveBeenCalledWith('T0', 'xlsx'));
     expect(downloadBlob).toHaveBeenCalledWith(blob, 'assessment-report-stores-T0.xlsx');

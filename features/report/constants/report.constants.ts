@@ -11,6 +11,10 @@ export const REPORT_DETAIL_ROLES: Role[] = [ROLES.SUPER_ADMIN, ROLES.ADMIN];
 
 export const OVERVIEW_TAB = 'overview';
 
+// The matrix is one row per store across the whole programme, so it pages like
+// the store directory does. The download stays the whole round either way.
+export const DEFAULT_MATRIX_PAGE_LIMIT = 25;
+
 export const STORE_SCOPE_TAB = 'store';
 export const MATRIX_SCOPE_TAB = 'matrix';
 
@@ -61,6 +65,10 @@ export const REPORT_TEXT = {
   matrixSection: (round: string) => `คะแนนรายมิติของทุกร้าน รอบ ${round}`,
   matrixStoreCount: (count: number) => `ร้านที่ส่งผลการประเมินรอบนี้ ${count} ร้าน`,
   matrixEmpty: 'ยังไม่มีร้านที่ส่งผลการประเมินรอบนี้',
+  matrixPaginationItemLabel: 'ร้าน',
+  // The table pages, the file does not — said next to the buttons so nobody
+  // downloads four times expecting four different pages.
+  matrixDownloadHint: (count: number) => `ไฟล์ที่ดาวน์โหลดมีครบทุกร้านในรอบนี้ (${count} ร้าน)`,
   storeCodeColumn: 'รหัสร้าน',
   storeNameColumn: 'ชื่อร้าน',
   provinceColumn: 'จังหวัด',

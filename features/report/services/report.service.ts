@@ -4,6 +4,7 @@ import type { DownloadedFile } from '@/features/dashboard/types/dashboard.types'
 import type {
   OverviewReport,
   ReportFileFormat,
+  RoundMatrixQueryParams,
   RoundMatrixReport,
   RoundReport,
 } from '../types/report.types';
@@ -35,9 +36,13 @@ export const reportService = {
       })
       .then(toDownloadedFile),
 
-  getRoundMatrix: (round: AssessmentRound) =>
-    api.get<RoundMatrixReport>(`/reports/rounds/${round}/stores`).then((res) => res.data),
+  getRoundMatrix: (round: AssessmentRound, params: RoundMatrixQueryParams = {}) =>
+    api
+      .get<RoundMatrixReport>(`/reports/rounds/${round}/stores`, { params })
+      .then((res) => res.data),
 
+  // No page here on purpose: the file is the whole round. A download that
+  // stopped at the rows on screen would have to be stitched together by hand.
   exportRoundMatrix: (round: AssessmentRound, format: ReportFileFormat) =>
     api
       .get<Blob>(`/reports/rounds/${round}/stores/export`, {

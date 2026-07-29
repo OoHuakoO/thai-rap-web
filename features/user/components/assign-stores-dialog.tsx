@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -56,6 +56,17 @@ export function AssignStoresDialog({ user, mode, open, onOpenChange }: AssignSto
     isError,
     error,
   } = useStores({ limit: ASSIGN_STORES_PAGE_SIZE, search: search || undefined });
+
+  // Stores the user already has float to the top so the current assignment is
+  // visible without scrolling the whole page of results. Ordered by
+  // `initialIds`, never the live `selectedIds` — sorting on the draft selection
+  // would yank a row out from under the cursor the moment it is ticked.
+  const sortedStores = useMemo(() => {
+    const alreadyAssigned = new Set(initialIds);
+    return [...(stores?.items ?? [])].sort(
+      (a, b) => Number(alreadyAssigned.has(b.id)) - Number(alreadyAssigned.has(a.id))
+    );
+  }, [stores, initialIds]);
 
   const assignAssignedStores = useAssignStores(user.id);
   const assignOwnedStores = useAssignOwnedStores(user.id);
@@ -114,16 +125,15 @@ export function AssignStoresDialog({ user, mode, open, onOpenChange }: AssignSto
           />
         ) : isLoading ? (
           <Loading className="py-8" />
-        ) : !stores?.items.length ? (
+        ) : !sortedStores.length ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
             {ASSIGN_STORES_TEXT.empty}
           </p>
         ) : (
           <ScrollArea className="h-72 rounded-md border">
             <ul className="divide-y">
-              {stores.items.map((store) => {
-                const isOwnedByOther =
-                  isOwnerMode && !!store.ownerId && store.ownerId !== user.id;
+              {sortedStores.map((store) => {
+                const isOwnedByOther = isOwnerMode && !!store.ownerId && store.ownerId !== user.id;
                 return (
                   <li key={store.id}>
                     <label className="flex cursor-pointer items-center gap-3 p-3 hover:bg-muted/50">

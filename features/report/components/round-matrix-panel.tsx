@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { AlertCard } from '@/components/shared/alert-card';
 import { CardSkeleton } from '@/components/shared/loading';
+import { PaginationBar } from '@/components/shared/pagination-bar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -16,7 +18,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import type { AssessmentRound } from '@/features/dashboard/types/dashboard.types';
 import { cn } from '@/utils/cn';
 import { extractErrorMessage } from '@/utils/extract-error-message';
-import { OVERALL_LEVEL_BADGE_CLASS, REPORT_TEXT } from '../constants/report.constants';
+import {
+  DEFAULT_MATRIX_PAGE_LIMIT,
+  OVERALL_LEVEL_BADGE_CLASS,
+  REPORT_TEXT,
+} from '../constants/report.constants';
 import { useExportRoundMatrix } from '../hooks/use-export-report';
 import { useRoundMatrix } from '../hooks/use-round-matrix';
 import type { ReportFileFormat } from '../types/report.types';
@@ -28,7 +34,10 @@ interface RoundMatrixPanelProps {
 
 /** Every accessible store's dimension scores for one round — 03_สรุปคะแนน on screen. */
 export function RoundMatrixPanel({ round }: RoundMatrixPanelProps) {
-  const { data: report, isLoading, isError, error } = useRoundMatrix(round);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(DEFAULT_MATRIX_PAGE_LIMIT);
+
+  const { data: report, isLoading, isError, error } = useRoundMatrix(round, { page, limit });
   const { mutate: exportReport, isPending: isExporting } = useExportRoundMatrix();
 
   const handleDownload = (format: ReportFileFormat) => exportReport({ round, format });
@@ -37,20 +46,25 @@ export function RoundMatrixPanel({ round }: RoundMatrixPanelProps) {
   if (isError) return <AlertCard variant="error" message={extractErrorMessage(error)} />;
   if (!report) return <AlertCard variant="info" message={REPORT_TEXT.matrixEmpty} />;
 
+  const total = report.meta.total;
+
   return (
     <Card className="shadow-sm">
       <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
         <div>
           <CardTitle className="text-base">{REPORT_TEXT.matrixSection(report.round)}</CardTitle>
-          <p className="text-xs text-charcoal">
-            {REPORT_TEXT.matrixStoreCount(report.rows.length)}
-          </p>
+          <p className="text-xs text-charcoal">{REPORT_TEXT.matrixStoreCount(total)}</p>
         </div>
-        <ReportDownloadButtons
-          isExporting={isExporting}
-          disabled={report.rows.length === 0}
-          onDownload={handleDownload}
-        />
+        <div className="flex flex-col items-end gap-1">
+          <ReportDownloadButtons
+            isExporting={isExporting}
+            disabled={total === 0}
+            onDownload={handleDownload}
+          />
+          {total > 0 && (
+            <p className="text-xs text-muted-foreground">{REPORT_TEXT.matrixDownloadHint(total)}</p>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="overflow-x-auto">
         {report.rows.length === 0 ? (
@@ -69,7 +83,9 @@ export function RoundMatrixPanel({ round }: RoundMatrixPanelProps) {
                   <TableHead className="text-right">{REPORT_TEXT.weightedScoreColumn}</TableHead>
                   <TableHead className="text-right">{REPORT_TEXT.redFlagColumn}</TableHead>
                   <TableHead>{REPORT_TEXT.overallLevelColumn}</TableHead>
-                  <TableHead>{REPORT_TEXT.criticalDimensionColumn}</TableHead>
+                  <TableHead className="whitespace-nowrap">
+                    {REPORT_TEXT.criticalDimensionColumn}
+                  </TableHead>
                   {report.dimensions.map((dimension) => (
                     <TableHead key={dimension.dimensionId} className="whitespace-nowrap text-right">
                       <Tooltip>
@@ -153,6 +169,20 @@ export function RoundMatrixPanel({ round }: RoundMatrixPanelProps) {
           </TooltipProvider>
         )}
       </CardContent>
+      {total > 0 && (
+        <PaginationBar
+          page={report.meta.page}
+          limit={report.meta.limit}
+          total={total}
+          totalPages={report.meta.totalPages}
+          onPageChange={setPage}
+          onLimitChange={(next) => {
+            setLimit(next);
+            setPage(1);
+          }}
+          itemLabel={REPORT_TEXT.matrixPaginationItemLabel}
+        />
+      )}
     </Card>
   );
 }

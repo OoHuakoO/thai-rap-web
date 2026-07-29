@@ -1,4 +1,5 @@
 import type { AssessmentRound } from '@/features/dashboard/types/dashboard.types';
+import type { PaginationMeta } from '@/types/api.types';
 
 export type ReportFileFormat = 'xlsx' | 'pdf';
 
@@ -103,11 +104,19 @@ export interface RoundMatrixRow {
   scoresByDimension: Record<number, number>;
 }
 
+export interface RoundMatrixQueryParams {
+  page?: number;
+  limit?: number;
+}
+
 /** Every accessible store's dimension scores for one round, side by side. */
 export interface RoundMatrixReport {
   round: AssessmentRound;
   dimensions: RoundMatrixDimension[];
+  /** One page of stores — `meta.total` is how many the round has in all. */
   rows: RoundMatrixRow[];
+  /** Over every store in the round, not the page, so paging never moves them. */
   averageByDimension: Record<number, number>;
   averageWeightedScore: number | null;
+  meta: PaginationMeta;
 }

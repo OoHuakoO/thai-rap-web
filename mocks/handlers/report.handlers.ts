@@ -28,6 +28,9 @@ const ROUNDS: AssessmentRound[] = ['T0', 'T1', 'T2', 'T3'];
 
 const MATRIX_ROLES: Role[] = [ROLES.SUPER_ADMIN, ROLES.ADMIN];
 
+// Matches normalizePagination() in the API — it defaults the same way.
+const DEFAULT_PAGE_LIMIT = 10;
+
 const REPORT_NOT_FOUND_CODE = 'RPT_001';
 const REPORT_NOT_FOUND_MESSAGE = 'ยังไม่มีผลการประเมินรอบนี้ของร้านนี้';
 
@@ -104,7 +107,19 @@ export const reportHandlers = [
     const round = parseRound(String(params.round));
     if (!round) return notFound(REPORT_NOT_FOUND_CODE, REPORT_NOT_FOUND_MESSAGE);
 
-    return HttpResponse.json<RoundMatrixReport>(buildRoundMatrix(round));
+    // Only `rows` is paged: the averages stay the round's, as the API keeps
+    // them, so they read the same on every page.
+    const report = buildRoundMatrix(round);
+    const url = new URL(request.url);
+    const page = Math.max(1, Number(url.searchParams.get('page') ?? 1));
+    const limit = Math.max(1, Number(url.searchParams.get('limit') ?? DEFAULT_PAGE_LIMIT));
+    const total = report.rows.length;
+
+    return HttpResponse.json<RoundMatrixReport>({
+      ...report,
+      rows: report.rows.slice((page - 1) * limit, page * limit),
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
   }),
 
   http.get(`${BASE_URL}/rounds/:round/stores/export`, ({ request, params }) => {

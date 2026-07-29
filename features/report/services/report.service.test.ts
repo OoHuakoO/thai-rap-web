@@ -38,6 +38,24 @@ describe('reportService', () => {
     expect(result).toEqual({ blob, filename: 'assessment-report-T1.pdf' });
   });
 
+  it('asks the all-stores matrix for one page', async () => {
+    await reportService.getRoundMatrix('T0', { page: 2, limit: 25 });
+
+    expect(api.get).toHaveBeenCalledWith('/reports/rounds/T0/stores', {
+      params: { page: 2, limit: 25 },
+    });
+  });
+
+  // The table pages, the file does not — the export carries no page or limit.
+  it('requests the matrix export without a page', async () => {
+    await reportService.exportRoundMatrix('T0', 'xlsx');
+
+    expect(api.get).toHaveBeenCalledWith('/reports/rounds/T0/stores/export', {
+      params: { format: 'xlsx' },
+      responseType: 'blob',
+    });
+  });
+
   it('requests the overview export as a blob in the chosen format', async () => {
     await reportService.exportOverviewReport('store-1', 'xlsx');
 

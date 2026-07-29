@@ -170,7 +170,9 @@ function round2(value: number): number {
 }
 
 /** Every store that "submitted" this round, one row each. */
-export function buildRoundMatrix(round: AssessmentRound): RoundMatrixReport {
+// The whole round, unpaged — slicing it into pages is the handler's job, the
+// same split the API makes between the report and its pagination meta.
+export function buildRoundMatrix(round: AssessmentRound): Omit<RoundMatrixReport, 'meta'> {
   const rows: RoundMatrixRow[] = storeDb
     .getAll()
     .filter((store) => assessedRounds(store.id).includes(round))

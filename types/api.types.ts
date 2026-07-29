@@ -4,15 +4,18 @@ export interface ApiResponse<T> {
   success: boolean;
 }
 
+// Matches buildPaginationMeta() in thai-rap-api/src/shared/pagination.util.ts
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 // Matches buildPaginatedResult() in thai-rap-api/src/shared/pagination.util.ts
 export interface PaginatedResponse<T> {
   items: T[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
+  meta: PaginationMeta;
 }
 
 /** Raw server error response shape — use ApiError class from services/api-error.ts in app code */
