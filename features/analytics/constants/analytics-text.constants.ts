@@ -38,6 +38,12 @@ export const ANALYTICS_KPI_TEXT = {
   readinessNotReady: 'ยังไม่พร้อมเข้าสู่การบ่มเพาะ',
 } as const;
 
+export const STORE_ANALYTICS_SECTION_TEXT = {
+  title: 'วิเคราะห์ศักยภาพร้าน',
+  viewAll: 'ดูหน้าวิเคราะห์ศักยภาพ',
+  empty: 'ยังไม่มีผลวิเคราะห์สำหรับร้านนี้ — ต้องประเมินอย่างน้อย 1 รอบก่อน',
+} as const;
+
 export const RADAR_CARD_TEXT = {
   title: 'ภาพรวมศักยภาพ 8 มิติ (Radar Comparison)',
   empty: 'ยังไม่มีคะแนนรายมิติ',
@@ -45,7 +51,7 @@ export const RADAR_CARD_TEXT = {
 } as const;
 
 export const DIMENSION_COMPARISON_TEXT = {
-  title: (from: string, to: string) => `เปรียบเทียบคะแนนรายมิติ (${from} vs ${to})`,
+  title: (rounds: string) => `เปรียบเทียบคะแนนรายมิติ (${rounds})`,
   axisLabel: 'คะแนน',
   empty: 'ยังไม่มีคะแนนรายมิติ',
   dimensionLegendTitle: 'มิติการประเมิน',

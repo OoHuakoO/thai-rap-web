@@ -10,12 +10,13 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart';
 import { colors } from '@/styles/tokens';
+import { cn } from '@/utils/cn';
 import {
-  AXIS_TICK,
-  BAR_VALUE_LABEL_STYLE,
+  ANALYTICS_CHART_SCALE,
+  DEFAULT_CHART_SCALE,
   SCORE_AXIS_DOMAIN,
   SCORE_AXIS_TICKS,
-  TREND_CHART_HEIGHT,
+  type AnalyticsChartScale,
 } from '../constants/analytics-display.constants';
 import { TREND_CARD_TEXT } from '../constants/analytics-text.constants';
 import type { TrendData } from '../types/analytics.types';
@@ -24,6 +25,7 @@ import { splitMeasuredAndProjected } from '../utils/trend-split';
 
 interface TrendCardProps {
   trend: TrendData;
+  scale?: AnalyticsChartScale;
 }
 
 const MEASURED_KEY = 'measured';
@@ -32,7 +34,8 @@ const PROJECTED_LABEL_KEY = 'projectedLabel';
 
 const formatPointLabel = (value: number | string) => Math.round(Number(value)).toString();
 
-export function TrendCard({ trend }: TrendCardProps) {
+export function TrendCard({ trend, scale = DEFAULT_CHART_SCALE }: TrendCardProps) {
+  const style = ANALYTICS_CHART_SCALE[scale];
   const series = trend.series[0];
   const hasData = trend.xAxis.length > 0 && Boolean(series);
 
@@ -53,7 +56,7 @@ export function TrendCard({ trend }: TrendCardProps) {
   return (
     <Card className="flex h-full flex-col shadow-sm">
       <CardHeader className="pb-1">
-        <CardTitle className="text-sm font-semibold text-text-main">
+        <CardTitle className={cn('font-semibold text-text-main', style.cardTitle)}>
           {hasData ? TREND_CARD_TEXT.titleWithRange(firstLabel, lastLabel) : TREND_CARD_TEXT.title}
         </CardTitle>
       </CardHeader>
@@ -63,11 +66,11 @@ export function TrendCard({ trend }: TrendCardProps) {
         {hasData && series && (
           <>
             <ul className="flex flex-wrap items-center gap-4">
-              <li className="flex items-center gap-1.5 text-[11px] text-charcoal">
+              <li className={cn('flex items-center gap-1.5 text-charcoal', style.legend)}>
                 <span className="h-0.5 w-4 rounded-full" style={{ backgroundColor: lineColor }} />
                 {series.name}
               </li>
-              <li className="flex items-center gap-1.5 text-[11px] text-charcoal">
+              <li className={cn('flex items-center gap-1.5 text-charcoal', style.legend)}>
                 <span
                   className="h-0 w-4 border-t-2 border-dashed"
                   style={{ borderColor: lineColor }}
@@ -79,9 +82,17 @@ export function TrendCard({ trend }: TrendCardProps) {
             <ChartContainer
               config={chartConfig}
               className="w-full"
-              style={{ height: TREND_CHART_HEIGHT }}
+              style={{ height: style.chartHeight }}
             >
-              <LineChart data={chartData} margin={{ top: 20, right: 16, bottom: 0, left: 0 }}>
+              <LineChart
+                data={chartData}
+                margin={{
+                  top: style.chartTopMargin,
+                  right: 16,
+                  bottom: 0,
+                  left: style.chartLeftMargin,
+                }}
+              >
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
                 {/* interval=0 keeps every round labelled — Recharts otherwise
                     drops ticks it thinks would collide. The qualifier is
@@ -90,7 +101,7 @@ export function TrendCard({ trend }: TrendCardProps) {
                 <XAxis
                   dataKey="label"
                   tickFormatter={toRoundCode}
-                  tick={AXIS_TICK}
+                  tick={style.axisTick}
                   interval={0}
                   axisLine={false}
                   tickLine={false}
@@ -98,14 +109,14 @@ export function TrendCard({ trend }: TrendCardProps) {
                 <YAxis
                   domain={SCORE_AXIS_DOMAIN}
                   ticks={SCORE_AXIS_TICKS}
-                  tick={AXIS_TICK}
+                  tick={style.axisTick}
                   axisLine={false}
                   tickLine={false}
                   label={{
                     value: TREND_CARD_TEXT.axisLabel,
                     position: 'insideTopLeft',
-                    offset: -12,
-                    style: AXIS_TICK,
+                    offset: style.axisLabelOffset,
+                    style: style.axisTick,
                   }}
                 />
                 <ChartTooltip content={<ChartTooltipContent />} />
@@ -122,7 +133,7 @@ export function TrendCard({ trend }: TrendCardProps) {
                     dataKey={MEASURED_KEY}
                     position="top"
                     formatter={formatPointLabel}
-                    style={BAR_VALUE_LABEL_STYLE}
+                    style={style.valueLabel}
                   />
                 </Line>
                 <Line
@@ -139,7 +150,7 @@ export function TrendCard({ trend }: TrendCardProps) {
                     dataKey={PROJECTED_LABEL_KEY}
                     position="top"
                     formatter={formatPointLabel}
-                    style={BAR_VALUE_LABEL_STYLE}
+                    style={style.valueLabel}
                   />
                 </Line>
               </LineChart>

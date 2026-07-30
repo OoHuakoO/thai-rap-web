@@ -166,7 +166,6 @@ export function AnalyticsToolbar({
         <Download className="h-4 w-4" />
         {isExporting ? ANALYTICS_TOOLBAR_TEXT.exporting : ANALYTICS_TOOLBAR_TEXT.export}
       </Button>
-
     </div>
   );
 }

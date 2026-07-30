@@ -143,13 +143,25 @@ export function AnalyticsDashboard() {
         <>
           <AnalyticsKpiRow kpis={analytics.kpis} comparePair={comparePair} />
 
-          <div className="grid grid-cols-1 gap-3 xl:grid-cols-4">
+          {/* The two dimension charts now plot every round the store has, so
+              they take the full page width and the right rail starts below
+              them — eight axis labels and 8 × 4 bars collide in a third of a
+              column. The bar chart gets two thirds of the row: the radar is
+              bounded by its own height, the bars only by width. */}
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+            <RadarComparisonCard radar={analytics.radar} />
+            <div className="lg:col-span-2">
+              <DimensionComparisonCard radar={analytics.radar} />
+            </div>
+          </div>
+
+          {/* items-start, or the column stretches to the taller right rail and
+              TrendCard's own h-full swells to fill all of it — the AI/mentor row
+              is then pushed past the grid row and paints over the section under
+              it. Every card in here sizes itself; none wants the rail's height. */}
+          <div className="grid grid-cols-1 items-start gap-3 xl:grid-cols-4">
             <div className="space-y-3 xl:col-span-3">
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
-                <RadarComparisonCard radar={analytics.radar} />
-                <DimensionComparisonCard radar={analytics.radar} comparePair={comparePair} />
-                <TrendCard trend={analytics.trend} />
-              </div>
+              <TrendCard trend={analytics.trend} />
 
               <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                 <AiAnalysisCard aiAnalysis={analytics.aiAnalysis} aiInsight={analytics.aiInsight} />

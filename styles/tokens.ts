@@ -10,6 +10,7 @@ export const colors = {
   charcoal: '#58595B', // body text, secondary labels
   white: '#FFFFFF', // page background, card bg
   purpleBanner: '#7A51A0', // secondary badges, project banner heading text (matches design)
+  blue: '#2563EB', // 4th chart series — same value as the `blue-600` analytics accent
   darkNav: '#1F2937', // sidebar bg
   textMain: '#111827', // body text
   scoreGreen: '#10B981', // positive score

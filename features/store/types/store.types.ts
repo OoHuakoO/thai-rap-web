@@ -14,6 +14,10 @@ export type StoreStatus =
   | 'IDP_CREATED'
   | 'COMPLETED';
 
+// FIELD_AUDITED and COMPLETED are the milestones a submitted T2 / T3 advances
+// a store to (ROUND_COMPLETION_STATUS in the API's AssessmentRepository), so
+// they are labelled by their round the way T0/T1 are — the enum name still
+// carries the stage each one stands for.
 export const STORE_STATUS_LABELS: Record<StoreStatus, string> = {
   REGISTERED: 'ลงทะเบียนแล้ว',
   T0_COMPLETED: 'ประเมิน T0 แล้ว',
@@ -24,9 +28,9 @@ export const STORE_STATUS_LABELS: Record<StoreStatus, string> = {
   CONDITIONAL_SELECTED: 'ผ่านแบบมีเงื่อนไข',
   WAITING_LIST: 'รายชื่อสำรอง',
   NOT_SELECTED: 'ยังไม่ผ่าน',
-  FIELD_AUDITED: 'ลงพื้นที่ตรวจแล้ว',
+  FIELD_AUDITED: 'ประเมิน T2 แล้ว',
   IDP_CREATED: 'มีแผนพัฒนาแล้ว',
-  COMPLETED: 'ติดตามผลครบแล้ว',
+  COMPLETED: 'ประเมิน T3 แล้ว',
 };
 
 export interface StoreDocument {

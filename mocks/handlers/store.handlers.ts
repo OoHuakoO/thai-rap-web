@@ -178,10 +178,10 @@ export const storeHandlers = [
     const total = stores.length;
     // The real API counts a store as "assessed Tn" when it has a submitted Tn
     // assessment. The mock's assessmentDb starts empty, so we proxy each round
-    // off the store's incubation status milestone instead: T0/T1 by their own
-    // *_COMPLETED status, T2 by FIELD_AUDITED (Field Audit), T3 by IDP_CREATED
-    // (post-audit follow-up). hasReachedStatus is inclusive, so later stages
-    // still count toward earlier rounds.
+    // off the status that round advances the store to (ROUND_COMPLETION_STATUS
+    // in the API's AssessmentRepository): T0/T1 by their own *_COMPLETED
+    // status, T2 by FIELD_AUDITED, T3 by COMPLETED. hasReachedStatus is
+    // inclusive, so later stages still count toward earlier rounds.
     const t0CompletedCount = stores.filter((s) =>
       hasReachedStatus(s.status, 'T0_COMPLETED')
     ).length;
@@ -191,7 +191,7 @@ export const storeHandlers = [
     const t2CompletedCount = stores.filter((s) =>
       hasReachedStatus(s.status, 'FIELD_AUDITED')
     ).length;
-    const t3CompletedCount = stores.filter((s) => hasReachedStatus(s.status, 'IDP_CREATED')).length;
+    const t3CompletedCount = stores.filter((s) => hasReachedStatus(s.status, 'COMPLETED')).length;
 
     const storeTypes = Array.from(
       new Set(stores.map((s) => s.storeType).filter((t): t is string => t !== null))

@@ -9,35 +9,45 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from '@/components/ui/chart';
+import { cn } from '@/utils/cn';
 import {
-  AXIS_TICK,
-  BAR_CHART_HEIGHT,
-  BAR_VALUE_LABEL_STYLE,
+  ANALYTICS_CHART_SCALE,
+  DEFAULT_CHART_SCALE,
+  MAX_SERIES_WITH_VALUE_LABELS,
   SCORE_AXIS_DOMAIN,
   SCORE_AXIS_TICKS,
   SERIES_COLORS,
   toDimensionNumber,
-  type ComparePairOption,
+  type AnalyticsChartScale,
 } from '../constants/analytics-display.constants';
 import { DIMENSION_COMPARISON_TEXT } from '../constants/analytics-text.constants';
 import type { RadarChartData } from '../types/analytics.types';
 import { toNumberedDimensionLabel } from '../utils/dimension-label';
+import { formatSeriesRoundLabel } from '../utils/series-round-label';
 import { toSeriesKey } from '../utils/series-key';
 
 interface DimensionComparisonCardProps {
-  /** Same payload as the radar — one chart per reading of the same 8 values. */
+  /** Same payload as the radar — one chart per reading of the same 8 values.
+   *  Which rounds are plotted is the payload's own business; the heading is
+   *  read back off the series rather than passed in. */
   radar: RadarChartData;
-  comparePair: ComparePairOption;
+  scale?: AnalyticsChartScale;
 }
 
 const BAR_CATEGORY_GAP = '18%';
-const BAR_GAP = 3;
+const BAR_GAP = 2;
 const LABEL_OFFSET = 6;
 
 const formatBarLabel = (value: number | string) => Math.round(Number(value)).toString();
 
-export function DimensionComparisonCard({ radar, comparePair }: DimensionComparisonCardProps) {
+export function DimensionComparisonCard({
+  radar,
+  scale = DEFAULT_CHART_SCALE,
+}: DimensionComparisonCardProps) {
+  const style = ANALYTICS_CHART_SCALE[scale];
   const hasData = radar.axes.length > 0 && radar.series.length > 0;
+  const showValueLabels = radar.series.length <= MAX_SERIES_WITH_VALUE_LABELS;
+  const roundLabel = formatSeriesRoundLabel(radar.series.map((series) => series.name));
 
   const chartConfig: ChartConfig = Object.fromEntries(
     radar.series.map((series, index) => [
@@ -59,8 +69,8 @@ export function DimensionComparisonCard({ radar, comparePair }: DimensionCompari
   return (
     <Card className="flex h-full flex-col shadow-sm">
       <CardHeader className="pb-1">
-        <CardTitle className="text-sm font-semibold text-text-main">
-          {DIMENSION_COMPARISON_TEXT.title(comparePair.from, comparePair.to)}
+        <CardTitle className={cn('font-semibold text-text-main', style.cardTitle)}>
+          {DIMENSION_COMPARISON_TEXT.title(roundLabel)}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col gap-2">
@@ -72,7 +82,7 @@ export function DimensionComparisonCard({ radar, comparePair }: DimensionCompari
               {radar.series.map((series, index) => (
                 <li
                   key={series.name}
-                  className="flex items-center gap-1.5 text-[11px] text-charcoal"
+                  className={cn('flex items-center gap-1.5 text-charcoal', style.legend)}
                 >
                   <span
                     className="h-2.5 w-2.5 rounded-sm"
@@ -88,27 +98,37 @@ export function DimensionComparisonCard({ radar, comparePair }: DimensionCompari
             <ChartContainer
               config={chartConfig}
               className="w-full"
-              style={{ height: BAR_CHART_HEIGHT }}
+              style={{ height: style.chartHeight }}
             >
               <BarChart
                 data={chartData}
                 barCategoryGap={BAR_CATEGORY_GAP}
                 barGap={BAR_GAP}
-                margin={{ top: 18, right: 5, bottom: 0, left: 0 }}
+                margin={{
+                  top: style.chartTopMargin,
+                  right: 5,
+                  bottom: 0,
+                  left: style.chartLeftMargin,
+                }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
-                <XAxis dataKey="dimension" tick={AXIS_TICK} axisLine={false} tickLine={false} />
+                <XAxis
+                  dataKey="dimension"
+                  tick={style.axisTick}
+                  axisLine={false}
+                  tickLine={false}
+                />
                 <YAxis
                   domain={SCORE_AXIS_DOMAIN}
                   ticks={SCORE_AXIS_TICKS}
-                  tick={AXIS_TICK}
+                  tick={style.axisTick}
                   axisLine={false}
                   tickLine={false}
                   label={{
                     value: DIMENSION_COMPARISON_TEXT.axisLabel,
                     position: 'insideTopLeft',
-                    offset: -12,
-                    style: AXIS_TICK,
+                    offset: style.axisLabelOffset,
+                    style: style.axisTick,
                   }}
                 />
                 <ChartTooltip content={<ChartTooltipContent />} />
@@ -116,13 +136,15 @@ export function DimensionComparisonCard({ radar, comparePair }: DimensionCompari
                   const key = toSeriesKey(index);
                   return (
                     <Bar key={key} dataKey={key} fill={`var(--color-${key})`} radius={[3, 3, 0, 0]}>
-                      <LabelList
-                        dataKey={key}
-                        position="top"
-                        offset={LABEL_OFFSET}
-                        formatter={formatBarLabel}
-                        style={BAR_VALUE_LABEL_STYLE}
-                      />
+                      {showValueLabels && (
+                        <LabelList
+                          dataKey={key}
+                          position="top"
+                          offset={LABEL_OFFSET}
+                          formatter={formatBarLabel}
+                          style={style.valueLabel}
+                        />
+                      )}
                     </Bar>
                   );
                 })}
@@ -131,7 +153,12 @@ export function DimensionComparisonCard({ radar, comparePair }: DimensionCompari
 
             {/* Eight Thai dimension names never fit as X-axis ticks, so the axis
                 carries the number and the legend below carries the name. */}
-            <ol className="mt-auto grid grid-cols-1 gap-x-4 gap-y-0.5 rounded-lg bg-muted/40 p-2.5 text-[10.5px] leading-snug text-charcoal sm:grid-cols-2">
+            <ol
+              className={cn(
+                'mt-auto grid grid-cols-1 gap-x-4 gap-y-0.5 rounded-lg bg-muted/40 p-2.5 leading-snug text-charcoal sm:grid-cols-2',
+                style.dimensionLegend
+              )}
+            >
               {radar.axes.map((axis, index) => (
                 <li key={axis}>{toNumberedDimensionLabel(axis, index)}</li>
               ))}

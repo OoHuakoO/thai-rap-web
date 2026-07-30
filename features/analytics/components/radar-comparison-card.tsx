@@ -11,10 +11,11 @@ import {
 } from '@/components/ui/chart';
 import { cn } from '@/utils/cn';
 import {
-  AXIS_TICK,
-  RADAR_CHART_HEIGHT,
+  ANALYTICS_CHART_SCALE,
+  DEFAULT_CHART_SCALE,
   SCORE_AXIS_DOMAIN,
   SERIES_COLORS,
+  type AnalyticsChartScale,
 } from '../constants/analytics-display.constants';
 import { RADAR_CARD_TEXT } from '../constants/analytics-text.constants';
 import type { RadarChartData } from '../types/analytics.types';
@@ -24,12 +25,42 @@ import { RadarAxisTick } from './radar-axis-tick';
 
 interface RadarComparisonCardProps {
   radar: RadarChartData;
+  scale?: AnalyticsChartScale;
 }
 
+/** Two rounds read fine as tinted areas; four stacked tints turn the plot into
+ *  one muddy blob, so past a pair the fill is only a hint and the stroke carries
+ *  the series. */
 const RADAR_FILL_OPACITY = 0.18;
+const RADAR_FILL_OPACITY_MANY = 0.06;
+const RADAR_MANY_SERIES = 2;
 
-export function RadarComparisonCard({ radar }: RadarComparisonCardProps) {
+/**
+ * Eight dimensions put a spoke every 45°, and Recharts draws the 0–100 scale
+ * along the one pointing right — straight through the dimension name at the end
+ * of it. Halfway to the next spoke clears both names: the labels on that side
+ * are anchored outwards from the ring, while the ones at the top and bottom are
+ * centred on their spoke and reach across every angle near the vertical.
+ */
+const RADIUS_AXIS_ANGLE = 22.5;
+
+/**
+ * The top of the scale is left unlabelled: its tick sits on the outer ring,
+ * which is where the dimension names begin, so at every radius that fits the
+ * card the two texts run into each other. The ring is the 100 boundary, and the
+ * bar chart beside it carries the exact per-dimension numbers.
+ */
+const formatRadiusTick = (value: number) =>
+  value >= SCORE_AXIS_DOMAIN[1] ? '' : String(Math.round(value));
+
+export function RadarComparisonCard({
+  radar,
+  scale = DEFAULT_CHART_SCALE,
+}: RadarComparisonCardProps) {
+  const style = ANALYTICS_CHART_SCALE[scale];
   const hasData = radar.axes.length > 0 && radar.series.length > 0;
+  const fillOpacity =
+    radar.series.length > RADAR_MANY_SERIES ? RADAR_FILL_OPACITY_MANY : RADAR_FILL_OPACITY;
 
   const chartConfig: ChartConfig = Object.fromEntries(
     radar.series.map((series, index) => [
@@ -51,7 +82,7 @@ export function RadarComparisonCard({ radar }: RadarComparisonCardProps) {
   return (
     <Card className="flex h-full flex-col shadow-sm">
       <CardHeader className="pb-1">
-        <CardTitle className="text-sm font-semibold text-text-main">
+        <CardTitle className={cn('font-semibold text-text-main', style.cardTitle)}>
           {RADAR_CARD_TEXT.title}
         </CardTitle>
       </CardHeader>
@@ -63,19 +94,31 @@ export function RadarComparisonCard({ radar }: RadarComparisonCardProps) {
             <ChartContainer
               config={chartConfig}
               className="mx-auto w-full"
-              style={{ height: RADAR_CHART_HEIGHT }}
+              style={{ height: style.chartHeight }}
             >
               {/* Leaves room around the plot for the two-line axis labels —
                   a larger radius clips the long Thai dimension names. */}
-              <RadarChart data={chartData} outerRadius="58%">
+              <RadarChart data={chartData} outerRadius={style.radarOuterRadius}>
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <PolarGrid stroke="#E5E7EB" />
-                <PolarAngleAxis dataKey="axis" tick={<RadarAxisTick />} />
+                <PolarAngleAxis
+                  dataKey="axis"
+                  tick={
+                    <RadarAxisTick
+                      fontSize={style.radarAxis.fontSize}
+                      lineHeight={style.radarAxis.lineHeight}
+                      maxCharsPerLine={style.radarAxis.maxCharsPerLine}
+                      maxLines={style.radarAxis.maxLines}
+                    />
+                  }
+                />
                 <PolarRadiusAxis
+                  angle={RADIUS_AXIS_ANGLE}
                   domain={SCORE_AXIS_DOMAIN}
-                  tick={{ fontSize: 9, fill: AXIS_TICK.fill }}
-                  axisLine={false}
                   tickCount={3}
+                  tickFormatter={formatRadiusTick}
+                  tick={{ fontSize: style.radarRadiusFontSize, fill: style.axisTick.fill }}
+                  axisLine={false}
                 />
                 {radar.series.map((series, index) => {
                   const key = toSeriesKey(index);
@@ -86,7 +129,7 @@ export function RadarComparisonCard({ radar }: RadarComparisonCardProps) {
                       dataKey={key}
                       stroke={`var(--color-${key})`}
                       fill={`var(--color-${key})`}
-                      fillOpacity={RADAR_FILL_OPACITY}
+                      fillOpacity={fillOpacity}
                       strokeWidth={2}
                       strokeDasharray={series.dashed ? '4 3' : undefined}
                       dot={{ r: 2.5 }}
@@ -103,7 +146,7 @@ export function RadarComparisonCard({ radar }: RadarComparisonCardProps) {
               {radar.series.map((series, index) => (
                 <li
                   key={series.name}
-                  className="flex items-center gap-1.5 text-[11px] text-charcoal"
+                  className={cn('flex items-center gap-1.5 text-charcoal', style.legend)}
                 >
                   <span
                     className={cn('h-2.5 w-2.5 rounded-full')}

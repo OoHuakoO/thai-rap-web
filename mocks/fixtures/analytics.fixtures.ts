@@ -22,6 +22,14 @@ const SERIES_LABELS: Record<MockRound, string> = {
 const SERIES_COLOR_BASELINE = '#7A51A0';
 const SERIES_COLOR_CURRENT = '#F17128';
 
+/** Matches SERIES_COLORS in analytics-display.constants.ts, round for round. */
+const SERIES_COLORS: Record<MockRound, string> = {
+  T0: SERIES_COLOR_BASELINE,
+  T1: SERIES_COLOR_CURRENT,
+  T2: '#10B981',
+  T3: '#2563EB',
+};
+
 // Baseline profile taken from the design mock-up, read against the project's
 // real 8 dimensions (docs §5). Every other store is derived from this by a
 // deterministic per-store offset, so the mock stays stable across reloads.
@@ -243,12 +251,15 @@ export function getStoreAnalytics(
       zone: getZone(toTotal),
       incubationReadiness: readiness,
     },
+    // Every round, not the compared pair — the API does the same, so both
+    // dimension charts draw the whole funnel while the KPIs stay on the pair.
     radar: {
       axes: dimensionSeed.map((dimension) => dimension.name),
-      series: [
-        { name: SERIES_LABELS[from], data: fromScores, color: SERIES_COLOR_BASELINE },
-        { name: SERIES_LABELS[to], data: toScores, color: SERIES_COLOR_CURRENT },
-      ],
+      series: ROUND_ORDER.map((round) => ({
+        name: SERIES_LABELS[round],
+        data: dimensionScores(storeId, round),
+        color: SERIES_COLORS[round],
+      })),
     },
     trend: {
       xAxis: [
