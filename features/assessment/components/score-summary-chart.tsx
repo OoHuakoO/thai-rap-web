@@ -18,7 +18,8 @@ const radarChartConfig = {
 
 export interface DimensionScore {
   id: number;
-  nameEn: string;
+  /** Thai name — "ระบบ THAI-RAP…docx" §5 names the 8 dimensions in Thai only. */
+  name: string;
   pct: number;
 }
 
@@ -59,7 +60,12 @@ export function ScoreSummaryChart({ dimensionScores, dimensionAverages }: ScoreS
       </ChartContainer>
       <div className="space-y-1.5">
         {dimensionScores.map((dim) => (
-          <ProgressBar key={dim.id} value={dim.pct} label={dim.nameEn} showPercentage />
+          <ProgressBar
+            key={dim.id}
+            value={dim.pct}
+            label={`${dim.id}. ${dim.name}`}
+            showPercentage
+          />
         ))}
       </div>
     </div>

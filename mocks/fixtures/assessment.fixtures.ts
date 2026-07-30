@@ -243,6 +243,10 @@ export const assessmentDb = {
         : q
     );
     assessment.currentScore = weightedScore(assessment.questions);
+    // An admin correcting a finished round: the API re-freezes totalScore on
+    // every score write (AssessmentService.rescore), so a mock that leaves the
+    // old one shows a summary the real backend would have moved.
+    if (isCompleted(assessment)) assessment.totalScore = assessment.currentScore;
     assessment.updatedAt = new Date().toISOString();
     return assessment;
   },

@@ -7,6 +7,7 @@ import { AssessmentForm } from './assessment-form';
 import { useStore } from '@/features/store';
 import { useConfirm, useAlert } from '@/components/shared/confirm-dialog';
 import { useAuthStore } from '@/stores/auth-store';
+import type { Role } from '@/types/auth.types';
 import {
   useAssessment,
   useAssessmentSummaries,
@@ -70,10 +71,17 @@ vi.mock('./dimension-list', () => ({
 
 vi.mock('./assess-table', () => ({
   AssessTable: ({
+    locked,
     onScoreChange,
   }: {
+    locked: boolean;
     onScoreChange: (questionId: number, score: number) => void;
-  }) => <button onClick={() => onScoreChange(1, 3)}>score-q1</button>,
+  }) => (
+    <div>
+      <p>{locked ? 'assess-table-locked' : 'assess-table-editable'}</p>
+      <button onClick={() => onScoreChange(1, 3)}>score-q1</button>
+    </div>
+  ),
 }));
 
 vi.mock('./score-summary', () => ({
@@ -82,6 +90,10 @@ vi.mock('./score-summary', () => ({
 
 vi.mock('./timeline-area', () => ({
   TimelineArea: () => <div>timeline-area</div>,
+}));
+
+vi.mock('./assessment-overall-summary', () => ({
+  AssessmentOverallSummary: () => <div>overall-summary</div>,
 }));
 
 function makeQuestion(overrides: Partial<AssessmentQuestion> = {}): AssessmentQuestion {
@@ -122,6 +134,18 @@ function makeAssessment(overrides: Partial<Assessment> = {}): Assessment {
 const dimensions: Dimension[] = [
   { id: 1, name: 'ครัว', nameEn: 'Kitchen', weight: 10, questionCount: 1 },
 ];
+
+// The form reads two things off the auth store: `can` for assessment:write and
+// `hasRole` for the admin-only correction of an already-submitted round.
+function mockAuth({ can = true, role = 'ASSESSOR' }: { can?: boolean; role?: Role } = {}) {
+  vi.mocked(useAuthStore).mockImplementation(((
+    selector: (s: { can: () => boolean; hasRole: (role: Role | Role[]) => boolean }) => unknown
+  ) =>
+    selector({
+      can: () => can,
+      hasRole: (wanted) => (Array.isArray(wanted) ? wanted : [wanted]).includes(role),
+    })) as unknown as typeof useAuthStore);
+}
 
 function Wrapper({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -172,8 +196,7 @@ beforeEach(() => {
   } as unknown as ReturnType<typeof useDeleteEvidence>);
   vi.mocked(useConfirm).mockReturnValue(vi.fn().mockResolvedValue(true));
   vi.mocked(useAlert).mockReturnValue(vi.fn());
-  vi.mocked(useAuthStore).mockImplementation(((selector: (s: { can: () => boolean }) => unknown) =>
-    selector({ can: () => true })) as unknown as typeof useAuthStore);
+  mockAuth();
 });
 
 describe('AssessmentForm', () => {
@@ -279,9 +302,7 @@ describe('AssessmentForm', () => {
   });
 
   it('hides the save buttons when the user lacks assessment:write permission', () => {
-    vi.mocked(useAuthStore).mockImplementation(((
-      selector: (s: { can: () => boolean }) => unknown
-    ) => selector({ can: () => false })) as unknown as typeof useAuthStore);
+    mockAuth({ can: false });
 
     render(<AssessmentForm storeId="store-1" round="T0" />, { wrapper: Wrapper });
 
@@ -291,9 +312,7 @@ describe('AssessmentForm', () => {
   // A read-only role must not trigger the auto-create POST — the API answers
   // 403 and the interceptor redirects the whole page to /403.
   it('shows a not-started notice for a read-only viewer when the round has no assessment', () => {
-    vi.mocked(useAuthStore).mockImplementation(((
-      selector: (s: { can: () => boolean }) => unknown
-    ) => selector({ can: () => false })) as unknown as typeof useAuthStore);
+    mockAuth({ can: false });
     vi.mocked(useAssessment).mockReturnValue({
       data: undefined,
       isLoading: false,
@@ -308,7 +327,9 @@ describe('AssessmentForm', () => {
     expect(vi.mocked(useAssessment).mock.calls[0][2]).toMatchObject({ canCreate: false });
   });
 
-  it('locks the save actions on an approved assessment, not just a submitted one', () => {
+  // Draft and submit are gone on a finished round for everyone — the API
+  // rejects both, so leaving them on screen only offers a guaranteed error.
+  it('hides the save actions on an approved assessment, not just a submitted one', () => {
     vi.mocked(useAssessment).mockReturnValue({
       data: makeAssessment({ status: 'APPROVED' }),
       isLoading: false,
@@ -318,8 +339,68 @@ describe('AssessmentForm', () => {
 
     render(<AssessmentForm storeId="store-1" round="T0" />, { wrapper: Wrapper });
 
-    expect(screen.getByRole('button', { name: '💾 บันทึกร่าง' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'บันทึกและถัดไป →' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: '💾 บันทึกร่าง' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'บันทึกและถัดไป →' })).not.toBeInTheDocument();
+  });
+
+  it('shows the cross-round summary to an admin only', () => {
+    render(<AssessmentForm storeId="store-1" round="T0" />, { wrapper: Wrapper });
+    expect(screen.queryByText('overall-summary')).not.toBeInTheDocument();
+
+    mockAuth({ role: 'ADMIN' });
+    render(<AssessmentForm storeId="store-1" round="T0" />, { wrapper: Wrapper });
+    expect(screen.getByText('overall-summary')).toBeInTheDocument();
+  });
+
+  it('offers no correction mode to an assessor on a submitted round', () => {
+    vi.mocked(useAssessment).mockReturnValue({
+      data: makeAssessment({ status: 'SUBMITTED' }),
+      isLoading: false,
+      isError: false,
+      retry: vi.fn(),
+    } as unknown as ReturnType<typeof useAssessment>);
+
+    render(<AssessmentForm storeId="store-1" round="T0" />, { wrapper: Wrapper });
+
+    expect(screen.queryByText('✎ โหมดแก้ไขผลที่ส่งแล้ว')).not.toBeInTheDocument();
+    expect(screen.getByText('assess-table-locked')).toBeInTheDocument();
+  });
+
+  it('puts an ADMIN into correction mode on a submitted round', () => {
+    mockAuth({ role: 'ADMIN' });
+    vi.mocked(useAssessment).mockReturnValue({
+      data: makeAssessment({ status: 'SUBMITTED' }),
+      isLoading: false,
+      isError: false,
+      retry: vi.fn(),
+    } as unknown as ReturnType<typeof useAssessment>);
+
+    render(<AssessmentForm storeId="store-1" round="T0" />, { wrapper: Wrapper });
+
+    expect(screen.getByText('✎ โหมดแก้ไขผลที่ส่งแล้ว')).toBeInTheDocument();
+  });
+
+  it('lets a SUPER_ADMIN change a score on an approved round', async () => {
+    mockAuth({ role: 'SUPER_ADMIN' });
+    const mutate = vi.fn();
+    vi.mocked(useUpdateScore).mockReturnValue({
+      mutate,
+    } as unknown as ReturnType<typeof useUpdateScore>);
+    vi.mocked(useAssessment).mockReturnValue({
+      data: makeAssessment({ status: 'APPROVED', questions: [makeQuestion({ rawScore: 2 })] }),
+      isLoading: false,
+      isError: false,
+      retry: vi.fn(),
+    } as unknown as ReturnType<typeof useAssessment>);
+
+    render(<AssessmentForm storeId="store-1" round="T0" />, { wrapper: Wrapper });
+    expect(screen.getByText('assess-table-editable')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'score-q1' }));
+
+    expect(mutate).toHaveBeenCalledWith(
+      { questionId: 1, rawScore: 3, note: undefined, suggestion: undefined },
+      expect.any(Object)
+    );
   });
 
   it('shows the no-store-selected message after the store is cleared via province change', async () => {

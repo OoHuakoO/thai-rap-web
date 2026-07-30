@@ -24,6 +24,9 @@ export const ASSESSMENT_FORM_TEXT = {
   submitConfirmTitle: (round: string) => `ยืนยัน Submit รอบ ${round}`,
   submitConfirmDescription: 'หลัง Submit แล้วจะไม่สามารถแก้ไขคะแนนได้',
   submitConfirmLabel: 'Submit',
+  correctionMode: '✎ โหมดแก้ไขผลที่ส่งแล้ว',
+  correctionHint:
+    'รอบนี้ส่งผลไปแล้ว — เฉพาะผู้ดูแลระบบเท่านั้นที่แก้ไขได้ การแก้คะแนนจะบันทึกทันทีและคำนวณคะแนนรวมกับ Red Flag ใหม่',
   deleteEvidenceTitle: 'ลบไฟล์',
   deleteEvidenceDescription: 'ต้องการลบไฟล์หลักฐานนี้ใช่หรือไม่?',
   retry: 'ลองใหม่',
@@ -53,6 +56,25 @@ export const SCORE_SUMMARY_TEXT = {
   radarThisStore: 'ร้านนี้',
   radarAverage: 'ค่าเฉลี่ยจังหวัด',
   dimensionAxisLabel: (id: number) => `มิติ ${id}`,
+} as const;
+
+export const OVERALL_SUMMARY_TEXT = {
+  title: 'สรุปรวมทุกรอบที่ประเมินแล้ว',
+  subtitle: 'ค่าเฉลี่ยรวมและคะแนนทุกมิติของทุกรอบที่ส่งผลแล้ว',
+  roundsIncluded: (count: number) => `รวม ${count} รอบ`,
+  empty: 'ยังไม่มีรอบที่ส่งผล — จะสรุปให้เมื่อส่งผลรอบแรกแล้ว',
+  averageTotalScore: 'คะแนนรวมเฉลี่ย (ถ่วงน้ำหนัก)',
+  averageDimensionPct: 'ค่าเฉลี่ยทุกมิติรวมกัน',
+  roundCountLabel: 'รอบที่นำมาเฉลี่ย',
+  roundCountValue: (count: number) => `${count} รอบ`,
+  columnDimension: 'มิติ',
+  columnWeight: 'น้ำหนัก',
+  columnAverage: 'เฉลี่ยรวม',
+  totalRowLabel: 'คะแนนรวมถ่วงน้ำหนัก',
+  weightPercent: (weight: number) => `${weight}%`,
+  percent: (pct: number) => `${pct.toFixed(1)}%`,
+  score: (score: number) => score.toFixed(2),
+  noRoundValue: '—',
 } as const;
 
 export const ASSESS_TABLE_TEXT = {

@@ -5,11 +5,12 @@ import { Loading } from '@/components/shared/loading';
 import { ProgressBar } from '@/components/shared/progress-bar';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores/auth-store';
-import { PERMISSIONS } from '@/types/auth.types';
+import { PERMISSIONS, ROLES } from '@/types/auth.types';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { useStore } from '@/features/store';
 import { AssessmentFormHeader } from './assessment-form-header';
 import { AssessmentNotice } from './assessment-notice';
+import { AssessmentOverallSummary } from './assessment-overall-summary';
 import { DimensionList } from './dimension-list';
 import { AssessTable } from './assess-table';
 import { ScoreSummary } from './score-summary';
@@ -28,7 +29,13 @@ interface AssessmentFormProps {
 
 export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
   const can = useAuthStore((s) => s.can);
+  const hasRole = useAuthStore((s) => s.hasRole);
   const canWrite = can(PERMISSIONS.ASSESSMENT_WRITE);
+  // Two admin-only things on this page, for two different reasons: correcting a
+  // round that was already submitted (the API allows exactly these two roles —
+  // AssessmentService.assertEditable — so anyone else would only get a 400), and
+  // the cross-round summary below, which is the programme owners' roll-up.
+  const isAdmin = hasRole([ROLES.SUPER_ADMIN, ROLES.ADMIN]);
   const [isStoreCleared, setIsStoreCleared] = useState(false);
 
   // storeId can change from outside the picker (browser back/forward, a
@@ -137,11 +144,15 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
 
   if (!assessment) return null;
 
-  const locked = isCompletedStatus(assessment.status);
-  // A MENTOR reaches this page on assessment:read but can't score — fold both
-  // "already submitted" and "no write permission" into one read-only flag
-  // consumed by the table/inputs below.
-  const readOnly = locked || !canWrite;
+  const isSubmittedRound = isCompletedStatus(assessment.status);
+  // An admin correcting a finished round: the scores reopen, the round does not.
+  // Draft/submit stay closed (the API rejects both on a completed round) — the
+  // per-question writes are the whole of it, and they save as they are typed.
+  const isCorrecting = isSubmittedRound && canWrite && isAdmin;
+  // A MENTOR reaches this page on assessment:read but can't score — fold
+  // "already submitted", "not mine to correct" and "no write permission" into
+  // one read-only flag consumed by the table/inputs below.
+  const readOnly = (isSubmittedRound && !isCorrecting) || !canWrite;
   const scoredCount = assessment.questions.filter((q) => q.rawScore !== null).length;
   const progressPct = Math.round((scoredCount / assessment.questions.length) * 100);
   // Drives which of the two save modes the primary button offers: a complete
@@ -168,19 +179,24 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
           </div>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          {canWrite && (
+          {isCorrecting && (
+            <span className="rounded-full border border-orange bg-cream px-3 py-1 text-xs font-semibold text-orange">
+              {ASSESSMENT_FORM_TEXT.correctionMode}
+            </span>
+          )}
+          {canWrite && !isSubmittedRound && (
             <>
               <Button
                 variant="outline"
                 className="gap-1.5 border-orange text-orange hover:bg-orange/10 hover:text-orange"
                 onClick={actions.handleSaveDraft}
-                disabled={locked || actions.isSavingDraft}
+                disabled={actions.isSavingDraft}
               >
                 {ASSESSMENT_FORM_TEXT.saveDraft}
               </Button>
               <Button
                 onClick={isComplete ? actions.handleSubmit : actions.handleSaveNext}
-                disabled={locked || actions.isSubmitting}
+                disabled={actions.isSubmitting}
               >
                 {isComplete ? ASSESSMENT_FORM_TEXT.saveComplete : ASSESSMENT_FORM_TEXT.saveNext}
               </Button>
@@ -188,6 +204,12 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
           )}
         </div>
       </AssessmentFormHeader>
+
+      {isCorrecting && (
+        <p className="rounded-lg border border-orange/40 bg-cream px-4 py-2 text-sm text-charcoal">
+          {ASSESSMENT_FORM_TEXT.correctionHint}
+        </p>
+      )}
 
       {dimensions && (
         // Left column (fixed-height dim/table row + natural-height
@@ -239,7 +261,7 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
               round={round}
               assessmentId={assessment.id}
               notes={assessment.notes}
-              canEdit={canWrite}
+              canEdit={canWrite && (!isSubmittedRound || isCorrecting)}
             />
           </div>
 
@@ -252,11 +274,13 @@ export function AssessmentForm({ storeId, round }: AssessmentFormProps) {
             currentScore={assessment.currentScore}
             questions={assessment.questions}
             redFlags={assessment.redFlags}
-            isSubmitted={locked}
+            isSubmitted={isSubmittedRound}
             className="mt-3 lg:absolute lg:inset-y-0 lg:right-0 lg:mt-0 lg:w-[340px]"
           />
         </div>
       )}
+
+      {isAdmin && <AssessmentOverallSummary storeId={storeId} />}
     </div>
   );
 }

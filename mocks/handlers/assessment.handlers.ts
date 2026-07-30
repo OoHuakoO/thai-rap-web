@@ -81,9 +81,22 @@ function badRequest(code: string, message: string): Response {
 }
 
 // Mirrors assertDraftOrInProgress in the API — a submitted or approved round
-// rejects every write, it is not merely hidden by the UI.
+// rejects the status writes (draft, submit) outright.
 function completedLock(assessmentId: string): Response | null {
   if (!assessmentDb.isCompleted(assessmentId)) return null;
+  return badRequest('ASSESS_004', 'ไม่สามารถแก้ไขการประเมินที่ส่งไปแล้ว');
+}
+
+const ADMIN_ROLES = ['SUPER_ADMIN', 'ADMIN'];
+
+// Mirrors assertEditable — the content writes (score, evidence, notes) stay open
+// to an admin role on a finished round so a wrong score can still be corrected.
+// A request with no mock token is left unscoped, as everywhere else in the mocks.
+function contentLock(assessmentId: string, request: Request): Response | null {
+  if (!assessmentDb.isCompleted(assessmentId)) return null;
+  const callerId = getMockUserId(request);
+  const caller = callerId ? userDb.findById(callerId) : null;
+  if (!caller || ADMIN_ROLES.includes(caller.role)) return null;
   return badRequest('ASSESS_004', 'ไม่สามารถแก้ไขการประเมินที่ส่งไปแล้ว');
 }
 
@@ -190,7 +203,7 @@ export const assessmentHandlers = [
     if (getScenario(request) === 'validation-error' || typeof body.notes !== 'string') {
       return validationError([{ field: 'notes', message: 'Notes is required' }]);
     }
-    const completed = completedLock(params.id as string);
+    const completed = contentLock(params.id as string, request);
     if (completed) return completed;
     const updated = assessmentDb.updateNotes(params.id as string, body.notes);
     if (!updated) return notFound('ASSESS_001', 'ไม่พบการประเมิน');
@@ -237,7 +250,7 @@ export const assessmentHandlers = [
 
     const assessmentId = params.id as string;
     const questionId = Number(params.questionId);
-    const completed = completedLock(assessmentId);
+    const completed = contentLock(assessmentId, request);
     if (completed) return completed;
 
     const seeded = questionSeed.find((q) => q.id === questionId);
@@ -262,7 +275,7 @@ export const assessmentHandlers = [
       if (!(file instanceof File)) {
         return validationError([{ field: 'file', message: 'file is required' }]);
       }
-      const completed = completedLock(params.id as string);
+      const completed = contentLock(params.id as string, request);
       if (completed) return completed;
       const created = assessmentDb.addEvidence(params.id as string, Number(params.questionId), {
         filename: file.name,
@@ -277,7 +290,7 @@ export const assessmentHandlers = [
   http.delete(`${BASE_URL}/assessments/:id/evidence/:evidenceId`, ({ request, params }) => {
     const blocked = guard(request);
     if (blocked) return blocked;
-    const completed = completedLock(params.id as string);
+    const completed = contentLock(params.id as string, request);
     if (completed) return completed;
     const removed = assessmentDb.removeEvidence(params.id as string, params.evidenceId as string);
     if (!removed) return notFound('FILE_003', 'ไม่พบไฟล์หลักฐาน');

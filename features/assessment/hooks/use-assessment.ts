@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { QUERY_STALE_TIME_MS } from '@/constants';
 import { storeKeys } from '@/features/store';
 import { assessmentService, dimensionService } from '../services/assessment.service';
 import { calcWeightedTotal } from '../utils/dimension-score';
+import { isCompletedStatus } from '../utils/status';
 import type { Assessment, Dimension, Round, UpdateScoreDto } from '../types/assessment.types';
 
 export const assessmentKeys = {
@@ -63,6 +64,34 @@ export function useAssessmentByRound(
     },
     enabled: !!storeId && !!round && (options?.enabled ?? true),
   });
+}
+
+/**
+ * Every listed round's full assessment at once, for the cross-round view. Reuses
+ * the same per-round cache key as useAssessment/useAssessmentByRound, so the
+ * round already open in the form costs no extra request — only the other
+ * finished rounds are fetched.
+ */
+export function useAssessmentsByRounds(storeId: string, rounds: Round[]) {
+  const results = useQueries({
+    queries: rounds.map((round) => ({
+      queryKey: assessmentKeys.byStoreRound(storeId, round),
+      queryFn: async () => {
+        const existing = await assessmentService.findByStoreAndRound(storeId, round);
+        return existing ? assessmentService.getById(existing.id) : null;
+      },
+      enabled: !!storeId,
+    })),
+  });
+
+  return {
+    // Rounds resolve independently; a null is a round with no record at all,
+    // which the caller has nothing to show for.
+    data: results
+      .map((result) => result.data)
+      .filter((assessment): assessment is Assessment => !!assessment),
+    isLoading: results.some((result) => result.isLoading),
+  };
 }
 
 export function useAssessment(
@@ -153,8 +182,10 @@ export function useUpdateScore(storeId: string, round: Round, assessmentId: stri
     // The PUT response is the saved question — patch it into the cached
     // assessment instead of refetching all 50 questions after every save.
     onSuccess: (updated) => {
+      let wasSubmitted = false;
       queryClient.setQueryData<Assessment>(assessmentKeys.byStoreRound(storeId, round), (prev) => {
         if (!prev) return prev;
+        wasSubmitted = isCompletedStatus(prev.status);
         const questions = prev.questions.map((q) =>
           q.questionId === updated.questionId ? { ...q, ...updated } : q
         );
@@ -172,6 +203,17 @@ export function useUpdateScore(storeId: string, round: Round, assessmentId: stri
       // Score save also reassigns the assessor on the backend — history
       // (assessorName/updatedAt on the timeline card) must refetch too.
       queryClient.invalidateQueries({ queryKey: assessmentKeys.history(storeId) });
+
+      // An admin correcting a finished round: the API re-freezes totalScore and
+      // rebuilds the red flags, none of which the single-question response
+      // carries — the patch above would leave the summary, the zone and this
+      // store's rank showing the score of the answer just replaced.
+      if (wasSubmitted) {
+        queryClient.invalidateQueries({ queryKey: assessmentKeys.byStoreRound(storeId, round) });
+        queryClient.invalidateQueries({ queryKey: assessmentKeys.byStore(storeId) });
+        queryClient.invalidateQueries({ queryKey: assessmentKeys.rank(storeId, round) });
+        queryClient.invalidateQueries({ queryKey: storeKeys.detail(storeId) });
+      }
     },
   });
 }
