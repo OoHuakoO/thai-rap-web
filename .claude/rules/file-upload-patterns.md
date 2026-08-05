@@ -128,9 +128,9 @@ When uploading a batch of files in a loop (picker shape, after parent
 abort the rest:
 
 ```ts
-for (const file of media.storefrontFiles) {
-  await storeService.uploadStorefrontPhoto(store.id, file).catch((err) => {
-    toast.error(CREATE_STORE_FORM_TEXT.storefrontUploadError(file.name, extractErrorMessage(err)));
+for (const file of media.storePhotoFiles) {
+  await storeService.uploadStorePhoto(store.id, file).catch((err) => {
+    toast.error(CREATE_STORE_FORM_TEXT.storePhotoUploadError(file.name, extractErrorMessage(err)));
   });
 }
 ```
@@ -187,9 +187,7 @@ function filterValidFiles(files: File[]): File[] {
 ```
 
 `formatFileSize()` lives in `utils/format-file-size.ts` — import it, don't
-redefine a local copy in the component (this exists as local duplicates in
-`store-media-picker.tsx` and `store-document-manager.tsx` today; treat that
-as a bug to fix when you touch either file, not a pattern to copy).
+redefine a local copy in the component.
 
 ---
 

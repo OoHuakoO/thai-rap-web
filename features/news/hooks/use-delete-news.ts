@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { dashboardKeys } from '@/features/dashboard/hooks/dashboard-keys';
+import { dashboardKeys } from '@/features/dashboard';
 import { newsService } from '../services/news.service';
 import { newsKeys } from './news-keys';
 

@@ -1,4 +1,4 @@
-import type { AssessmentRound } from '@/features/dashboard/types/dashboard.types';
+import type { AssessmentRound } from '@/features/dashboard';
 import { ROLES, type Role } from '@/types/auth.types';
 import type { ReportFileFormat } from '../types/report.types';
 

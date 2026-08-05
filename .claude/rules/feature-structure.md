@@ -84,7 +84,7 @@ import type { Store, StoreStatus } from '@/features/store';
 import { useAssessmentSummaries } from '@/features/assessment/hooks/use-assessment';
 ```
 
-If code does this today, treat it as a bug to fix when you touch that file —
+If you find a deep import, treat it as a bug to fix when you touch that file —
 route it through `@/features/assessment` instead.
 
 ---
@@ -103,7 +103,7 @@ hooks → types
 - **Exception:** a component may call a service directly for one-off,
   non-cached side effects that don't fit `useMutation` cleanly — e.g. looping
   over several files to upload them after a create-mutation succeeds
-  (`create-store-form.tsx` calling `storeService.uploadLogo` inside the
+  (`create-store-form.tsx` calling `storeService.uploadStorePhoto` inside the
   `onSuccess` callback). This is a deliberate escape hatch, not a pattern to
   spread — if you're calling the same service method from more than one
   component, wrap it in a hook instead.

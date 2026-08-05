@@ -1,6 +1,6 @@
 import api from '@/services/api';
-import type { AssessmentRound } from '@/features/dashboard/types/dashboard.types';
-import type { DownloadedFile } from '@/features/dashboard/types/dashboard.types';
+import { parseFilename } from '@/utils/parse-filename';
+import type { AssessmentRound, DownloadedFile } from '@/features/dashboard';
 import type {
   OverviewReport,
   ReportFileFormat,
@@ -8,13 +8,6 @@ import type {
   RoundMatrixReport,
   RoundReport,
 } from '../types/report.types';
-
-const FILENAME_PATTERN = /filename="?([^";]+)"?/;
-
-function parseFilename(contentDisposition: unknown): string | undefined {
-  if (typeof contentDisposition !== 'string') return undefined;
-  return FILENAME_PATTERN.exec(contentDisposition)?.[1];
-}
 
 function toDownloadedFile(res: { data: Blob; headers: unknown }): DownloadedFile {
   const headers = res.headers as Record<string, unknown>;

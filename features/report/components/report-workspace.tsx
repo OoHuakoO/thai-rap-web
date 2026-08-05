@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { AssessmentRound } from '@/features/dashboard/types/dashboard.types';
+import type { AssessmentRound } from '@/features/dashboard';
 import { useStores } from '@/features/store';
 import { useAuthStore } from '@/stores/auth-store';
 import { extractErrorMessage } from '@/utils/extract-error-message';

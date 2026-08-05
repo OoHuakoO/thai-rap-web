@@ -169,10 +169,8 @@ individual actions inside an otherwise-accessible page — e.g. an
 the "Add Store" button and edit/delete controls on that page should check
 `can('store:write')` / `can('store:delete')` before rendering.
 
-**Gap today:** no component in the codebase calls `can()` or `hasRole()` —
-write and delete actions render for any role that can reach the page at all,
-relying entirely on the backend to reject the request. When you add or touch
-a write/delete action in a page reachable by more than one role, gate it:
+Any write/delete action on a page more than one role can reach must be gated
+this way. (`spec/03-access-control.md` inventories the call sites.)
 
 ```tsx
 // ✓ Hide, don't just disable — a hidden control also means no dead click
@@ -180,6 +178,11 @@ const can = useAuthStore((s) => s.can);
 
 {can('store:write') && <Button onClick={openCreateStore}>{STORE_TEXT.addStore}</Button>}
 ```
+
+Gate a **link** with `canRoute(path)`, not `can(permission)` — a route can carry
+an `allowedRoles` list narrower than the permission it requires (`/stores` needs
+`store:read` but admits only SUPER_ADMIN/ADMIN/ENTREPRENEUR), so a permission
+check alone renders a link the dashboard layout bounces straight back.
 
 This is a client-side UX guard only, not a security boundary — the backend
 must still enforce the same permission on the endpoint. Never treat a hidden

@@ -1,4 +1,4 @@
-import type { AssessmentRound } from '@/features/dashboard/types/dashboard.types';
+import type { AssessmentRound } from '@/features/dashboard';
 import type { PaginationMeta } from '@/types/api.types';
 
 export type ReportFileFormat = 'xlsx' | 'pdf';

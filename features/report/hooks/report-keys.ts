@@ -1,4 +1,4 @@
-import type { AssessmentRound } from '@/features/dashboard/types/dashboard.types';
+import type { AssessmentRound } from '@/features/dashboard';
 import type { RoundMatrixQueryParams } from '../types/report.types';
 
 export const reportKeys = {

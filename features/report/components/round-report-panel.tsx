@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type { AssessmentRound } from '@/features/dashboard/types/dashboard.types';
+import type { AssessmentRound } from '@/features/dashboard';
 import { cn } from '@/utils/cn';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { formatThaiDate } from '@/utils/format-thai-date';

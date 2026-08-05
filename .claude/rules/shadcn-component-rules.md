@@ -14,17 +14,13 @@ Custom components wrap or extend shadcn — they never replace it.
 
 ## Available shadcn Components
 
-All installed shadcn components live in `components/ui/`:
+Installed primitives live in `components/ui/` — **that directory is the list**.
+Read it before assuming a primitive exists; a component named in a shadcn doc
+is not necessarily installed here. `spec/05-ui-system.md` carries the inventory
+as of its last update, but the folder is authoritative.
 
-| Category | Components |
-|---|---|
-| Form | `Button`, `Input`, `Label`, `Textarea`, `Select`, `Checkbox`, `Switch`, `Slider`, `Calendar` |
-| Display | `Badge`, `Card`, `Alert`, `Avatar`, `Skeleton`, `Progress`, `Separator`, `ScrollArea` |
-| Overlay | `Dialog`, `Sheet`, `Popover`, `Tooltip`, `DropdownMenu`, `HoverCard` |
-| Navigation | `Tabs`, `Breadcrumb`, `Pagination` |
-| Data | `Table`, `Chart` |
-| Layout | `Accordion`, `Collapsible`, `Resizable` |
-| Feedback | `Sonner` (toast) |
+If the primitive you need is not there, install it (see below) rather than
+building a custom equivalent.
 
 ---
 

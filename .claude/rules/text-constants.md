@@ -92,13 +92,13 @@ import { STORE_FORM_TEXT } from '../constants/store-form.constants';
 ### DON'T — raw string in JSX
 
 ```tsx
-// ✗ features/store/components/store-detail.tsx does this today — fix when touched
+// ✗ Copy typed straight into the markup
 <p className="mb-1.5 text-xs font-bold text-charcoal">ข้อมูลติดต่อ</p>
 <span className="text-muted-foreground">เจ้าของร้าน</span>
 ```
 
 ```tsx
-// ✗ features/dashboard/components/activity-feed.tsx does this today — fix when touched
+// ✗ Same problem in a card heading
 <CardTitle className="text-sm font-semibold">กิจกรรมและการแจ้งเตือน</CardTitle>
 ```
 

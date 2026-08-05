@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import type { AssessmentRound } from '@/features/dashboard/types/dashboard.types';
+import type { AssessmentRound } from '@/features/dashboard';
 import { reportService } from '../services/report.service';
 import type { RoundMatrixQueryParams } from '../types/report.types';
 import { reportKeys } from './report-keys';

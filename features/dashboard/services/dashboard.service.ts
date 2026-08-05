@@ -1,4 +1,5 @@
 import api from '@/services/api';
+import { parseFilename } from '@/utils/parse-filename';
 import type {
   ActivityItem,
   DashboardKPIs,
@@ -12,13 +13,6 @@ import type {
   Top20Entry,
   Top20RoundFilter,
 } from '../types/dashboard.types';
-
-const FILENAME_PATTERN = /filename="?([^";]+)"?/;
-
-function parseFilename(contentDisposition: unknown): string | undefined {
-  if (typeof contentDisposition !== 'string') return undefined;
-  return FILENAME_PATTERN.exec(contentDisposition)?.[1];
-}
 
 export const dashboardService = {
   getKpis: () => api.get<DashboardKPIs>('/dashboard/kpis').then((res) => res.data),

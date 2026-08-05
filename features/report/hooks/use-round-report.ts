@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import type { AssessmentRound } from '@/features/dashboard/types/dashboard.types';
+import type { AssessmentRound } from '@/features/dashboard';
 import { reportService } from '../services/report.service';
 import { reportKeys } from './report-keys';
 

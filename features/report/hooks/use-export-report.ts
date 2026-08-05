@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import type { AssessmentRound } from '@/features/dashboard/types/dashboard.types';
+import type { AssessmentRound } from '@/features/dashboard';
 import { downloadBlob } from '@/utils/download-blob';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { REPORT_TEXT } from '../constants/report.constants';

@@ -6,11 +6,16 @@ export { ProvinceComparisonCard } from './components/province-comparison-card';
 export { ActivityFeedCard } from './components/activity-feed-card';
 export { ReportsStatusCard } from './components/reports-status-card';
 
+// Query keys are part of the public surface: news mutations invalidate the
+// activity feed, which renders the same items.
+export { dashboardKeys } from './hooks/dashboard-keys';
+
 export type {
   ActivityItem,
   ActivityType,
   AssessmentRound,
   DashboardKPIs,
+  DownloadedFile,
   IncubationStep,
   IncubationStepStatus,
   ProvinceComparison,

@@ -1,4 +1,5 @@
 import api from '@/services/api';
+import { parseFilename } from '@/utils/parse-filename';
 import type {
   ActionPlan,
   AnalyticsQueryParams,
@@ -7,13 +8,6 @@ import type {
   StoreAnalytics,
   TrendData,
 } from '../types/analytics.types';
-
-const FILENAME_PATTERN = /filename="?([^";]+)"?/;
-
-function parseFilename(contentDisposition: unknown): string | undefined {
-  if (typeof contentDisposition !== 'string') return undefined;
-  return FILENAME_PATTERN.exec(contentDisposition)?.[1];
-}
 
 export const analyticsService = {
   getStoreAnalytics: (storeId: string, params: AnalyticsQueryParams) =>
