@@ -120,7 +120,7 @@ Per-query overrides in use:
 | `useAssessmentRank()` | `staleTime: 60s` | cohort aggregate; re-runs on every remount otherwise |
 | `useRoundMatrix()` | `placeholderData: keepPreviousData` | a 40-column table must not blank out on page change |
 | `useStore(id)`, `useUser(id)`, `useAssessment*` | `enabled: !!id` | never fire on an empty id |
-| `useStoreStats()` | `enabled: hasRole([ADMIN, ENTREPRENEUR])` | the API 403s everyone else |
+| `useStoreStats()` | `enabled: hasRole([SUPER_ADMIN, ADMIN, ENTREPRENEUR])` | the API 403s everyone else |
 | `useStoreAnalytics()` | `enabled: Boolean(storeId)` | store is picked client-side |
 
 ## Query key inventory
@@ -133,9 +133,10 @@ Keys are always built from a `*Keys` object — never inline.
 | store | `storeKeys` (`hooks/use-stores.ts`) | `all`, `list(params)`, `detail(id)`, `stats()` |
 | assessment | `assessmentKeys` (`hooks/use-assessment.ts`) | `all`, `byStore(storeId)`, `byStoreRound(storeId, round)`, `history(storeId)`, `rank(storeId, round)` |
 | assessment | `dimensionKeys` | `all` |
-| analytics | `analyticsKeys` (`hooks/analytics-keys.ts`) | `all`, `store(storeId, params)`, `actionPlans(storeId)` |
+| analytics | `analyticsKeys` (`hooks/analytics-keys.ts`) | `all`, `store(storeId, params)` |
 | report | `reportKeys` (`hooks/report-keys.ts`) | `all`, `round(storeId, round)`, `overview(storeId)`, `matrix(round, params)` |
 | news | `newsKeys` (`hooks/news-keys.ts`) | `all`, `list(query)`, `detail(id)` |
+| pitching | `pitchingKeys` (`hooks/pitching-keys.ts`) | `all`, `detail(id)`, `mine(storeId, round)`, `ranking(round, province, page, limit)`, `cohort(round)`, `storeReport(storeId, round)` |
 | user | `userKeys` (`hooks/use-users.ts`) | `all`, `list(params)`, `stats()`, `detail(id)` |
 | province | `provinceKeys` | `all` |
 | store type | `storeTypeKeys` | `all` |
@@ -157,12 +158,15 @@ server-side side effect touched, not just its own resource.
 | `useUpdateNotes` | `byStoreRound` |
 | `useUploadEvidence` / `useDeleteEvidence` | `byStoreRound` |
 | `useCreateNews` / `useUpdateNews` / `useDeleteNews` | `newsKeys.all` **and** `dashboardKeys.activities()` — the dashboard activity feed renders the same items |
+| `useCreatePitching`, `useUpdatePitching`, `useUpdatePitchingScore` | **sets** `pitchingKeys.mine(storeId, round)` and `detail(id)` from the response — every pitching write answers with the whole form, so nothing has to be refetched while a judge is still typing |
+| `useSubmitPitching` | the same two, plus invalidates `pitchingKeys.all` — the ranking and every store report move when a form lands. It deliberately does **not** touch `storeKeys`: submitting a pitching form never changes `Store.status` |
 | `useApproveUser`, `useRejectUser`, `useAssignStores` | `userKeys.all` |
 | `useAssignOwnedStores` | `userKeys.all` **and** `storeKeys.all` — ownership is what an entrepreneur's store list resolves against |
 
-Patching over refetching is used exactly once (`useUpdateScore`), because
-refetching all 50 questions after every keystroke-sized save is the wrong trade.
-Everywhere else, invalidate.
+Writing the response into the cache instead of refetching is used by
+`useUpdateScore` (a patch of one question) and by every pitching write (the
+whole form comes back). Both are for the same reason: refetching after every
+keystroke-sized save is the wrong trade. Everywhere else, invalidate.
 
 ## Service conventions
 

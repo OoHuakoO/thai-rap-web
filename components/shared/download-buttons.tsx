@@ -2,20 +2,28 @@
 
 import { FileSpreadsheet, FileText, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { REPORT_TEXT } from '../constants/report.constants';
-import type { ReportFileFormat } from '../types/report.types';
 
-interface ReportDownloadButtonsProps {
+/** The two formats every export route on the API accepts. */
+export type DownloadFormat = 'xlsx' | 'pdf';
+
+interface DownloadButtonsProps {
   isExporting: boolean;
   disabled?: boolean;
-  onDownload: (format: ReportFileFormat) => void;
+  // Labels are props, not constants in this file: the copy belongs to whichever
+  // feature owns the download, per .claude/rules/text-constants.md. Only the
+  // mechanics are shared.
+  excelLabel: string;
+  pdfLabel: string;
+  onDownload: (format: DownloadFormat) => void;
 }
 
-export function ReportDownloadButtons({
+export function DownloadButtons({
   isExporting,
   disabled,
+  excelLabel,
+  pdfLabel,
   onDownload,
-}: ReportDownloadButtonsProps) {
+}: DownloadButtonsProps) {
   return (
     <div className="flex flex-wrap gap-2">
       <Button
@@ -29,7 +37,7 @@ export function ReportDownloadButtons({
         ) : (
           <FileSpreadsheet className="h-4 w-4 text-score-green" />
         )}
-        {REPORT_TEXT.downloadExcel}
+        {excelLabel}
       </Button>
       <Button
         type="button"
@@ -42,7 +50,7 @@ export function ReportDownloadButtons({
         ) : (
           <FileText className="h-4 w-4 text-score-red" />
         )}
-        {REPORT_TEXT.downloadPdf}
+        {pdfLabel}
       </Button>
     </div>
   );

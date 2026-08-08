@@ -23,13 +23,14 @@ interface UserRowActionsProps {
 }
 
 // Which assignment a row offers is decided by role, matching the API: an
-// ASSESSOR and a MENTOR take assigned stores (ASSIGNMENT_SCOPED_ROLES — the
-// list the one scores against and the other reads against), only an
-// ENTREPRENEUR takes owned ones. Any other role gets no button rather than one
-// that 400s.
+// ASSESSOR, a MENTOR and a JUDGE take assigned stores (ASSIGNMENT_SCOPED_ROLES
+// — the list the first scores against, the second reads against and the third
+// judges against), only an ENTREPRENEUR takes owned ones. Any other role gets no
+// button rather than one that 400s USER_006.
 const ASSIGN_MODE_BY_ROLE: Partial<Record<User['role'], AssignStoresMode>> = {
   [ROLES.ASSESSOR]: 'assessor',
   [ROLES.MENTOR]: 'mentor',
+  [ROLES.JUDGE]: 'judge',
   [ROLES.ENTREPRENEUR]: 'owner',
 };
 

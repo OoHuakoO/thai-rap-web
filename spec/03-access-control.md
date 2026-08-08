@@ -29,30 +29,30 @@ Permissions are `<resource>:<action>` strings from `PERMISSIONS`.
 `SUPER_ADMIN` spreads `ALL_PERMISSIONS`; `ADMIN` is `ALL_PERMISSIONS` minus
 `SUPER_ADMIN_ONLY_PERMISSIONS`.
 
-| Permission | SUPER_ADMIN | ADMIN | ASSESSOR | MENTOR | ENTREPRENEUR | JUDGE | ME_TEAM | VIEWER |
-|---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-| `dashboard:read` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `manual:read` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `news:read` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `news:write` | ✓ | ✓ | | | | | | |
-| `news:delete` | ✓ | ✓ | | | | | | |
-| `store:read` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
-| `store:read:public` | ✓ | ✓ | | | ✓ | | | ✓ |
-| `store:write` | ✓ | ✓ | | | ✓ | | | |
-| `store:delete` | ✓ | ✓ | | | ✓ | | | |
-| `store:assign` | ✓ | ✓ | | | | | | |
-| `assessment:read` | ✓ | ✓ | ✓ | ✓ | | | | |
-| `assessment:write` | ✓ | ✓ | ✓ | | | | | |
-| `assessment:delete` | ✓ | ✓ | | | | | | |
-| `analytics:read` | ✓ | ✓ | ✓ | ✓ | | | ✓ | |
-| `pitching:read` | ✓ | ✓ | ✓ | ✓ | | ✓ | ✓ | |
-| `pitching:write` | ✓ | ✓ | | | | ✓ | | |
-| `pitching:delete` | ✓ | ✓ | | | | | | |
-| `reports:read` | ✓ | ✓ | ✓ | ✓ | ✓ | | ✓ | |
-| `reports:export` | ✓ | ✓ | ✓ | ✓ | ✓ | | ✓ | |
-| `users:read` | ✓ | | | | | | | |
-| `users:write` | ✓ | | | | | | | |
-| `users:delete` | ✓ | | | | | | | |
+| Permission | SUPER_ADMIN | ADMIN | ASSESSOR | MENTOR | ENTREPRENEUR | JUDGE | VIEWER |
+|---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+| `dashboard:read` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `manual:read` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `news:read` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `news:write` | ✓ | ✓ | | | | | |
+| `news:delete` | ✓ | ✓ | | | | | |
+| `store:read` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| `store:read:public` | ✓ | ✓ | | | ✓ | | ✓ |
+| `store:write` | ✓ | ✓ | | | ✓ | | |
+| `store:delete` | ✓ | ✓ | | | ✓ | | |
+| `store:assign` | ✓ | ✓ | | | | | |
+| `assessment:read` | ✓ | ✓ | ✓ | ✓ | | | |
+| `assessment:write` | ✓ | ✓ | ✓ | | | | |
+| `assessment:delete` | ✓ | ✓ | | | | | |
+| `analytics:read` | ✓ | ✓ | ✓ | ✓ | | | |
+| `pitching:read` | ✓ | ✓ | | | | ✓ | |
+| `pitching:write` | ✓ | ✓ | | | | ✓ | |
+| `pitching:delete` | ✓ | ✓ | | | | | |
+| `reports:read` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| `reports:export` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| `users:read` | ✓ | | | | | | |
+| `users:write` | ✓ | | | | | | |
+| `users:delete` | ✓ | | | | | | |
 
 Decisions worth knowing, all documented in comments at the definition:
 
@@ -80,8 +80,7 @@ Decisions worth knowing, all documented in comments at the definition:
 | ASSESSOR | ASSIGNED | ASSIGNED | ASSIGNED | ASSIGNED |
 | MENTOR | ASSIGNED | ASSIGNED | ASSIGNED | ASSIGNED |
 | ENTREPRENEUR | OWN | OWN | NONE | OWN |
-| JUDGE | ASSIGNED | NONE | NONE | NONE |
-| ME_TEAM | ALL | ALL | ALL | ALL |
+| JUDGE | ASSIGNED | NONE | NONE | **ASSIGNED** |
 | VIEWER | PUBLIC | NONE | NONE | NONE |
 
 ADMIN manages every store but only evaluates the ones assigned to it — the one
@@ -92,7 +91,15 @@ client-side filtering.
 
 `ASSIGNED` resolves against `User.assignedStores`, `OWN` against
 `User.ownedStores` — both managed on `/users` (see
-[features/user.md](features/user.md)).
+[features/user.md](features/user.md)). `isAssignmentScopedRole()` derives the
+assignment-scoped set (ASSESSOR, MENTOR, JUDGE) from this table rather than
+listing it again, so the roles offered the assign dialog and the roles whose
+store list is narrowed cannot drift apart.
+
+JUDGE's `reports` scope is ASSIGNED, not NONE, because `/reports` carries a
+พิชชิ่ง scope it may open — every assessment scope of that page is gated
+separately on `REPORT_ASSESSMENT_ROLES`, which it is not in, and the API 403s it
+from `/reports/*` regardless.
 
 ## Public store fields
 
@@ -146,6 +153,9 @@ where a permission tier is too wide:
 |---|---|---|
 | `/stores` | `store:read` | SUPER_ADMIN, ADMIN, ENTREPRENEUR |
 | `/assessment` | `assessment:read` | SUPER_ADMIN, ADMIN, ASSESSOR, MENTOR |
+| `/pitching` | `pitching:read` | SUPER_ADMIN, ADMIN, JUDGE |
+| `/pitching/form` | `pitching:write` | SUPER_ADMIN, ADMIN, JUDGE |
+| `/pitching/ranking` | `pitching:read` | SUPER_ADMIN, ADMIN, JUDGE |
 | `/users` | `users:read` | SUPER_ADMIN |
 
 Matching (`canAccessRoute`): longest matching entry wins, so `/news/new` is
@@ -202,6 +212,8 @@ Every gating call site in the app today:
 | `report/store-report-section.tsx` | `can(...)` | hides the report block on the store detail page |
 | `analytics/store-analytics-section.tsx` | `hasRole(STORE_ANALYTICS_SECTION_ROLES)`, `can(...)` | hides the analytics block on the store detail page |
 | `news/news-list.tsx` | `can(NEWS_WRITE)`, `can(NEWS_DELETE)` | hides create/edit/delete controls |
+| `pitching/pitching-dashboard-toolbar.tsx`, `pitching/pitching-store-card.tsx` | `can(PITCHING_WRITE)` | hides the two links to `/pitching/form` for a read-only role |
+| `report/report-workspace.tsx` | `hasRole(REPORT_ASSESSMENT_ROLES / REPORT_DETAIL_ROLES / REPORT_PITCHING_ROLES)` | picks which of the three report scopes exist; one scope renders bare, none renders an info card |
 | `user/user-row-actions.tsx` | `can(USERS_WRITE)`, `can(USERS_DELETE)` | hides approve / reject / assign |
 | `dashboard/top20-card.tsx`, `dashboard/province-comparison-card.tsx` | `hasRole(ENTREPRENEUR)` | hides cross-store cards from an entrepreneur |
 | `dashboard/activity-feed-card.tsx`, `reports-status-card.tsx`, `top20-card.tsx` | `canRoute(ROUTES.X)` | renders the card's footer link only when the target is reachable |
@@ -212,7 +224,7 @@ Two extra notes:
 - `canRoute()` — not `can()` — is what gates a **link**. `/stores` needs
   `store:read` but admits only three roles, so `can('store:read')` alone would
   render a link the dashboard layout bounces straight back.
-- `useStoreStats()` sets `enabled: hasRole([ADMIN, ENTREPRENEUR])` because the
+- `useStoreStats()` sets `enabled: hasRole([SUPER_ADMIN, ADMIN, ENTREPRENEUR])` because the
   API 403s `/stores/stats` for everyone else. Skipping the call beats letting
   it fail, retry, and trip the interceptor's 403 redirect.
 

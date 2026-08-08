@@ -29,7 +29,9 @@ export function ScoreSummaryStoreHeader({ store }: ScoreSummaryStoreHeaderProps)
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-xs font-bold text-charcoal">{store.name}</p>
-        <p className="truncate text-[11.5px] text-muted-foreground">{store.province ?? STORE_UNSPECIFIED_LABEL}</p>
+        <p className="truncate text-[11.5px] text-muted-foreground">
+          {store.province ?? STORE_UNSPECIFIED_LABEL}
+        </p>
       </div>
       <StatusBadge
         status={STORE_STATUS_VARIANT[store.status]}

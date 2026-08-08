@@ -4,5 +4,4 @@ export const analyticsKeys = {
   all: ['analytics'] as const,
   store: (storeId: string, params: AnalyticsQueryParams) =>
     ['analytics', storeId, params.compare, params.province ?? 'all'] as const,
-  actionPlans: (storeId: string) => ['analytics', storeId, 'action-plans'] as const,
 };

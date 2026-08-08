@@ -23,6 +23,8 @@ export const ROUTES = {
 
   // Pitching
   PITCHING: '/pitching',
+  PITCHING_FORM: '/pitching/form',
+  PITCHING_RANKING: '/pitching/ranking',
 
   // Reports
   REPORTS: '/reports',

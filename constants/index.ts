@@ -25,3 +25,8 @@ export const STORE_UNSPECIFIED_LABEL = 'ไม่ระบุ';
 
 // Matches MAX_FILE_SIZE in thai-rap-api store.controller.ts
 export const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+
+// Mirrors @Max(100) on PaginationDto in thai-rap-api common/dto/pagination.dto.ts.
+// Every paginated endpoint extends that DTO, and a larger `limit` is rejected
+// with 422 — the API never clamps. Any `limit` this app sends must be <= this.
+export const API_MAX_PAGE_LIMIT = 100;

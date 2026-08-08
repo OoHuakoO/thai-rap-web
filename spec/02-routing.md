@@ -35,6 +35,9 @@ app/
 | `/assessment/[storeId]/[round]` | `ASSESSMENT_DETAIL(id, round)` | `.../[storeId]/[round]/page.tsx` | `AssessmentForm` | inherits `/assessment` |
 | `/analytics` | `ANALYTICS` | `.../analytics/page.tsx` | `AnalyticsDashboard` | `analytics:read` |
 | `/reports` | `REPORTS` | `.../reports/page.tsx` | `ReportPageHeader` + `ReportWorkspace` | `reports:read` |
+| `/pitching` | `PITCHING` | `.../pitching/page.tsx` | `PitchingDashboard` | `pitching:read` + SUPER_ADMIN / ADMIN / JUDGE |
+| `/pitching/form` | `PITCHING_FORM` | `.../pitching/form/page.tsx` | `PitchingFormWorkspace` | `pitching:write` + SUPER_ADMIN / ADMIN / JUDGE |
+| `/pitching/ranking` | `PITCHING_RANKING` | `.../pitching/ranking/page.tsx` | `PitchingRankingWorkspace` | `pitching:read` + SUPER_ADMIN / ADMIN / JUDGE |
 | `/news` | `NEWS` | `.../news/page.tsx` | `NewsPageHeader` + `NewsList` | `news:read` (all roles) |
 | `/news/new` | `NEWS_NEW` | `.../news/new/page.tsx` | `CreateNewsForm` | `news:write` |
 | `/news/[id]/edit` | `NEWS_EDIT(id)` | `.../news/[id]/edit/page.tsx` | `EditNewsForm` | `news:write` |
@@ -46,13 +49,12 @@ app/
 
 ### Declared but not built
 
-`ROUTES` and `NAV_ITEMS` carry three entries with no page behind them. This is
+`ROUTES` and `NAV_ITEMS` carry two entries with no page behind them. This is
 intentional — the nav links are enabled and 404 on purpose, so the shape of the
 finished product stays visible.
 
 | Path | Key | Status |
 |---|---|---|
-| `/pitching` | `PITCHING` | Nav item + `ROUTE_PERMISSIONS` entry exist; no page. |
 | `/manual` | `MANUAL` | Bottom nav item + permission exist; no page. |
 | `/users/[id]` | `USER_DETAIL(id)` | Helper exists; no page and no caller. |
 

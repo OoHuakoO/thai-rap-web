@@ -149,10 +149,7 @@ describe('ScoreSummary', () => {
 
     // dim 1 scores 25%, dim 2 scores 100% — both listed, weakest first.
     const weakPoints = screen.getAllByRole('listitem').map((li) => li.textContent);
-    expect(weakPoints).toEqual([
-      'คุณภาพอาหาร (มิติ 1)25.0%',
-      'ความปลอดภัย (มิติ 2)100.0%',
-    ]);
+    expect(weakPoints).toEqual(['คุณภาพอาหาร (มิติ 1)25.0%', 'ความปลอดภัย (มิติ 2)100.0%']);
   });
 
   it(`lists at most ${IMPROVEMENT_POINTS_COUNT} weak points, dropping the highest`, () => {

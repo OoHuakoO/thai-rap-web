@@ -116,9 +116,7 @@ describe('UserRowActions', () => {
     renderWithClient(<UserRowActions user={mentor} />);
 
     await userEvent.click(screen.getByRole('button', { name: /มอบหมายร้าน/ }));
-    await waitFor(() =>
-      expect(screen.getByText('กำหนดร้านที่ให้คำปรึกษา')).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByText('กำหนดร้านที่ให้คำปรึกษา')).toBeInTheDocument());
     expect(screen.getByText('เลือกแล้ว 1 ร้าน')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'บันทึก' }));

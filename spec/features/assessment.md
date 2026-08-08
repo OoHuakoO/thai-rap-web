@@ -29,7 +29,7 @@ per round. The most stateful feature in the app.
 | `/assessment/[storeId]/[round]` | `AssessmentForm` | The scoring form |
 
 Access: `assessment:read` **and** `allowedRoles: [SUPER_ADMIN, ADMIN, ASSESSOR,
-MENTOR]`. ME_TEAM reads results through reports/analytics instead.
+MENTOR]`. ENTREPRENEUR reads its own result through reports instead.
 
 `AssessmentEntry` fetches the first accessible store, finds the first round that
 is not yet completed (falling back to `T3`), and `router.replace`s to

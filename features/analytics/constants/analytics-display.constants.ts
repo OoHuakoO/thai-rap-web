@@ -3,7 +3,7 @@ import type { LucideIcon } from 'lucide-react';
 import { ROUNDS, type Round } from '@/features/assessment';
 import { colors } from '@/styles/tokens';
 import { ROLES, type Role } from '@/types/auth.types';
-import type { ComparePair, IDPPhase } from '../types/analytics.types';
+import type { ComparePair } from '../types/analytics.types';
 
 // Who may see one store's charts inline on its detail page. Wider than
 // `analytics:read`, which gates the programme-wide /analytics page and is
@@ -20,7 +20,6 @@ export const STORE_ANALYTICS_SECTION_ROLES: Role[] = [
   ROLES.ADMIN,
   ROLES.ASSESSOR,
   ROLES.MENTOR,
-  ROLES.ME_TEAM,
   ROLES.ENTREPRENEUR,
 ];
 
@@ -226,16 +225,6 @@ export const DEFAULT_CHART_SCALE: AnalyticsChartScale = 'default';
 export function toDimensionNumber(index: number): string {
   return String(index + 1);
 }
-
-// ─── Action plans ────────────────────────────────────────────────────────────
-
-export const ACTION_PLAN_PHASE_DAYS: Record<IDPPhase, string> = {
-  D7: '7',
-  D30: '30',
-  D90: '90',
-};
-
-export const ACTION_PLAN_PHASE_ORDER: readonly IDPPhase[] = ['D7', 'D30', 'D90'];
 
 // ─── Misc ────────────────────────────────────────────────────────────────────
 

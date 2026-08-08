@@ -50,7 +50,7 @@ only.
 `AssignStoresDto` is `{ storeIds: string[] }` and is the **complete** list: an
 omitted store is revoked, `[]` clears every one. It is not an add operation.
 
-## The two assignment modes
+## The assignment modes
 
 `ASSIGN_MODE_BY_ROLE` in `user-row-actions.tsx` decides which button a row
 offers, matching the API:
@@ -59,8 +59,14 @@ offers, matching the API:
 |---|---|---|---|
 | `ASSESSOR` | `assessor` | `/assigned-stores` | `ASSIGNED` — the stores it may score |
 | `MENTOR` | `mentor` | `/assigned-stores` | `ASSIGNED` — the stores it may read |
+| `JUDGE` | `judge` | `/assigned-stores` | `ASSIGNED` — the stores it may pitch and score |
 | `ENTREPRENEUR` | `owner` | `/owned-stores` | `OWN` — the stores it owns |
-| any other | — | — | No button, rather than one that 400s |
+| any other | — | — | No button, rather than one that 400s `USER_006` |
+
+The first three write the same `Store.assignedUsers` list through the same
+endpoint; only the dialog copy differs, which is why
+`ASSIGN_STORES_MODE_TEXT` is keyed by mode. A judge with no assignments reaches
+no store and no pitch — the intended state, not a bug.
 
 `useAssignOwnedStores` invalidates `storeKeys.all` as well as `userKeys.all` —
 ownership is what an entrepreneur's store list resolves against, so the store

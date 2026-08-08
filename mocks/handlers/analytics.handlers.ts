@@ -2,7 +2,7 @@ import { http, HttpResponse } from 'msw';
 import type { PathParams } from 'msw';
 import { API_URL } from '@/constants';
 import type { AnalyticsQueryParams, ComparePair } from '@/features/analytics/types/analytics.types';
-import { getActionPlans, getStoreAnalytics, toAnalyticsCsv } from '../fixtures/analytics.fixtures';
+import { getStoreAnalytics, toAnalyticsCsv } from '../fixtures/analytics.fixtures';
 import { forbidden, getScenario, notFound, serverError, unauthorized } from '../utils/scenario';
 
 const BASE_URL = `${API_URL}/analytics`;
@@ -60,15 +60,6 @@ export const analyticsHandlers = [
       weaknesses: analytics.weaknesses,
       redFlags: analytics.redFlags,
     });
-  }),
-
-  http.get(`${BASE_URL}/:storeId/action-plans`, ({ request, params }) => {
-    const scenarioResponse = checkScenario(request);
-    if (scenarioResponse) return scenarioResponse;
-
-    const plans = getActionPlans(storeIdOf(params));
-    if (!plans) return notFound(STORE_NOT_FOUND_CODE, STORE_NOT_FOUND_MESSAGE);
-    return HttpResponse.json(plans);
   }),
 
   // Not in the OpenAPI contract yet — see features/analytics/README-gaps note.

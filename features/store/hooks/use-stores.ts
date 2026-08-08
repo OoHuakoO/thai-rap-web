@@ -24,10 +24,14 @@ export function useStores(params?: StoreQueryParams) {
 }
 
 export function useStoreStats() {
-  // API only allows ADMIN and ENTREPRENEUR on /stores/stats (403 PERM_001 for
-  // everyone else) — matches who can open the /stores page. Skip the call for
-  // other roles rather than let it fail and retry.
-  const canReadStats = useAuthStore((s) => s.hasRole([ROLES.ADMIN, ROLES.ENTREPRENEUR]));
+  // API only allows SUPER_ADMIN, ADMIN and ENTREPRENEUR on /stores/stats (403
+  // PERM_001 for everyone else) — matches who can open the /stores page. Skip
+  // the call for other roles rather than let it fail and retry. SUPER_ADMIN is
+  // listed explicitly: `hasRole` matches the role exactly, it does not treat
+  // SUPER_ADMIN as an ADMIN the way the API's `isAdminRole` does.
+  const canReadStats = useAuthStore((s) =>
+    s.hasRole([ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ENTREPRENEUR])
+  );
   return useQuery({
     queryKey: storeKeys.stats(),
     queryFn: () => storeService.getStats(),

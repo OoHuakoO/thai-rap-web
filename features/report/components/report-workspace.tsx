@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { AlertCard } from '@/components/shared/alert-card';
 import { CardSkeleton } from '@/components/shared/loading';
 import {
@@ -12,13 +12,17 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { AssessmentRound } from '@/features/dashboard';
+import { PITCHING_ROUNDS, PITCHING_ROUND_LABELS, PitchingReportPanel } from '@/features/pitching';
 import { useStores } from '@/features/store';
 import { useAuthStore } from '@/stores/auth-store';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import {
   MATRIX_SCOPE_TAB,
   OVERVIEW_TAB,
+  PITCHING_SCOPE_TAB,
+  REPORT_ASSESSMENT_ROLES,
   REPORT_DETAIL_ROLES,
+  REPORT_PITCHING_ROLES,
   REPORT_ROUNDS,
   REPORT_TEXT,
   STORE_SCOPE_TAB,
@@ -31,27 +35,87 @@ import { RoundReportPanel } from './round-report-panel';
 // store they own, so this picker doubles as their "my store" selector.
 const STORE_PAGE_SIZE = 100;
 
+interface Scope {
+  value: string;
+  label: string;
+  panel: ReactNode;
+}
+
+// Three scopes, each gated on its own role list, because they read three
+// different APIs: a JUDGE holds reports:read for the pitching scope alone and
+// would get nothing but 403s from the other two, while an ASSESSOR is the
+// mirror image.
 export function ReportWorkspace() {
-  const [scope, setScope] = useState<string>(STORE_SCOPE_TAB);
   const hasRole = useAuthStore((state) => state.hasRole);
 
-  // Without the matrix there is only one scope left, so the outer tab strip
-  // disappears rather than rendering a single tab over the old page.
-  if (!hasRole(REPORT_DETAIL_ROLES)) return <StoreReportWorkspace />;
+  const candidates: (Scope | false)[] = [
+    hasRole(REPORT_ASSESSMENT_ROLES) && {
+      value: STORE_SCOPE_TAB,
+      label: REPORT_TEXT.storeScopeTab,
+      panel: <StoreReportWorkspace />,
+    },
+    hasRole(REPORT_DETAIL_ROLES) && {
+      value: MATRIX_SCOPE_TAB,
+      label: REPORT_TEXT.matrixScopeTab,
+      panel: <MatrixReportWorkspace />,
+    },
+    hasRole(REPORT_PITCHING_ROLES) && {
+      value: PITCHING_SCOPE_TAB,
+      label: REPORT_TEXT.pitchingScopeTab,
+      panel: <PitchingReportWorkspace />,
+    },
+  ];
+
+  return <ScopeTabs scopes={candidates.filter((scope): scope is Scope => scope !== false)} />;
+}
+
+// A single available scope renders bare — a one-tab strip over the page is
+// chrome that decides nothing.
+function ScopeTabs({ scopes }: { scopes: Scope[] }) {
+  const [scope, setScope] = useState<string>(scopes[0]?.value ?? '');
+
+  if (scopes.length === 0) return <AlertCard variant="info" message={REPORT_TEXT.noScope} />;
+  if (scopes.length === 1) return <>{scopes[0].panel}</>;
 
   return (
     <Tabs value={scope} onValueChange={setScope} className="space-y-4">
       <TabsList>
-        <TabsTrigger value={STORE_SCOPE_TAB}>{REPORT_TEXT.storeScopeTab}</TabsTrigger>
-        <TabsTrigger value={MATRIX_SCOPE_TAB}>{REPORT_TEXT.matrixScopeTab}</TabsTrigger>
+        {scopes.map((item) => (
+          <TabsTrigger key={item.value} value={item.value}>
+            {item.label}
+          </TabsTrigger>
+        ))}
       </TabsList>
 
-      <TabsContent value={STORE_SCOPE_TAB}>
-        <StoreReportWorkspace />
-      </TabsContent>
-      <TabsContent value={MATRIX_SCOPE_TAB}>
-        <MatrixReportWorkspace />
-      </TabsContent>
+      {scopes.map((item) => (
+        <TabsContent key={item.value} value={item.value}>
+          {item.panel}
+        </TabsContent>
+      ))}
+    </Tabs>
+  );
+}
+
+// The pitching page's own report panel, one round at a time — the same
+// component /pitching renders, so the two can never drift.
+function PitchingReportWorkspace() {
+  const [round, setRound] = useState<string>(PITCHING_ROUNDS[0]);
+
+  return (
+    <Tabs value={round} onValueChange={setRound}>
+      <TabsList aria-label={REPORT_TEXT.pitchingScopeTab}>
+        {PITCHING_ROUNDS.map((item) => (
+          <TabsTrigger key={item} value={item}>
+            {PITCHING_ROUND_LABELS[item]}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+
+      {PITCHING_ROUNDS.map((item) => (
+        <TabsContent key={item} value={item} className="mt-4">
+          <PitchingReportPanel round={item} />
+        </TabsContent>
+      ))}
     </Tabs>
   );
 }

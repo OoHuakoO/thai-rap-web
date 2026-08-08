@@ -17,6 +17,7 @@ import {
   validationError,
 } from '../utils/scenario';
 import { HTTP_STATUS } from '@/constants/http-status';
+import { isAssignmentScopedRole } from '@/constants/permissions';
 import { ROLES } from '@/types/auth.types';
 import type { Role } from '@/types/auth.types';
 import type { User } from '@/features/user/types/user.types';
@@ -74,12 +75,12 @@ function withOwner(store: Store): Store {
 }
 
 // Mirrors StoreService.listScope / assertVisible: an ENTREPRENEUR sees only the
-// stores it owns, an ASSESSOR and a MENTOR only the ones assigned to them
-// (ASSIGNMENT_SCOPED_ROLES on the API), in the list and on a direct id alike.
-// Takes an owner-resolved store, never a raw fixture row.
+// stores it owns, and an assignment-scoped role (ASSESSOR, MENTOR, JUDGE) only
+// the ones assigned to it, in the list and on a direct id alike. Takes an
+// owner-resolved store, never a raw fixture row.
 function isVisibleTo(store: Store, caller: User | null): boolean {
   if (caller?.role === ROLES.ENTREPRENEUR) return store.ownerId === caller.id;
-  if (caller?.role === ROLES.ASSESSOR || caller?.role === ROLES.MENTOR) {
+  if (caller && isAssignmentScopedRole(caller.role)) {
     return caller.assignedStoreIds.includes(store.id);
   }
   return true;
@@ -290,7 +291,9 @@ export const storeHandlers = [
     // side, so a store carrying either is a 409, not a successful delete.
     const assessments = assessmentDb.findAllByStore(store.id);
     if (assessments.length > 0) {
-      return inUse(`ไม่สามารถลบร้านนี้ได้ เพราะมีข้อมูลการประเมินอยู่ ${assessments.length} รายการ`);
+      return inUse(
+        `ไม่สามารถลบร้านนี้ได้ เพราะมีข้อมูลการประเมินอยู่ ${assessments.length} รายการ`
+      );
     }
     if (store.documents.length > 0) {
       return inUse(

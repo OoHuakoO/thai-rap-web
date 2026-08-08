@@ -43,7 +43,6 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.ASSESSMENT_READ,
     PERMISSIONS.ASSESSMENT_WRITE,
     PERMISSIONS.ANALYTICS_READ,
-    PERMISSIONS.PITCHING_READ,
     PERMISSIONS.REPORTS_READ,
     PERMISSIONS.REPORTS_EXPORT,
   ],
@@ -63,7 +62,6 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.STORE_READ,
     PERMISSIONS.ASSESSMENT_READ,
     PERMISSIONS.ANALYTICS_READ,
-    PERMISSIONS.PITCHING_READ,
     PERMISSIONS.REPORTS_READ,
     PERMISSIONS.REPORTS_EXPORT,
   ],
@@ -94,7 +92,11 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.REPORTS_EXPORT,
   ],
 
-  // กรรมการ Pitching — pitching scoring + view dashboard/store for context
+  // กรรมการ Pitching — scores the stores it is assigned, and reads nothing else
+  // about them. reports:read / reports:export are here for the พิชชิ่ง scope of
+  // รายงานและส่งออก only; every assessment scope of that page is gated
+  // separately on REPORT_ASSESSMENT_ROLES, which this role is not in, and the
+  // API 403s it from /reports/* anyway.
   JUDGE: [
     PERMISSIONS.MANUAL_READ,
     PERMISSIONS.DASHBOARD_READ,
@@ -102,18 +104,6 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.STORE_READ,
     PERMISSIONS.PITCHING_READ,
     PERMISSIONS.PITCHING_WRITE,
-  ],
-
-  // ทีม M&E — monitor all, view reports, no write. It reads results through
-  // analytics and reports ("วิเคราะห์ผลก่อน–หลัง"), not the scoring page, so no
-  // assessment:read.
-  ME_TEAM: [
-    PERMISSIONS.MANUAL_READ,
-    PERMISSIONS.DASHBOARD_READ,
-    PERMISSIONS.NEWS_READ,
-    PERMISSIONS.STORE_READ,
-    PERMISSIONS.ANALYTICS_READ,
-    PERMISSIONS.PITCHING_READ,
     PERMISSIONS.REPORTS_READ,
     PERMISSIONS.REPORTS_EXPORT,
   ],
@@ -168,14 +158,16 @@ export const ROLE_DATA_SCOPES: Record<Role, RoleDataScopes> = {
     reports: DATA_SCOPES.OWN,
   },
 
+  // ASSIGNED throughout: a judging panel is assembled per store, so a judge
+  // reaches the stores a SUPER_ADMIN gave it and no others — the API enforces
+  // the same through ASSIGNMENT_SCOPED_ROLES. `reports` is ASSIGNED rather than
+  // NONE because the พิชชิ่ง scope of รายงานและส่งออก is its own report.
   JUDGE: {
     store: DATA_SCOPES.ASSIGNED,
     assessment: DATA_SCOPES.NONE,
     analytics: DATA_SCOPES.NONE,
-    reports: DATA_SCOPES.NONE,
+    reports: DATA_SCOPES.ASSIGNED,
   },
-
-  ME_TEAM: { ...ALL_SCOPES },
 
   VIEWER: {
     store: DATA_SCOPES.PUBLIC,
@@ -223,12 +215,34 @@ export const ROUTE_PERMISSIONS: RoutePermissionConfig[] = [
     path: ROUTES.ASSESSMENT,
     requiredPermission: PERMISSIONS.ASSESSMENT_READ,
     // Staff only. MENTOR is here on read alone — it opens the same page in
-    // read-only mode. The role gate sits on top of the permission because
-    // ME_TEAM reads results via reports/analytics, not the scoring page.
+    // read-only mode. The role gate sits on top of the permission so that a
+    // role given assessment:read for reports or analytics has to be named
+    // here before it reaches the scoring page.
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ASSESSOR, ROLES.MENTOR],
   },
   { path: ROUTES.ANALYTICS, requiredPermission: PERMISSIONS.ANALYTICS_READ },
-  { path: ROUTES.PITCHING, requiredPermission: PERMISSIONS.PITCHING_READ },
+  {
+    path: ROUTES.PITCHING,
+    requiredPermission: PERMISSIONS.PITCHING_READ,
+    // The judging panel and the people running it. A role gate on top of the
+    // permission so that granting pitching:read to a future read-only seat is a
+    // deliberate two-line change, not a side effect.
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.JUDGE],
+  },
+  {
+    // The scoring form is the one pitching page that writes, so it asks for
+    // pitching:write rather than the dashboard's pitching:read. Longest match
+    // wins in canAccessRoute, so this entry is what /pitching/form is checked
+    // against — never the dashboard's, which would let a read-only seat in.
+    path: ROUTES.PITCHING_FORM,
+    requiredPermission: PERMISSIONS.PITCHING_WRITE,
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.JUDGE],
+  },
+  {
+    path: ROUTES.PITCHING_RANKING,
+    requiredPermission: PERMISSIONS.PITCHING_READ,
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.JUDGE],
+  },
   { path: ROUTES.REPORTS, requiredPermission: PERMISSIONS.REPORTS_READ },
   // Announcements are readable by every role — no allowedRoles gate. Publishing
   // is not: the two pages that write one require news:write, which only
@@ -270,6 +284,16 @@ export function getDataScope(role: Role, resource: ScopedResource): DataScope {
 
 export function getPublicStoreFields(): StoreFieldKey[] {
   return PUBLIC_STORE_FIELDS;
+}
+
+/**
+ * Whether `role` reaches stores through `Store.assignedUsers` — the API's
+ * `ASSIGNMENT_SCOPED_ROLES`. Derived from `ROLE_DATA_SCOPES` rather than listed
+ * again, so the roles that get the assign dialog and the roles whose store list
+ * is narrowed can never drift apart.
+ */
+export function isAssignmentScopedRole(role: Role): boolean {
+  return getDataScope(role, 'store') === DATA_SCOPES.ASSIGNED;
 }
 
 /**

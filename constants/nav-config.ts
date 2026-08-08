@@ -37,7 +37,6 @@ export const NAV_ITEMS: NavItem[] = [
       ROLES.ADMIN,
       ROLES.ASSESSOR,
       ROLES.MENTOR,
-      ROLES.ME_TEAM,
       ROLES.JUDGE,
       ROLES.ENTREPRENEUR,
       ROLES.VIEWER,
@@ -65,21 +64,14 @@ export const NAV_ITEMS: NavItem[] = [
     labelTh: 'วิเคราะห์ศักยภาพ',
     href: ROUTES.ANALYTICS,
     icon: NAV_ICONS.analytics,
-    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ASSESSOR, ROLES.MENTOR, ROLES.ME_TEAM],
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.ASSESSOR, ROLES.MENTOR],
   },
   {
     label: 'Pitching & Ranking',
     labelTh: 'คะแนนพิชชิ่ง',
     href: ROUTES.PITCHING,
     icon: NAV_ICONS.pitching,
-    allowedRoles: [
-      ROLES.SUPER_ADMIN,
-      ROLES.ADMIN,
-      ROLES.ASSESSOR,
-      ROLES.MENTOR,
-      ROLES.JUDGE,
-      ROLES.ME_TEAM,
-    ],
+    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.JUDGE],
   },
   {
     label: 'Reports & Export',
@@ -88,13 +80,15 @@ export const NAV_ITEMS: NavItem[] = [
     icon: NAV_ICONS.reports,
     // ENTREPRENEUR included: the page scopes itself to the stores it owns, and
     // the cross-store matrix tab is gated separately on REPORT_DETAIL_ROLES.
+    // JUDGE included for the พิชชิ่ง scope only — the assessment scopes are
+    // gated on REPORT_ASSESSMENT_ROLES, which it is not in.
     allowedRoles: [
       ROLES.SUPER_ADMIN,
       ROLES.ADMIN,
       ROLES.ASSESSOR,
       ROLES.MENTOR,
-      ROLES.ME_TEAM,
       ROLES.ENTREPRENEUR,
+      ROLES.JUDGE,
     ],
   },
   {
@@ -111,7 +105,6 @@ export const NAV_ITEMS: NavItem[] = [
       ROLES.MENTOR,
       ROLES.ENTREPRENEUR,
       ROLES.JUDGE,
-      ROLES.ME_TEAM,
       ROLES.VIEWER,
     ],
   },
@@ -137,7 +130,6 @@ export const NAV_BOTTOM_ITEMS: NavItem[] = [
       ROLES.MENTOR,
       ROLES.ENTREPRENEUR,
       ROLES.JUDGE,
-      ROLES.ME_TEAM,
       ROLES.VIEWER,
     ],
   },
@@ -166,9 +158,7 @@ export function getBottomNavItemsForRole(role: Role): NavItem[] {
  * same loop. `/errors/403` sits outside both route groups, so nothing guards it.
  */
 export function getDefaultRouteForRole(role: Role): string {
-  const firstAccessible = getNavItemsForRole(role).find((item) =>
-    canAccessRoute(role, item.href)
-  );
+  const firstAccessible = getNavItemsForRole(role).find((item) => canAccessRoute(role, item.href));
   return firstAccessible?.href ?? ROUTES.ERROR_403;
 }
 

@@ -1,5 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { API_URL } from '@/constants';
+import { isAssignmentScopedRole } from '@/constants/permissions';
 import { ROLES } from '@/types/auth.types';
 import type {
   ActivityItem,
@@ -60,8 +61,9 @@ function getCaller(request: Request): User | null {
 }
 
 // Mirrors DashboardService's resolveStoreScope: an ENTREPRENEUR's overview
-// covers the stores it owns, an ASSESSOR's and a MENTOR's the ones assigned to
-// them, and every staff role keeps the project-wide numbers. Ownership and
+// covers the stores it owns, an assignment-scoped role's (ASSESSOR, MENTOR,
+// JUDGE) the ones assigned to it, and every staff role keeps the project-wide
+// numbers. Ownership and
 // assignment live on the user record — what the /users dialogs write — so both
 // are read from there rather than copied onto the dashboard rows.
 //
@@ -74,7 +76,7 @@ function scopedStores(request: Request): DashboardStore[] {
   if (caller.role === ROLES.ENTREPRENEUR) {
     return dashboardStores.filter((store) => caller.ownedStoreIds.includes(store.storeId));
   }
-  if (caller.role === ROLES.ASSESSOR || caller.role === ROLES.MENTOR) {
+  if (isAssignmentScopedRole(caller.role)) {
     return dashboardStores.filter((store) => caller.assignedStoreIds.includes(store.storeId));
   }
   return dashboardStores;

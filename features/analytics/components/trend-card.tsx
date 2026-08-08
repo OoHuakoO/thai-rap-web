@@ -21,16 +21,13 @@ import {
 import { TREND_CARD_TEXT } from '../constants/analytics-text.constants';
 import type { TrendData } from '../types/analytics.types';
 import { toRoundCode } from '../utils/round-code';
-import { splitMeasuredAndProjected } from '../utils/trend-split';
 
 interface TrendCardProps {
   trend: TrendData;
   scale?: AnalyticsChartScale;
 }
 
-const MEASURED_KEY = 'measured';
-const PROJECTED_KEY = 'projected';
-const PROJECTED_LABEL_KEY = 'projectedLabel';
+const SCORE_KEY = 'score';
 
 const formatPointLabel = (value: number | string) => Math.round(Number(value)).toString();
 
@@ -42,14 +39,15 @@ export function TrendCard({ trend, scale = DEFAULT_CHART_SCALE }: TrendCardProps
   const lineColor = series?.color ?? colors.orange;
 
   const chartConfig: ChartConfig = {
-    [MEASURED_KEY]: { label: series?.name ?? TREND_CARD_TEXT.axisLabel, color: lineColor },
-    [PROJECTED_KEY]: { label: TREND_CARD_TEXT.projectedLegend, color: lineColor },
+    [SCORE_KEY]: { label: series?.name ?? TREND_CARD_TEXT.axisLabel, color: lineColor },
   };
 
-  const chartData = hasData ? splitMeasuredAndProjected(trend.xAxis, series) : [];
+  const chartData = hasData
+    ? trend.xAxis.map((label, index) => ({ label, [SCORE_KEY]: series?.data[index] ?? null }))
+    : [];
 
-  // Axis labels carry a qualifier the title doesn't want — "T3 (เป้าหมาย)" in
-  // the heading reads as "(T0 – T3 (เป้าหมาย) Trend)".
+  // toRoundCode, not the raw label: a parenthesised qualifier in the heading
+  // would nest inside the title's own parentheses.
   const firstLabel = toRoundCode(trend.xAxis[0]);
   const lastLabel = toRoundCode(trend.xAxis[trend.xAxis.length - 1]);
 
@@ -70,13 +68,6 @@ export function TrendCard({ trend, scale = DEFAULT_CHART_SCALE }: TrendCardProps
                 <span className="h-0.5 w-4 rounded-full" style={{ backgroundColor: lineColor }} />
                 {series.name}
               </li>
-              <li className={cn('flex items-center gap-1.5 text-charcoal', style.legend)}>
-                <span
-                  className="h-0 w-4 border-t-2 border-dashed"
-                  style={{ borderColor: lineColor }}
-                />
-                {TREND_CARD_TEXT.projectedLegend}
-              </li>
             </ul>
 
             <ChartContainer
@@ -95,9 +86,7 @@ export function TrendCard({ trend, scale = DEFAULT_CHART_SCALE }: TrendCardProps
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
                 {/* interval=0 keeps every round labelled — Recharts otherwise
-                    drops ticks it thinks would collide. The qualifier is
-                    stripped for the same reason: the dashed line and its legend
-                    entry already say which points are projected. */}
+                    drops ticks it thinks would collide. */}
                 <XAxis
                   dataKey="label"
                   tickFormatter={toRoundCode}
@@ -121,33 +110,16 @@ export function TrendCard({ trend, scale = DEFAULT_CHART_SCALE }: TrendCardProps
                 />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Line
-                  dataKey={MEASURED_KEY}
+                  dataKey={SCORE_KEY}
                   type="linear"
-                  stroke={`var(--color-${MEASURED_KEY})`}
+                  stroke={`var(--color-${SCORE_KEY})`}
                   strokeWidth={2}
                   dot={{ r: 3.5 }}
                   connectNulls={false}
                   isAnimationActive={false}
                 >
                   <LabelList
-                    dataKey={MEASURED_KEY}
-                    position="top"
-                    formatter={formatPointLabel}
-                    style={style.valueLabel}
-                  />
-                </Line>
-                <Line
-                  dataKey={PROJECTED_KEY}
-                  type="linear"
-                  stroke={`var(--color-${PROJECTED_KEY})`}
-                  strokeWidth={2}
-                  strokeDasharray="5 4"
-                  dot={{ r: 3.5 }}
-                  connectNulls={false}
-                  isAnimationActive={false}
-                >
-                  <LabelList
-                    dataKey={PROJECTED_LABEL_KEY}
+                    dataKey={SCORE_KEY}
                     position="top"
                     formatter={formatPointLabel}
                     style={style.valueLabel}

@@ -1,6 +1,6 @@
 'use client';
 
-import { PieChart, Pie, Cell } from 'recharts';
+import { PieChart, Pie, Cell, Label } from 'recharts';
 import {
   ChartContainer,
   ChartTooltip,
@@ -70,24 +70,42 @@ export function DonutChart({
               fill={slice.color ?? DEFAULT_COLORS[i % DEFAULT_COLORS.length]}
             />
           ))}
+          {/* Recharts renders only the child types it knows, so a bare <text>
+              here is dropped — the centre caption has to arrive as a <Label>
+              and take its coordinates from the ring's own viewBox. */}
           {(centerLabel || centerValue !== undefined) && (
-            <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle">
-              {centerValue !== undefined && (
-                <tspan x="50%" dy="-0.4em" fontSize={22} fontWeight={700} fill={colors.charcoal}>
-                  {centerValue}
-                </tspan>
-              )}
-              {centerLabel && (
-                <tspan
-                  x="50%"
-                  dy={centerValue !== undefined ? '1.4em' : '0.35em'}
-                  fontSize={11}
-                  fill={colors.charcoal}
-                >
-                  {centerLabel}
-                </tspan>
-              )}
-            </text>
+            <Label
+              position="center"
+              content={({ viewBox }) => {
+                if (!viewBox || !('cx' in viewBox)) return null;
+                const { cx, cy } = viewBox;
+                return (
+                  <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
+                    {centerValue !== undefined && (
+                      <tspan
+                        x={cx}
+                        dy="-0.4em"
+                        fontSize={22}
+                        fontWeight={700}
+                        fill={colors.charcoal}
+                      >
+                        {centerValue}
+                      </tspan>
+                    )}
+                    {centerLabel && (
+                      <tspan
+                        x={cx}
+                        dy={centerValue !== undefined ? '1.4em' : '0.35em'}
+                        fontSize={11}
+                        fill={colors.charcoal}
+                      >
+                        {centerLabel}
+                      </tspan>
+                    )}
+                  </text>
+                );
+              }}
+            />
           )}
         </Pie>
         {showLegend && <ChartLegend content={<ChartLegendContent nameKey="label" />} />}

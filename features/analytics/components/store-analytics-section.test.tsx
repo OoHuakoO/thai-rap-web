@@ -31,14 +31,11 @@ const analytics: StoreAnalytics = {
   },
   trend: {
     xAxis: ['T0', 'T1', 'T2', 'T3'],
-    series: [{ name: 'ร้านบ้านสวนคุณสุข', data: [25, 50, null, null], actualCount: 2 }],
+    series: [{ name: 'ร้านบ้านสวนคุณสุข', data: [25, 50, null, null] }],
   },
   strengths: [],
   weaknesses: [],
   redFlags: [],
-  aiAnalysis: null,
-  mentorRecommendations: [],
-  incubationStatus: null,
 };
 
 function renderWithClient(ui: React.ReactElement) {

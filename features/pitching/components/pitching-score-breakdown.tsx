@@ -1,0 +1,89 @@
+'use client';
+
+import { AlertCard } from '@/components/shared/alert-card';
+import { ProgressBar } from '@/components/shared/progress-bar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PITCHING_DASHBOARD_TEXT, PITCHING_TEXT } from '../constants/pitching.constants';
+
+export interface PitchingScoreRow {
+  id: number;
+  code: string;
+  title: string;
+  maxScore: number;
+  /** Null while a judge has left the criterion unscored. */
+  score: number | null;
+}
+
+interface PitchingScoreBreakdownProps {
+  rows: PitchingScoreRow[];
+  /** Σ of the rows — the cross-judge average, or one judge's own total. */
+  total: number | null;
+  /** "คะแนนเฉลี่ย" for the cross-judge view, "คะแนนที่ให้" for a single judge. */
+  scoreColumnLabel: string;
+}
+
+export function PitchingScoreBreakdown({
+  rows,
+  total,
+  scoreColumnLabel,
+}: PitchingScoreBreakdownProps) {
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm font-semibold">
+          {PITCHING_DASHBOARD_TEXT.criteriaTitle}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {rows.length === 0 ? (
+          <AlertCard variant="info" message={PITCHING_DASHBOARD_TEXT.criteriaEmpty} />
+        ) : (
+          <>
+            <div className="flex items-center gap-3 border-b pb-2 text-xs text-muted-foreground">
+              <span className="w-8 flex-shrink-0">{PITCHING_DASHBOARD_TEXT.judgeIndexColumn}</span>
+              <span className="min-w-0 flex-1">{PITCHING_TEXT.criteriaTitle}</span>
+              <span className="w-32 flex-shrink-0 text-right">{scoreColumnLabel}</span>
+            </div>
+
+            <ul className="space-y-3">
+              {rows.map((row) => (
+                <li key={row.id} className="flex items-center gap-3">
+                  <span className="w-8 flex-shrink-0 text-sm text-muted-foreground">
+                    {row.code}
+                  </span>
+                  <span
+                    className="min-w-0 flex-1 truncate text-sm text-text-main"
+                    title={row.title}
+                  >
+                    {row.title}
+                  </span>
+                  <span className="w-32 flex-shrink-0">
+                    <ProgressBar
+                      value={row.score === null ? 0 : (row.score / row.maxScore) * 100}
+                    />
+                  </span>
+                  <span className="w-20 flex-shrink-0 text-right text-sm font-medium tabular-nums">
+                    {row.score ?? PITCHING_TEXT.noComment}
+                    <span className="text-muted-foreground"> / {row.maxScore}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="flex items-center justify-between rounded-lg bg-cream px-4 py-3">
+              <div>
+                <p className="text-sm font-semibold text-text-main">
+                  {PITCHING_DASHBOARD_TEXT.totalLabel}
+                </p>
+                <p className="text-xs text-muted-foreground">{PITCHING_DASHBOARD_TEXT.totalHint}</p>
+              </div>
+              <p className="text-2xl font-bold tabular-nums text-orange">
+                {PITCHING_TEXT.totalOutOf(total ?? 0)}
+              </p>
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

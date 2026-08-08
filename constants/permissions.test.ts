@@ -34,7 +34,6 @@ describe('permissions', () => {
       expect(hasPermission(ROLES.MENTOR, PERMISSIONS.NEWS_WRITE)).toBe(false);
       expect(hasPermission(ROLES.ENTREPRENEUR, PERMISSIONS.NEWS_WRITE)).toBe(false);
       expect(hasPermission(ROLES.JUDGE, PERMISSIONS.NEWS_WRITE)).toBe(false);
-      expect(hasPermission(ROLES.ME_TEAM, PERMISSIONS.NEWS_WRITE)).toBe(false);
       expect(hasPermission(ROLES.VIEWER, PERMISSIONS.NEWS_WRITE)).toBe(false);
       expect(hasPermission(ROLES.VIEWER, PERMISSIONS.NEWS_DELETE)).toBe(false);
     });
@@ -47,15 +46,13 @@ describe('permissions', () => {
       expect(getDataScope(ROLES.MENTOR, 'assessment')).toBe(DATA_SCOPES.ASSIGNED);
     });
 
-    // The scoring page is staff-only. The M&E team reads results through
-    // reports/analytics instead, so it holds neither assessment permission.
-    it('keeps the assessment page away from a store and the M&E team', () => {
-      for (const role of [ROLES.ENTREPRENEUR, ROLES.ME_TEAM]) {
-        expect(hasPermission(role, PERMISSIONS.ASSESSMENT_READ)).toBe(false);
-        expect(hasPermission(role, PERMISSIONS.ASSESSMENT_WRITE)).toBe(false);
-        expect(canAccessRoute(role, ROUTES.ASSESSMENT)).toBe(false);
-      }
-      expect(canAccessRoute(ROLES.ME_TEAM, ROUTES.REPORTS)).toBe(true);
+    // The scoring page is staff-only. A store reads its own result through
+    // reports instead, so it holds neither assessment permission.
+    it('keeps the assessment page away from a store', () => {
+      expect(hasPermission(ROLES.ENTREPRENEUR, PERMISSIONS.ASSESSMENT_READ)).toBe(false);
+      expect(hasPermission(ROLES.ENTREPRENEUR, PERMISSIONS.ASSESSMENT_WRITE)).toBe(false);
+      expect(canAccessRoute(ROLES.ENTREPRENEUR, ROUTES.ASSESSMENT)).toBe(false);
+      expect(canAccessRoute(ROLES.ENTREPRENEUR, ROUTES.REPORTS)).toBe(true);
     });
 
     // ผู้ประกอบการ gets the project overview, its own store profile, and its own
@@ -104,7 +101,7 @@ describe('permissions', () => {
 
       expect(hasPermission(ROLES.ADMIN, PERMISSIONS.USERS_READ)).toBe(false);
       expect(hasPermission(ROLES.ADMIN, PERMISSIONS.USERS_WRITE)).toBe(false);
-      expect(hasPermission(ROLES.ME_TEAM, PERMISSIONS.USERS_READ)).toBe(false);
+      expect(hasPermission(ROLES.ASSESSOR, PERMISSIONS.USERS_READ)).toBe(false);
     });
   });
 
@@ -112,7 +109,7 @@ describe('permissions', () => {
     it('lets only the super admin reach user management', () => {
       expect(canAccessRoute(ROLES.SUPER_ADMIN, ROUTES.USERS)).toBe(true);
       expect(canAccessRoute(ROLES.ADMIN, ROUTES.USERS)).toBe(false);
-      expect(canAccessRoute(ROLES.ME_TEAM, ROUTES.USERS)).toBe(false);
+      expect(canAccessRoute(ROLES.ASSESSOR, ROUTES.USERS)).toBe(false);
     });
 
     it('lets a general user see the overview and announcements but not the internal pages', () => {
@@ -135,7 +132,6 @@ describe('permissions', () => {
       // Reaching /news no longer implies reaching what publishes to it — the
       // longer entries win the match, so a reader is turned away by news:write.
       expect(canAccessRoute(ROLES.VIEWER, ROUTES.NEWS_NEW)).toBe(false);
-      expect(canAccessRoute(ROLES.ME_TEAM, ROUTES.NEWS_NEW)).toBe(false);
       expect(canAccessRoute(ROLES.ENTREPRENEUR, ROUTES.NEWS_EDIT('42'))).toBe(false);
       expect(canAccessRoute(ROLES.JUDGE, ROUTES.NEWS_EDIT('42'))).toBe(false);
     });

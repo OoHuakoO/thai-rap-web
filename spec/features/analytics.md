@@ -11,7 +11,7 @@ narrative, mentor recommendations, and the IDP action plan.
 | `/analytics` | `AnalyticsDashboard` |
 | `/stores/[id]` | `StoreAnalyticsSection` — the same data embedded in the store detail page |
 
-Access: `analytics:read` — SUPER_ADMIN, ADMIN, ASSESSOR, MENTOR, ME_TEAM.
+Access: `analytics:read` — SUPER_ADMIN, ADMIN, ASSESSOR, MENTOR.
 **ENTREPRENEUR does not have it** and its `analytics` data scope is `NONE`;
 this is staff tooling. `StoreAnalyticsSection` re-checks with
 `hasRole(STORE_ANALYTICS_SECTION_ROLES)` because it renders inside a page an
@@ -24,7 +24,6 @@ entrepreneur can open.
 | GET | `/analytics/:storeId?compare&province` | `getStoreAnalytics` |
 | GET | `/analytics/:storeId/radar` | `getRadar` |
 | GET | `/analytics/:storeId/trend` | `getTrend` |
-| GET | `/analytics/:storeId/action-plans` | `getActionPlans` |
 | GET | `/analytics/:storeId/export?compare&province` | `exportAnalytics` → `{ blob, filename }` |
 
 `getStoreAnalytics` already returns radar and trend, so the two dedicated
@@ -61,15 +60,11 @@ pair.
 | `AnalyticsToolbar` | — | Store picker, compare-pair select, province filter, export button |
 | `AnalyticsKpiRow` / `AnalyticsKpiCard` | `kpis` | Baseline score, comparison score, improvement %, rank, zone, incubation readiness |
 | `RadarComparisonCard` + `radar-axis-tick.tsx` | `radar` | 8-axis dimension radar, one series per round |
-| `TrendCard` | `trend` | Score over rounds; solid up to `actualCount`, dashed after (projection) |
+| `TrendCard` | `trend` | Score over rounds; a round with no submitted assessment is a gap, never a forecast |
 | `DimensionComparisonCard` | `radar` | Per-dimension before/after |
 | `HighlightListCard` | `strengths`, `weaknesses` | Top/bottom dimensions |
 | `RedFlagsCard` | `redFlags` | `RedFlag[]` with severity styling |
-| `AiAnalysisCard` | `aiAnalysis`, `aiInsight` | Narrative bullets + an emphasised closing line |
-| `MentorRecommendationsCard` | `mentorRecommendations` | String list |
-| `IncubationStatusCard` | `incubationStatus` | Status, step, `chance` 0–100 |
 | `TargetCard` | `target` | Final-round goal — **skipped entirely when the API omits it** |
-| `ActionPlansSection` + `ActionPlanCard` | `useActionPlans` | IDP phases `D7` / `D30` / `D90` with progress and items |
 
 ## Types
 
@@ -79,9 +74,7 @@ degrades without them:
 
 | Field | Status |
 |---|---|
-| `aiInsight?` | Not in the contract — closing line omitted if absent |
 | `target?` | Not in the contract — `TargetCard` not rendered if absent |
-| `TrendSeries.actualCount?` | Not in the contract — every point treated as measured if absent |
 
 `RadarChartData.axes` are **dimension labels straight from the API**. Never
 hardcode the eight names on the client.
@@ -97,7 +90,6 @@ baseline/comparison, not literally T0/T1.
 | `dimension-label.ts` | Shortens an axis label to fit the radar |
 | `kpi-format.ts` | Number/percentage formatting for the KPI row |
 | `round-code.ts`, `series-key.ts`, `series-round-label.ts` | Map a compare pair / series to its round code and label |
-| `trend-split.ts` | Splits a series into measured vs projected at `actualCount` |
 | `to-bullet-lines.ts` | Splits the AI narrative into bullets, one per line |
 
 Five of the six have unit tests — this is where the presentation logic lives, so

@@ -13,7 +13,6 @@ export const CREATE_USER_ROLE_OPTIONS: { value: CreateUserFormValues['role']; la
   { value: ROLES.MENTOR, label: 'ที่ปรึกษา (Mentor / Coach)' },
   { value: ROLES.ASSESSOR, label: 'ผู้ประเมิน (Assessor)' },
   { value: ROLES.JUDGE, label: 'กรรมการ Pitching' },
-  { value: ROLES.ME_TEAM, label: 'ทีม M&E' },
   { value: ROLES.ADMIN, label: 'ผู้ดูแลระบบ (Admin / PMO)' },
 ];
 

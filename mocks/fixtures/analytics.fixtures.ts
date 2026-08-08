@@ -1,6 +1,5 @@
 import type { RedFlag } from '@/features/assessment/types/assessment.types';
 import type {
-  ActionPlan,
   AnalyticsQueryParams,
   StoreAnalytics,
 } from '@/features/analytics/types/analytics.types';
@@ -172,32 +171,6 @@ function buildRedFlags(storeId: string, scores: number[]): RedFlag[] {
   return flags;
 }
 
-function buildAiAnalysis(from: MockRound, to: MockRound, rate: number | null): string {
-  const change = rate === null ? 'เริ่มจากศูนย์' : `${rate > 0 ? '+' : ''}${rate}%`;
-  return [
-    `ศักยภาพโดยรวมเปลี่ยนแปลง ${change} จาก ${from} → ${to} โดยเด่นที่ด้านแบรนด์และการตลาด`,
-    'ด้านการเงินยังเป็นจุดที่ควรเร่งพัฒนา เน้นการควบคุมต้นทุนและเพิ่มอัตรากำไรขั้นต้น',
-    'การตลาดออนไลน์และการใช้เทคโนโลยีจะช่วยเพิ่มโอกาสเข้าถึงลูกค้าได้มากขึ้น',
-  ].join('\n');
-}
-
-const AI_INSIGHT =
-  'หากยกระดับด้านการเงินและระบบปฏิบัติการได้อย่างน้อย 15% จะทำให้มีโอกาสติด Top 25% ของโครงการ';
-
-const MENTOR_RECOMMENDATIONS = [
-  'พัฒนา SOP และมาตรฐานการบริการ เพื่อให้บริการสม่ำเสมอและควบคุมต้นทุน',
-  'เพิ่มช่องทางการตลาดออนไลน์ (Facebook Ads, LINE OA) และลงคอนเทนต์อย่างต่อเนื่อง',
-  'จัดทำเมนู Signature Dish และเล่าเรื่องราว (Storytelling) ของร้านให้ชัดเจน',
-  'ใช้เทคโนโลยี POS และระบบสต็อก เพื่อลดการสูญเสียและเพิ่มประสิทธิภาพ',
-];
-
-const INCUBATION_STEPS = [
-  'ประเมินรอบที่ 1',
-  'ประเมินรอบที่ 2',
-  'ลงพื้นที่ Field Audit',
-  'พิจารณาผลคัดเลือก',
-];
-
 const TARGET_ROUND = 'T3';
 const TARGET_TOTAL_SCORE = 90;
 const TARGET_READINESS = 90;
@@ -233,9 +206,7 @@ export function getStoreAnalytics(
   const { rank, total } = rankOf(storeId);
   const readiness = incubationReadiness(storeId, toTotal, rate);
 
-  // The trend always runs the full funnel, independent of the compared pair —
-  // T0/T1 are measured, T2/T3 are the projected targets.
-  const measuredRounds = 2;
+  // The trend always runs the full funnel, independent of the compared pair.
   const trendValues = ROUND_ORDER.map((round) => weightedTotal(dimensionScores(storeId, round)));
 
   const seed = Number(storeId) || storeId.length;
@@ -262,32 +233,12 @@ export function getStoreAnalytics(
       })),
     },
     trend: {
-      xAxis: [
-        ROUND_ORDER[0],
-        ROUND_ORDER[1],
-        `${ROUND_ORDER[2]} (เป้าหมาย)`,
-        `${ROUND_ORDER[3]} (เป้าหมาย)`,
-      ],
-      series: [
-        {
-          name: 'คะแนนรวม',
-          data: trendValues,
-          color: SERIES_COLOR_CURRENT,
-          actualCount: measuredRounds,
-        },
-      ],
+      xAxis: [...ROUND_ORDER],
+      series: [{ name: 'คะแนนรวม', data: trendValues, color: SERIES_COLOR_CURRENT }],
     },
     strengths: topDimensions(toScores, HIGHLIGHT_COUNT, false),
     weaknesses: topDimensions(toScores, HIGHLIGHT_COUNT, true),
     redFlags: buildRedFlags(storeId, toScores),
-    aiAnalysis: buildAiAnalysis(from, to, rate),
-    aiInsight: AI_INSIGHT,
-    mentorRecommendations: MENTOR_RECOMMENDATIONS,
-    incubationStatus: {
-      status: 'อยู่ระหว่างการคัดเลือก',
-      step: INCUBATION_STEPS[seed % INCUBATION_STEPS.length],
-      chance: Math.round(readiness),
-    },
     target: {
       round: TARGET_ROUND,
       totalScore: TARGET_TOTAL_SCORE,
@@ -295,44 +246,6 @@ export function getStoreAnalytics(
       topPercentile: TARGET_TOP_PERCENTILE,
     },
   };
-}
-
-export function getActionPlans(storeId: string): ActionPlan[] | null {
-  if (!storeDb.findById(storeId)) return null;
-  const seed = Number(storeId) || storeId.length;
-
-  return [
-    {
-      phase: 'D7',
-      label: 'แผน 7 วัน (Quick Win)',
-      progress: Math.min(100, 40 + ((seed * 9) % 55)),
-      items: [
-        'ปรับภาพและเรื่องราวร้านในเพจ Facebook',
-        'สำรวจต้นทุนวัตถุดิบ 5 รายการหลัก',
-        'อบรมพนักงานเรื่องการบริการพื้นฐาน',
-      ],
-    },
-    {
-      phase: 'D30',
-      label: 'แผน 30 วัน (Short Term)',
-      progress: Math.min(100, 20 + ((seed * 7) % 45)),
-      items: [
-        'จัดทำโปรโมชัน Set Menu ประจำเดือน',
-        'วิเคราะห์จุดคุ้มทุนและตั้งเป้าอัตรากำไร',
-        'เริ่มใช้ระบบ POS และรายงานยอดขาย',
-      ],
-    },
-    {
-      phase: 'D90',
-      label: 'แผน 90 วัน (Long Term)',
-      progress: Math.min(100, 5 + ((seed * 3) % 30)),
-      items: [
-        'พัฒนาเมนู Signature และวัตถุดิบท้องถิ่น',
-        'ขยายช่องทางจัดจำหน่าย Delivery Platform',
-        'เตรียมพร้อมขอรับรองมาตรฐาน/เครื่องหมายคุณภาพ',
-      ],
-    },
-  ];
 }
 
 const CSV_BOM = '﻿';

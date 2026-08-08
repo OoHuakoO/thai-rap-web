@@ -13,18 +13,30 @@ assessments, plus Excel/PDF export. Where analytics interprets, reports state.
 Access: `reports:read` — every role except JUDGE and VIEWER, **including
 ENTREPRENEUR**, whose `reports` scope is `OWN`.
 
-## The two scopes
+## The three scopes
 
-`ReportWorkspace` branches on `hasRole(REPORT_DETAIL_ROLES)`
-(`[SUPER_ADMIN, ADMIN]`):
+`ReportWorkspace` builds its scope list from three independent role checks, then
+renders whatever survives. They read three different APIs, so a role holding
+`reports:read` does not necessarily reach all of them:
 
-```
-REPORT_DETAIL_ROLES        →  <Tabs>  รายงานรายร้าน | รายงานทุกร้าน (รายมิติ)
-everyone else              →  StoreReportWorkspace alone, no outer tab strip
-```
+| Scope | Gate | Roles |
+|---|---|---|
+| รายงานรายร้าน | `REPORT_ASSESSMENT_ROLES` | SUPER_ADMIN, ADMIN, ASSESSOR, MENTOR, ENTREPRENEUR |
+| รายงานทุกร้าน (รายมิติ) | `REPORT_DETAIL_ROLES` | SUPER_ADMIN, ADMIN |
+| รายงานพิชชิ่ง | `REPORT_PITCHING_ROLES` | SUPER_ADMIN, ADMIN, JUDGE |
 
-A single remaining tab would render a tab strip over the old page, so the strip
-disappears rather than showing one option.
+A JUDGE is the mirror image of an ASSESSOR here: it holds `reports:read` for the
+พิชชิ่ง scope alone and would get nothing but 403s from the other two.
+
+A single remaining scope renders **bare** — a one-tab strip over the page is
+chrome that decides nothing. No available scope renders an info card rather than
+an empty page.
+
+### Pitching scope
+
+Mounts `PitchingReportPanel` from `@/features/pitching` under a round tab strip,
+the same component `/pitching` renders — see
+[features/pitching.md](pitching.md). Nothing report-specific lives here.
 
 ### Store scope
 
@@ -110,8 +122,10 @@ the table several screens wide.
 
 ## Dependencies
 
-Imports `AssessmentRound` and `DownloadedFile` from `@/features/dashboard`, and
-`useStores` from `@/features/store` — both through the barrel.
+Imports `AssessmentRound` and `DownloadedFile` from `@/features/dashboard`,
+`useStores` from `@/features/store`, and `PitchingReportPanel` +
+`PITCHING_ROUNDS` + `PITCHING_ROUND_LABELS` from `@/features/pitching` — all
+through the barrel.
 
 ## Tests
 

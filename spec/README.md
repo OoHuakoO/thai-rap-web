@@ -36,6 +36,7 @@ other side. Every feature spec ends in a **Gaps** section for exactly this.
 | Assessment | [features/assessment.md](features/assessment.md) | `/assessment` |
 | Analytics | [features/analytics.md](features/analytics.md) | `/analytics` |
 | Report | [features/report.md](features/report.md) | `/reports` |
+| Pitching | [features/pitching.md](features/pitching.md) | `/pitching`, `/pitching/form`, `/pitching/ranking` |
 | News | [features/news.md](features/news.md) | `/news` |
 | User | [features/user.md](features/user.md) | `/users` |
 | Reference data | [features/reference-data.md](features/reference-data.md) | — (province, store type) |

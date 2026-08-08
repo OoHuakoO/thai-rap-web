@@ -111,6 +111,9 @@ const seed: User[] = [
     email: 'kritsada.w@example.com',
     role: ROLES.JUDGE,
     status: USER_STATUSES.ACTIVE,
+    // A judging panel is assembled per store, so a JUDGE is assignment-scoped
+    // like an ASSESSOR — without a list it reaches no store and no pitch.
+    assignedStoreIds: ['1', '2'],
     lastLogin: '2024-05-02T13:00:00Z',
     createdAt: '2024-03-01T10:00:00Z',
     updatedAt: '2024-05-01T09:00:00Z',
@@ -125,16 +128,6 @@ const seed: User[] = [
     lastLogin: '2024-05-21T07:45:00Z',
     createdAt: '2024-03-15T08:00:00Z',
     updatedAt: '2024-05-10T11:00:00Z',
-  }),
-  makeUser({
-    id: '6',
-    name: 'นางสาวพิมพ์ชนก สุขใจ',
-    email: 'pimchanok.s@nstda.or.th',
-    role: ROLES.ME_TEAM,
-    status: USER_STATUSES.ACTIVE,
-    lastLogin: '2024-05-17T16:30:00Z',
-    createdAt: '2024-03-20T09:00:00Z',
-    updatedAt: '2024-05-15T14:00:00Z',
   }),
   makeUser({
     id: '8',

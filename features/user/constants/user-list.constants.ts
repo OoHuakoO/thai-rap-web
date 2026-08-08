@@ -5,7 +5,8 @@ import type { UserStatus } from '../types/user.types';
 
 export const USER_LIST_TEXT = {
   pageTitle: 'ผู้ใช้งานและสิทธิ์',
-  pageDescription: 'อนุมัติผู้สมัครใหม่ มอบหมายร้านให้ผู้ประเมิน และกำหนดเจ้าของร้านให้ผู้ประกอบการ',
+  pageDescription:
+    'อนุมัติผู้สมัครใหม่ มอบหมายร้านให้ผู้ประเมิน และกำหนดเจ้าของร้านให้ผู้ประกอบการ',
   searchPlaceholder: 'ค้นหาชื่อหรืออีเมล',
   filterAllRoles: 'ทุกระดับผู้ใช้',
   filterAllStatuses: 'ทุกสถานะ',

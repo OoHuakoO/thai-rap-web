@@ -68,7 +68,7 @@ service + types only; that is correct, not incomplete.
 
 Two hook-key conventions coexist and both are fine:
 
-- a dedicated `<domain>-keys.ts` (`dashboard`, `analytics`, `news`, `report`)
+- a dedicated `<domain>-keys.ts` (`dashboard`, `analytics`, `news`, `report`, `pitching`)
 - keys exported from the hooks file itself (`store`, `user`, `assessment`)
 
 What is not fine is an inline `queryKey: ['stores']` at a call site.
@@ -96,7 +96,8 @@ Current cross-feature edges (all via barrels, all one-directional):
 |---|---|---|
 | `assessment` | `store` | store name/status on the scoring page; `storeKeys` invalidation |
 | `analytics` | `assessment`, `store` | reuses `RedFlag`/`Round`/`Zone`; store picker |
-| `report` | `dashboard`, `store` | reuses `AssessmentRound`; store picker |
+| `report` | `dashboard`, `store`, `pitching` | reuses `AssessmentRound`; store picker; the พิชชิ่ง scope |
+| `pitching` | `store`, `province` | store picker on the form; province filter on the ranking |
 | `user` | `store` | assigning stores invalidates `storeKeys` |
 | `store` | `province`, `store-type` | filter dropdowns |
 | `news` | `dashboard` | invalidates the activity feed, which renders the same items |

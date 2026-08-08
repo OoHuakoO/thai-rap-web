@@ -48,7 +48,6 @@ Eight roles, mirroring the Prisma `Role` enum in the API. Full rights in
 | `MENTOR` | ที่ปรึกษา / Coach | Reads finished assessments; never scores |
 | `ENTREPRENEUR` | ผู้ประกอบการ / ร้านค้า | Own store + own report only |
 | `JUDGE` | กรรมการ Pitching | Pitching scoring only |
-| `ME_TEAM` | ทีม M&E | Monitors and reads everything; writes nothing |
 | `VIEWER` | ผู้ใช้ทั่วไป | Only the store fields the project discloses |
 
 ## Stack
@@ -89,6 +88,11 @@ NEXT_PUBLIC_ENABLE_MOCKS=false
 Timings, also fixed in `constants/index.ts`: `API_TIMEOUT_MS = 10_000`,
 `QUERY_STALE_TIME_MS = 60_000`, `MAX_FILE_SIZE_BYTES = 10 MB` (mirrors the
 API's own limit).
+
+`API_MAX_PAGE_LIMIT = 100` mirrors `@Max(100)` on the API's shared
+`PaginationDto`, which every paginated endpoint extends. A larger `limit` is
+answered with 422, not clamped, so any page size this app sends must be
+`<= API_MAX_PAGE_LIMIT` — raising it is an API change first.
 
 ## Scripts
 

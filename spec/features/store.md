@@ -13,7 +13,7 @@ manage a store's media and documents. The largest feature in the app.
 | `/stores/[id]/edit` | `StoreListBackLink` + `StoreFormHeader mode="edit"` + `StoreEditPage` | |
 
 Access: `store:read` **and** `allowedRoles: [SUPER_ADMIN, ADMIN, ENTREPRENEUR]`.
-ASSESSOR/MENTOR/JUDGE/ME_TEAM hold `store:read` for other pages' store pickers
+ASSESSOR/MENTOR/JUDGE hold `store:read` for other pages' store pickers
 but cannot open this section. VIEWER holds only `store:read:public`.
 
 An ENTREPRENEUR sees only the stores it owns — enforced server-side by the `OWN`
@@ -24,7 +24,7 @@ data scope, not by client filtering.
 | Method | Path | Service method |
 |---|---|---|
 | GET | `/stores` | `getAll(params)` → `PaginatedStores` |
-| GET | `/stores/stats` | `getStats()` — ADMIN + ENTREPRENEUR only |
+| GET | `/stores/stats` | `getStats()` — SUPER_ADMIN + ADMIN + ENTREPRENEUR only |
 | GET | `/stores/:id` | `getById(id)` |
 | POST | `/stores` | `create(dto)` |
 | PATCH | `/stores/:id` | `update(id, dto)` |

@@ -73,20 +73,13 @@ export function Top20Card() {
 
         {!isLoading && !isError && (
           <div className="max-h-[200px] overflow-y-auto">
-            <Top20Table
-              entries={entries}
-              canOpenStore={canOpenStore}
-              onRowClick={handleRowClick}
-            />
+            <Top20Table entries={entries} canOpenStore={canOpenStore} onRowClick={handleRowClick} />
           </div>
         )}
 
         {!isLoading && !isError && !!entries?.length && (
           <div className="mt-auto flex justify-end pt-1">
-            <CardFooterButton
-              label={TOP20_TEXT.footerLink}
-              onClick={() => setFullListOpen(true)}
-            />
+            <CardFooterButton label={TOP20_TEXT.footerLink} onClick={() => setFullListOpen(true)} />
           </div>
         )}
 

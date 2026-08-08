@@ -1,6 +1,7 @@
 'use client';
 
 import { AlertCard } from '@/components/shared/alert-card';
+import { DownloadButtons } from '@/components/shared/download-buttons';
 import { CardSkeleton } from '@/components/shared/loading';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +20,6 @@ import { REPORT_ROUNDS, REPORT_TEXT, ZONE_BADGE_CLASS } from '../constants/repor
 import { useExportOverviewReport } from '../hooks/use-export-report';
 import { useOverviewReport } from '../hooks/use-overview-report';
 import type { ReportFileFormat } from '../types/report.types';
-import { ReportDownloadButtons } from './report-download-buttons';
 
 interface OverviewReportPanelProps {
   storeId: string;
@@ -45,7 +45,9 @@ export function OverviewReportPanel({ storeId }: OverviewReportPanelProps) {
               {REPORT_TEXT.unresolvedFlags(report.unresolvedRedFlagCount)}
             </p>
           </div>
-          <ReportDownloadButtons
+          <DownloadButtons
+            excelLabel={REPORT_TEXT.downloadExcel}
+            pdfLabel={REPORT_TEXT.downloadPdf}
             isExporting={isExporting}
             disabled={report.rounds.length === 0}
             onDownload={handleDownload}

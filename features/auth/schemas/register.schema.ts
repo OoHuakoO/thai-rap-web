@@ -12,7 +12,6 @@ export const REGISTERABLE_ROLES = [
   ROLES.MENTOR,
   ROLES.ASSESSOR,
   ROLES.JUDGE,
-  ROLES.ME_TEAM,
 ] as const;
 
 export const registerSchema = z

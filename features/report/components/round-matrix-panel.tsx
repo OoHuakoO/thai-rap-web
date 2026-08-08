@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { AlertCard } from '@/components/shared/alert-card';
+import { DownloadButtons } from '@/components/shared/download-buttons';
 import { CardSkeleton } from '@/components/shared/loading';
 import { PaginationBar } from '@/components/shared/pagination-bar';
 import { Badge } from '@/components/ui/badge';
@@ -26,7 +27,6 @@ import {
 import { useExportRoundMatrix } from '../hooks/use-export-report';
 import { useRoundMatrix } from '../hooks/use-round-matrix';
 import type { ReportFileFormat } from '../types/report.types';
-import { ReportDownloadButtons } from './report-download-buttons';
 
 interface RoundMatrixPanelProps {
   round: AssessmentRound;
@@ -56,7 +56,9 @@ export function RoundMatrixPanel({ round }: RoundMatrixPanelProps) {
           <p className="text-xs text-charcoal">{REPORT_TEXT.matrixStoreCount(total)}</p>
         </div>
         <div className="flex flex-col items-end gap-1">
-          <ReportDownloadButtons
+          <DownloadButtons
+            excelLabel={REPORT_TEXT.downloadExcel}
+            pdfLabel={REPORT_TEXT.downloadPdf}
             isExporting={isExporting}
             disabled={total === 0}
             onDownload={handleDownload}

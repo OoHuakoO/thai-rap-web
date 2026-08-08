@@ -62,7 +62,6 @@ export const TREND_CARD_TEXT = {
   titleWithRange: (from: string, to: string) => `แนวโน้มพัฒนาการ (${from} – ${to} Trend)`,
   axisLabel: 'คะแนน',
   empty: 'ยังไม่มีข้อมูลแนวโน้ม',
-  projectedLegend: 'เป้าหมาย (ประมาณการ)',
 } as const;
 
 export const HIGHLIGHT_CARD_TEXT = {
@@ -86,44 +85,9 @@ export const RED_FLAGS_CARD_TEXT = {
   close: 'ปิด',
 } as const;
 
-export const INCUBATION_STATUS_TEXT = {
-  title: 'สถานะการคัดเลือก (Incubation Status)',
-  stepLabel: 'ขั้นตอน:',
-  chanceLabel: 'โอกาสได้รับคัดเลือก:',
-  chanceValue: (chance: number) => `${Math.round(chance)}%`,
-  empty: 'ยังไม่เข้าสู่กระบวนการคัดเลือก',
-} as const;
-
 export const TARGET_CARD_TEXT = {
   title: (round: string) => `เป้าหมาย (${round} Target)`,
   totalScore: (score: number) => `คะแนนรวม ${score} คะแนน`,
   readiness: (score: number) => `Incubation Readiness ${score} / 100`,
   topPercentile: (percent: number) => `โอกาสติด Top ${percent}% ของโครงการ`,
-} as const;
-
-export const AI_ANALYSIS_TEXT = {
-  title: 'วิเคราะห์ด้วยระบบอัจฉริยะ (AI / System Analysis)',
-  insightPrefix: 'คำแนะนำเชิงลึก:',
-  footerAction: 'ดูการวิเคราะห์ฉบับเต็ม',
-  dialogTitle: 'ผลวิเคราะห์ฉบับเต็ม',
-  empty: 'ระบบยังไม่ได้วิเคราะห์ร้านนี้',
-  close: 'ปิด',
-} as const;
-
-export const MENTOR_RECOMMENDATIONS_TEXT = {
-  title: 'คำแนะนำจากเมนเทอร์ (Mentor Recommendations)',
-  footerAction: 'ดูคำแนะนำทั้งหมด',
-  dialogTitle: 'คำแนะนำจากเมนเทอร์ทั้งหมด',
-  empty: 'ยังไม่มีคำแนะนำจากเมนเทอร์',
-  close: 'ปิด',
-} as const;
-
-export const ACTION_PLANS_TEXT = {
-  title: 'แผนพัฒนาศักยภาพ (Action Plans)',
-  progressLabel: 'ความคืบหน้า',
-  detailLink: 'ดูรายละเอียด',
-  empty: 'ยังไม่มีแผนพัฒนาสำหรับร้านนี้',
-  dialogTitle: (label: string) => `รายละเอียด${label}`,
-  itemsLabel: 'รายการที่ต้องทำ',
-  close: 'ปิด',
 } as const;

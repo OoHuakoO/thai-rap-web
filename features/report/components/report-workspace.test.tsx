@@ -54,5 +54,29 @@ describe('ReportWorkspace', () => {
     expect(await screen.findByText('ยังไม่มีร้านที่เข้าถึงได้')).toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'รายงานทุกร้าน (รายมิติ)' })).not.toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'รายงานรายร้าน' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'รายงานพิชชิ่ง' })).not.toBeInTheDocument();
+  });
+
+  it('offers an admin all three scopes', async () => {
+    signInAs(ROLES.ADMIN);
+    renderWithClient(<ReportWorkspace />);
+
+    expect(await screen.findByRole('tab', { name: 'รายงานพิชชิ่ง' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'รายงานรายร้าน' })).toBeInTheDocument();
+  });
+
+  // A JUDGE holds reports:read for the pitching scope alone — every assessment
+  // scope of this page 403s it on the API, so the tab strip disappears and the
+  // pitching panel renders bare.
+  it('shows a judge the pitching report only, with no scope tabs', async () => {
+    signInAs(ROLES.JUDGE);
+    renderWithClient(<ReportWorkspace />);
+
+    expect(
+      await screen.findByRole('tab', { name: 'รอบคัดเลือกเข้า Incubation' })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'รายงานพิชชิ่ง' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'รายงานรายร้าน' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'รายงานทุกร้าน (รายมิติ)' })).not.toBeInTheDocument();
   });
 });

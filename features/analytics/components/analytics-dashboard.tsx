@@ -16,14 +16,10 @@ import { ANALYTICS_PAGE_TEXT, HIGHLIGHT_CARD_TEXT } from '../constants/analytics
 import { useExportAnalytics } from '../hooks/use-export-analytics';
 import { useStoreAnalytics } from '../hooks/use-store-analytics';
 import type { AnalyticsQueryParams } from '../types/analytics.types';
-import { ActionPlansSection } from './action-plans-section';
-import { AiAnalysisCard } from './ai-analysis-card';
 import { AnalyticsKpiRow } from './analytics-kpi-row';
 import { AnalyticsToolbar } from './analytics-toolbar';
 import { DimensionComparisonCard } from './dimension-comparison-card';
 import { HighlightListCard } from './highlight-list-card';
-import { IncubationStatusCard } from './incubation-status-card';
-import { MentorRecommendationsCard } from './mentor-recommendations-card';
 import { RadarComparisonCard } from './radar-comparison-card';
 import { RedFlagsCard } from './red-flags-card';
 import { TargetCard } from './target-card';
@@ -155,18 +151,13 @@ export function AnalyticsDashboard() {
             </div>
           </div>
 
-          {/* items-start, or the column stretches to the taller right rail and
-              TrendCard's own h-full swells to fill all of it — the AI/mentor row
-              is then pushed past the grid row and paints over the section under
-              it. Every card in here sizes itself; none wants the rail's height. */}
+          {/* items-start, or the left column stretches to the taller right rail
+              and TrendCard's own h-full swells to fill all of it, painting over
+              the section under it. Every card in here sizes itself; none wants
+              the rail's height. */}
           <div className="grid grid-cols-1 items-start gap-3 xl:grid-cols-4">
             <div className="space-y-3 xl:col-span-3">
               <TrendCard trend={analytics.trend} />
-
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                <AiAnalysisCard aiAnalysis={analytics.aiAnalysis} aiInsight={analytics.aiInsight} />
-                <MentorRecommendationsCard recommendations={analytics.mentorRecommendations} />
-              </div>
             </div>
 
             <div className="space-y-3">
@@ -185,12 +176,9 @@ export function AnalyticsDashboard() {
                 accent="orange"
               />
               <RedFlagsCard redFlags={analytics.redFlags} />
-              <IncubationStatusCard incubationStatus={analytics.incubationStatus} />
               {analytics.target && <TargetCard target={analytics.target} />}
             </div>
           </div>
-
-          {storeId && <ActionPlansSection storeId={storeId} />}
         </>
       )}
     </div>

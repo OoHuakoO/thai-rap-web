@@ -17,6 +17,21 @@ export const DEFAULT_MATRIX_PAGE_LIMIT = 25;
 
 export const STORE_SCOPE_TAB = 'store';
 export const MATRIX_SCOPE_TAB = 'matrix';
+export const PITCHING_SCOPE_TAB = 'pitching';
+
+// Who sees the assessment scopes at all. Mirrors ASSESSMENT_READ_ROLES on the
+// API, which 403s everyone else from /reports/* — JUDGE holds reports:read only
+// for the พิชชิ่ง scope below, and would get nothing but errors here.
+export const REPORT_ASSESSMENT_ROLES: Role[] = [
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
+  ROLES.ASSESSOR,
+  ROLES.MENTOR,
+  ROLES.ENTREPRENEUR,
+];
+
+// Who sees the พิชชิ่ง scope. Mirrors PITCHING_READ_ROLES on the API.
+export const REPORT_PITCHING_ROLES: Role[] = [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.JUDGE];
 
 export const REPORT_TEXT = {
   pageTitle: 'รายงานผลการประเมิน',
@@ -26,12 +41,14 @@ export const REPORT_TEXT = {
   overviewTab: 'ภาพรวมทุกรอบ',
   storeScopeTab: 'รายงานรายร้าน',
   matrixScopeTab: 'รายงานทุกร้าน (รายมิติ)',
+  pitchingScopeTab: 'รายงานพิชชิ่ง',
   roundLabel: 'เลือกรอบการประเมิน',
   downloadExcel: 'ดาวน์โหลด Excel',
   downloadPdf: 'ดาวน์โหลด PDF',
   downloading: 'กำลังสร้างไฟล์...',
   downloadSuccess: 'ดาวน์โหลดไฟล์สำเร็จ',
   noStore: 'ยังไม่มีร้านที่เข้าถึงได้',
+  noScope: 'บทบาทของคุณยังไม่มีรายงานที่เข้าถึงได้',
   selectStoreFirst: 'เลือกร้านเพื่อดูรายงาน',
   noRoundData: 'ยังไม่มีผลการประเมินรอบนี้',
   noRounds: 'ยังไม่มีผลการประเมินที่ส่งแล้ว',

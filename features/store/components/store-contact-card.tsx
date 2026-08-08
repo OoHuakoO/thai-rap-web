@@ -21,9 +21,7 @@ export function StoreContactCard({ store }: StoreContactCardProps) {
           {store.ownerName ?? STORE_UNSPECIFIED_LABEL}
         </span>
         <span className="text-muted-foreground">{STORE_DETAIL_TEXT.phoneLabel}</span>
-        <span className="font-medium text-charcoal">
-          {store.phone ?? STORE_UNSPECIFIED_LABEL}
-        </span>
+        <span className="font-medium text-charcoal">{store.phone ?? STORE_UNSPECIFIED_LABEL}</span>
         <span className="text-muted-foreground">{STORE_DETAIL_TEXT.emailLabel}</span>
         <span className="break-all font-medium text-charcoal">
           {store.email || STORE_DETAIL_TEXT.emailEmpty}

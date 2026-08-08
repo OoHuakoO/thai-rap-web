@@ -125,10 +125,11 @@ Every file here has at least two real consumers; that is the bar for the folder
 | `alert-card.tsx` | `AlertCard` | The standard error/info/empty block: `variant` + `message` |
 | `back-link.tsx` | `BackLink` | "← back" link with an href |
 | `bar-chart.tsx` | `BarChart` | Recharts bar wrapper |
-| `donut-chart.tsx` | `DonutChart` | Recharts donut wrapper |
+| `donut-chart.tsx` | `DonutChart` | Recharts donut wrapper. The optional centre caption goes through Recharts' `<Label content>` — a bare `<text>` inside `<Pie>` is dropped |
 | `brand-icons.tsx` | `FacebookIcon`, `LineIcon`, `InstagramIcon` | Social marks for store contact cards |
 | `confirm-dialog.tsx` | `ConfirmDialogProvider`, `useConfirm`, `useAlert` | Promise-based confirm — **every** destructive action goes through it |
 | `data-table.tsx` | `DataTable<T>` | Generic table driven by `TableColumn<T>[]`, with loading/empty states and optional row selection |
+| `download-buttons.tsx` | `DownloadButtons`, `DownloadFormat` | The Excel/PDF pair on every export. Labels are props — the copy belongs to the feature that owns the download |
 | `error-page.tsx` | `ErrorPage` | The single layout behind all four status pages and both boundaries |
 | `field-error.tsx` | `FieldError` | Field-level validation message |
 | `loading.tsx` | `Loading`, `TableSkeleton`, `CardSkeleton` | The three loading shapes |

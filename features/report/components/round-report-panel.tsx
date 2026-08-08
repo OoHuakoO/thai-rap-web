@@ -1,6 +1,7 @@
 'use client';
 
 import { AlertCard } from '@/components/shared/alert-card';
+import { DownloadButtons } from '@/components/shared/download-buttons';
 import { CardSkeleton } from '@/components/shared/loading';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +22,7 @@ import { REPORT_DETAIL_ROLES, REPORT_TEXT, ZONE_BADGE_CLASS } from '../constants
 import { useExportRoundReport } from '../hooks/use-export-report';
 import { useRoundReport } from '../hooks/use-round-report';
 import type { ReportFileFormat } from '../types/report.types';
-import { ReportDownloadButtons } from './report-download-buttons';
+
 import { RoundQuestionDetail } from './round-question-detail';
 
 interface RoundReportPanelProps {
@@ -52,7 +53,12 @@ export function RoundReportPanel({ storeId, round }: RoundReportPanelProps) {
       <Card className="shadow-sm">
         <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
           <CardTitle className="text-base">{report.store.name}</CardTitle>
-          <ReportDownloadButtons isExporting={isExporting} onDownload={handleDownload} />
+          <DownloadButtons
+            isExporting={isExporting}
+            excelLabel={REPORT_TEXT.downloadExcel}
+            pdfLabel={REPORT_TEXT.downloadPdf}
+            onDownload={handleDownload}
+          />
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-2">
           <ReportField label={REPORT_TEXT.totalScore} value={formatScore(report.totalScore)} />

@@ -10,7 +10,6 @@ export const USER_ROLES = [
   ROLES.MENTOR,
   ROLES.ENTREPRENEUR,
   ROLES.JUDGE,
-  ROLES.ME_TEAM,
   ROLES.VIEWER,
 ] as const;
 

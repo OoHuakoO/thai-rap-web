@@ -13,7 +13,6 @@
 //                into an IDP — never scores it (brief §3.4)
 // ENTREPRENEUR — ผู้ประกอบการ / ร้านค้า: own store + own assessment read-only
 // JUDGE        — กรรมการ Pitching: pitching scoring only
-// ME_TEAM      — ทีม M&E: monitor + view all reports, no write
 // VIEWER       — ผู้ใช้ทั่วไป: only the store fields the project marks public
 export const ROLES = {
   SUPER_ADMIN: 'SUPER_ADMIN',
@@ -22,7 +21,6 @@ export const ROLES = {
   MENTOR: 'MENTOR',
   ENTREPRENEUR: 'ENTREPRENEUR',
   JUDGE: 'JUDGE',
-  ME_TEAM: 'ME_TEAM',
   VIEWER: 'VIEWER',
 } as const;
 
@@ -40,7 +38,6 @@ export const ROLE_DISPLAY_ORDER: Role[] = [
   ROLES.MENTOR,
   ROLES.ASSESSOR,
   ROLES.JUDGE,
-  ROLES.ME_TEAM,
   ROLES.ADMIN,
   ROLES.SUPER_ADMIN,
 ];
@@ -53,7 +50,6 @@ export const ROLE_LABELS: Record<Role, string> = {
   MENTOR: 'ที่ปรึกษา (Mentor / Coach)',
   ENTREPRENEUR: 'ผู้ประกอบการ / ร้านค้า',
   JUDGE: 'กรรมการ Pitching',
-  ME_TEAM: 'ทีม M&E',
   VIEWER: 'ผู้ใช้ทั่วไป (User)',
 };
 
@@ -65,7 +61,6 @@ export const ROLE_SHORT_LABELS: Record<Role, string> = {
   MENTOR: 'Mentor',
   ENTREPRENEUR: 'ร้านค้า',
   JUDGE: 'กรรมการ',
-  ME_TEAM: 'M&E',
   VIEWER: 'ผู้ใช้ทั่วไป',
 };
 
@@ -75,14 +70,13 @@ export const ROLE_DESCRIPTIONS: Record<Role, string> = {
   MENTOR: 'ดูผลประเมินร้านที่ได้รับมอบหมาย ให้คำแนะนำรายมิติ จัดทำแผนพัฒนา และติดตามความก้าวหน้า',
   ASSESSOR: 'ประเมินร้านที่ได้รับมอบหมาย ตรวจหลักฐาน บันทึก Red Flag ดูวิเคราะห์ศักยภาพ และรายงาน',
   JUDGE: 'ให้คะแนน Pitching ของร้านที่ได้รับมอบหมาย',
-  ME_TEAM: 'ติดตามและดูรายงานทุกร้าน แต่แก้ไขข้อมูลไม่ได้',
   ADMIN: 'จัดการข้อมูลร้านค้าทั้งหมด ประเมินร้านที่ได้รับมอบหมาย ดูผลประเมิน วิเคราะห์ และรายงาน',
   SUPER_ADMIN: 'ใช้งานได้ทุกฟังก์ชัน และเป็นผู้กำหนดสิทธิ์การเข้าถึงข้อมูลของทุกระดับ',
 };
 
 /**
  * The five access levels in the project brief. Roles sharing a level share the
- * same tier (MENTOR/ASSESSOR/JUDGE/ME_TEAM are all level-3 staff). The level is
+ * same tier (MENTOR/ASSESSOR/JUDGE are all level-3 staff). The level is
  * descriptive only — it never grants access on its own, permissions do.
  */
 export const ROLE_ACCESS_LEVEL: Record<Role, 1 | 2 | 3 | 4 | 5> = {
@@ -91,7 +85,6 @@ export const ROLE_ACCESS_LEVEL: Record<Role, 1 | 2 | 3 | 4 | 5> = {
   MENTOR: 3,
   ASSESSOR: 3,
   JUDGE: 3,
-  ME_TEAM: 3,
   ADMIN: 4,
   SUPER_ADMIN: 5,
 };

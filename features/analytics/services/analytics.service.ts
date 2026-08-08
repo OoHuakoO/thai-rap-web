@@ -1,7 +1,6 @@
 import api from '@/services/api';
 import { parseFilename } from '@/utils/parse-filename';
 import type {
-  ActionPlan,
   AnalyticsQueryParams,
   DownloadedFile,
   RadarChartData,
@@ -18,9 +17,6 @@ export const analyticsService = {
 
   getTrend: (storeId: string) =>
     api.get<TrendData>(`/analytics/${storeId}/trend`).then((res) => res.data),
-
-  getActionPlans: (storeId: string) =>
-    api.get<ActionPlan[]>(`/analytics/${storeId}/action-plans`).then((res) => res.data),
 
   // Filename comes back in the header because the server owns the format —
   // the mock ships CSV while the real API ships XLSX, same as the dashboard

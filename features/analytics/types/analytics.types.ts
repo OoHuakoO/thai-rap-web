@@ -38,12 +38,6 @@ export interface TrendSeries {
   name: string;
   data: (number | null)[];
   color?: string;
-  /**
-   * How many leading points are measured rather than projected. The trend line
-   * is drawn solid up to this point and dashed after it. Not part of the
-   * OpenAPI contract yet — when absent every point is treated as measured.
-   */
-  actualCount?: number;
 }
 
 export interface TrendData {
@@ -55,13 +49,6 @@ export interface DimensionHighlight {
   dimensionId: number;
   name: string;
   score: number;
-}
-
-export interface IncubationStatus {
-  status: string;
-  step: string;
-  /** Estimated chance of selection, 0–100. */
-  chance: number;
 }
 
 /**
@@ -84,23 +71,7 @@ export interface StoreAnalytics {
   strengths: DimensionHighlight[];
   weaknesses: DimensionHighlight[];
   redFlags: RedFlag[];
-  /** Narrative analysis; one bullet per line. */
-  aiAnalysis: string | null;
-  /** Emphasised closing line under the AI bullets. Not in the contract yet. */
-  aiInsight?: string | null;
-  mentorRecommendations: string[];
-  incubationStatus: IncubationStatus | null;
   target?: AnalyticsTarget;
-}
-
-export type IDPPhase = 'D7' | 'D30' | 'D90';
-
-export interface ActionPlan {
-  phase: IDPPhase;
-  label: string;
-  /** 0–100. */
-  progress: number;
-  items: string[];
 }
 
 export interface AnalyticsQueryParams {

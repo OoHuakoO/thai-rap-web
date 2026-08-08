@@ -1,5 +1,5 @@
-/** `assessor` and `mentor` both write Store.assignedUsers; `owner` writes Store.ownerId. */
-export type AssignStoresMode = 'assessor' | 'mentor' | 'owner';
+/** `assessor`, `mentor` and `judge` all write Store.assignedUsers; `owner` writes Store.ownerId. */
+export type AssignStoresMode = 'assessor' | 'mentor' | 'judge' | 'owner';
 
 // Copy keyed by mode rather than three flat `<mode><Field>` keys, so the dialog
 // reads one entry instead of branching per string — and a fourth assignable
@@ -17,6 +17,13 @@ export const ASSIGN_STORES_MODE_TEXT = {
     title: 'กำหนดร้านที่ให้คำปรึกษา',
     description: (name: string) =>
       `เลือกร้านที่ "${name}" ดูแล ที่ปรึกษาจะเห็นข้อมูลร้านและผลการประเมินเฉพาะร้านในรายการนี้เท่านั้น`,
+    success: 'บันทึกร้านที่มอบหมายแล้ว',
+  },
+  judge: {
+    trigger: 'มอบหมายร้าน',
+    title: 'กำหนดร้านที่เป็นกรรมการ',
+    description: (name: string) =>
+      `เลือกร้านที่ "${name}" เป็นกรรมการ กรรมการจะเห็นและให้คะแนนพิชชิ่งได้เฉพาะร้านในรายการนี้เท่านั้น`,
     success: 'บันทึกร้านที่มอบหมายแล้ว',
   },
   owner: {

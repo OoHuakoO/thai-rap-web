@@ -29,9 +29,9 @@ does not cover them; Vitest type-checks them at run time via esbuild.
 | Access control | 2 | `constants/permissions.test.ts`, `constants/nav-config.test.ts` — the matrices and the redirect-loop guarantees |
 | API client | 3 | `services/__tests__/api.test.ts` (refresh, retry, redirects), `api-error.test.ts`, `extract-error-message.test.ts` |
 | Pure domain utils | 12 | scoring (`dimension-score`, `overall-summary`, `zone`, `round`, `status`), analytics formatting, dashboard formatting |
-| Services | 5 | assessment, auth, dashboard, news, report — URL, params, response shaping |
+| Services | 6 | assessment, auth, dashboard, news, pitching, report — URL, params, response shaping |
 | Hooks | 5 | `use-assessment`, `use-login`, `use-logout`, `use-register`, `use-top20` |
-| Components | 22 | forms, list/table rendering, empty and error states, permission-driven rendering |
+| Components | 23 | forms, list/table rendering, empty and error states, permission-driven rendering |
 | MSW handlers | 7 | role-aware handlers are logic, so they get their own tests |
 
 Rules of thumb from `.claude/rules/testing.md`:
@@ -55,7 +55,7 @@ mocks/
 ├── browser.ts               setupWorker(...handlers)
 ├── handlers/
 │   ├── index.ts             merges every domain's handlers
-│   └── <domain>.handlers.ts one file per domain (11 today)
+│   └── <domain>.handlers.ts one file per domain (12 today)
 ├── factories/               createXxx() / createXxxFromDto()
 ├── fixtures/                in-memory stateful stores
 └── utils/scenario.ts        shared X-Mock-Scenario helpers

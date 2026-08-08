@@ -15,6 +15,8 @@ export const colors = {
   textMain: '#111827', // body text
   scoreGreen: '#10B981', // positive score
   scoreRed: '#EF4444', // negative score / error
+  amber: '#F59E0B', // middling score — the JS twin of the amber-500 badge classes
+  neutral: '#9CA3AF', // "no data" / lowest band in a score ramp
 } as const;
 
 // ─── Font Sizes ───────────────────────────────────────────────────────────────
