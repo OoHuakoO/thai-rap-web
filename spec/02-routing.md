@@ -49,16 +49,13 @@ app/
 
 ### Declared but not built
 
-`ROUTES` and `NAV_ITEMS` carry two entries with no page behind them. This is
-intentional — the nav links are enabled and 404 on purpose, so the shape of the
-finished product stays visible.
+`ROUTES` carries one entry with no page behind it.
 
 | Path | Key | Status |
 |---|---|---|
-| `/manual` | `MANUAL` | Bottom nav item + permission exist; no page. |
 | `/users/[id]` | `USER_DETAIL(id)` | Helper exists; no page and no caller. |
 
-Do not stub these. Building one means building it properly, with its page,
+Do not stub it. Building it means building it properly, with its page,
 permission check, and feature folder.
 
 ### `NEWS_EDIT_PATTERN`

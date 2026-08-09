@@ -16,10 +16,9 @@ at a result from landing in an editable form.
 | `PITCH_DECK` | รอบคัดเลือกเข้า Incubation | 10 criteria, no sections |
 | `ACCELERATION` | รอบ Incubation สู่ Acceleration | 16 criteria in หมวด A / หมวด B, plus two minimum conditions |
 
-**Submitting a form never changes `Store.status`.** The form says so in an
-`AlertCard` above it and again in the submit confirmation, because a judge would
-otherwise reasonably assume it does. Selection is a committee decision taken
-later on the averaged scores.
+**Submitting a form never changes `Store.status`.** The submit confirmation says
+so, because a judge would otherwise reasonably assume it does. Selection is a
+committee decision taken later on the averaged scores.
 
 ## Layout
 
@@ -40,9 +39,10 @@ later on the averaged scores.
 └── PitchingFormWorkspace              round tabs (2)
     └── PitchingFormPanel              store picker → the caller's own form
         └── PitchingForm
-            ├── PitchingFormHeader             judge, date, ผลิตภัณฑ์ต้นแบบ (ACCELERATION)
             ├── PitchingMinimumConditionsPanel ACCELERATION only
+            ├── PitchingScoreSummary           running total + the band it falls in
             ├── PitchingCriteriaTable          grouped by section
+            ├── PitchingLevelBands             ช่วงคะแนน → ระดับ → ข้อเสนอแนะ, read-only
             ├── PitchingComments               per-round free-text prompts
             └── PitchingVerdict                ความเห็นสรุป + เหตุผล + ไม่มีส่วนได้เสีย
 
@@ -117,16 +117,26 @@ JUDGE to its own form.
 
 ## Editing model
 
-There is no save button. Every field commits on blur (or on change for the
-checkboxes and the verdict radio), and each write answers with the whole form,
-which is written straight into the cache — a keystroke never triggers a refetch
-of the form being typed into. `useSubmitPitching` is the one write that also
-invalidates `pitchingKeys.all`, because the ranking and every store report move
-when a form lands.
+**Nothing is written until ส่งแบบประเมิน.** `PitchingForm` holds the whole form in
+one `PitchingDraft` state seeded from the server copy; every field commits into
+that state on blur (or on change for the numeric readings, the checkboxes and the
+verdict radio — the numbers commit as they are typed so the running total moves
+with them), and
+`useSubmitPitching` is the only mutation on the page — it posts the entire form
+to `POST /pitching/:id/submit`, which writes it in one transaction. There is no
+autosave and no draft endpoint, so **a refresh or a closed tab loses whatever
+has not been submitted**; that is the accepted trade for one write.
 
-Each editable field keeps a local draft echoed from the server value and
-re-synced by a `useEffect` on that value, so typing stays responsive while the
-mutation is in flight.
+The form is mounted with `key={pitching.id}` in `PitchingFormPanel`, which is
+what seeds the draft exactly once — a background refetch answering with the
+stored copy can never overwrite what is being typed, and switching store or round
+mounts a fresh form instead of merging into the old draft.
+
+The ผ่าน/ไม่ผ่าน badges on the minimum conditions come from
+`evaluateMinimumConditions` in `features/pitching/utils/` rather than from
+`Pitching.minimumConditions` — the server's copy is a submit behind the readings
+on screen. It mirrors the API's own function; the two thresholds must change
+together.
 
 Submitting requires (all enforced by the API, surfaced as a toast):
 
@@ -134,8 +144,43 @@ Submitting requires (all enforced by the API, surfaced as a toast):
 2. a verdict chosen — `PITCH_009`
 3. `ACCELERATION` only: both minimum-condition readings present — `PITCH_008`
 
-A submitted form is locked for everyone; `isLocked` disables every input and
-hides the submit button.
+**Every numeric box refuses an out-of-range entry rather than dropping it on
+blur.** A criterion score must be an integer in `0..criterion.maxScore`, the
+Score Card reading an integer in `0..40`, the participation reading a number in
+`0..100` — all three mirror the API's bounds (`PitchingService.updateScore` and
+`UpdatePitchingDto`). A keystroke outside the bound is refused, the last accepted
+value stays in the box and the field shows the range under it, so the draft can
+never carry a number the API would 400 on and the box never shows one the draft
+is not holding.
+
+`PitchingScoreSummary` sits above the criteria and reads the same draft: Σ of the
+scores entered so far out of Σ `maxScore`, the band that total currently falls in
+(`getPitchingLevel` in `features/pitching/utils/pitching-level.ts`, mirroring the
+API's cut points), that band's guidance, and how many rows are filled. An unscored
+row counts as 0, so the band only ever understates the final one while the form
+is incomplete — which is what the "ยังกรอกไม่ครบทุกข้อ" line under it says.
+
+The form follows the paper form's own order, with the running total added on top:
+criteria → the selection bands → committee comments → verdict.
+`PitchingLevelBands` is the ส่วนที่ 2 table
+(`PITCHING_LEVEL_BANDS`), read-only reference copy taken verbatim from each PDF;
+the two rounds share the 80/70/60 cut points but not the guidance wording, and
+the tie-break line is acceleration-only.
+
+**Only the acceleration form has a per-criterion หลักฐาน / ข้อสังเกต field.** The
+pitch deck PDF scores the row and nothing else, so `PitchingCriteriaTable` renders
+the note textarea on `criterion.round === 'ACCELERATION'` alone and the API 400s
+`PITCH_003` for a note sent with a pitch deck score.
+
+The form renders **only what a judge fills in** — no evaluation header. Judge,
+วันที่ประเมิน and ผลิตภัณฑ์ต้นแบบ live on the record and are read back on the
+dashboard's judge table, but the form neither shows nor writes them, and
+`UpdatePitchingDto` does not carry them (the API rejects them 422).
+
+Submitting does not lock the form. Every field stays editable afterwards and
+the submit button stays visible, so a judge corrects its own scoring and sends
+it again; the API re-freezes `totalScore` on each score write, so the ranking
+follows the correction without a resubmit.
 
 ## Starting a form
 

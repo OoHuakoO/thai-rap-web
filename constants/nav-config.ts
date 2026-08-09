@@ -12,7 +12,6 @@ export const NAV_ICONS = {
   analytics: '/icons/nav/analytics.png',
   pitching: '/icons/nav/pitching.png',
   reports: '/icons/nav/reports.png',
-  manual: '/icons/nav/manual.png',
 } as const;
 
 /** A brand icon asset path from `NAV_ICONS`, or a Lucide component for items with no asset yet. */
@@ -117,30 +116,8 @@ export const NAV_ITEMS: NavItem[] = [
   },
 ];
 
-export const NAV_BOTTOM_ITEMS: NavItem[] = [
-  {
-    label: 'User Manual',
-    labelTh: 'คู่มือการใช้งาน',
-    href: ROUTES.MANUAL,
-    icon: NAV_ICONS.manual,
-    allowedRoles: [
-      ROLES.SUPER_ADMIN,
-      ROLES.ADMIN,
-      ROLES.ASSESSOR,
-      ROLES.MENTOR,
-      ROLES.ENTREPRENEUR,
-      ROLES.JUDGE,
-      ROLES.VIEWER,
-    ],
-  },
-];
-
 export function getNavItemsForRole(role: Role): NavItem[] {
   return NAV_ITEMS.filter((item) => item.allowedRoles.includes(role));
-}
-
-export function getBottomNavItemsForRole(role: Role): NavItem[] {
-  return NAV_BOTTOM_ITEMS.filter((item) => item.allowedRoles.includes(role));
 }
 
 /**

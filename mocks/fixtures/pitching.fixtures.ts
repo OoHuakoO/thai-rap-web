@@ -3,6 +3,7 @@ import type {
   PitchingCriterion,
   PitchingLevel,
   PitchingRound,
+  SubmitPitchingDto,
   UpdatePitchingDto,
 } from '@/features/pitching';
 
@@ -130,13 +131,11 @@ export const pitchingDb = {
   update: (id: string, data: UpdatePitchingDto): Pitching | null => {
     return patch(id, (current) => ({
       ...current,
-      prototypeProduct: data.prototypeProduct ?? current.prototypeProduct,
       evidenceChecked: data.evidenceChecked ?? current.evidenceChecked,
       comments: data.comments ?? current.comments,
       recommendation: data.recommendation ?? current.recommendation,
       recommendationReason: data.recommendationReason ?? current.recommendationReason,
       noConflictOfInterest: data.noConflictOfInterest ?? current.noConflictOfInterest,
-      evaluatedAt: data.evaluatedAt ?? current.evaluatedAt,
       minimumConditions: current.minimumConditions
         ? buildMinimumConditions(
             data.scoreCardTotal === undefined
@@ -160,21 +159,69 @@ export const pitchingDb = {
             }
           : criterion
       );
-      return { ...current, criteria, currentScore: sumScores(criteria) };
-    }),
-  submit: (id: string) =>
-    patch(id, (current) => {
-      const totalScore = sumScores(current.criteria);
+      const currentScore = sumScores(criteria);
+      // A submitted form stays editable, and the API re-freezes totalScore on
+      // every score write so the ranking follows the correction.
+      if (current.status !== 'SUBMITTED') return { ...current, criteria, currentScore };
       return {
         ...current,
+        criteria,
+        currentScore,
+        totalScore: currentScore,
+        level: levelFor(currentScore),
+      };
+    }),
+  // The whole form arrives here: the client buffers every field and writes
+  // once, so submit merges the payload before it freezes the total.
+  submit: (id: string, data: SubmitPitchingDto = {}) =>
+    patch(id, (current) => {
+      const merged = mergeSubmitPayload(current, data);
+      const totalScore = sumScores(merged.criteria);
+      return {
+        ...merged,
         status: 'SUBMITTED',
         totalScore,
         currentScore: totalScore,
         level: levelFor(totalScore),
-        submittedAt: new Date().toISOString(),
+        // A correction resubmit keeps the first hand-in time, like the API.
+        submittedAt: current.submittedAt ?? new Date().toISOString(),
       };
     }),
 };
+
+export function mergeSubmitPayload(current: Pitching, data: SubmitPitchingDto): Pitching {
+  const scoreById = new Map((data.scores ?? []).map((entry) => [entry.criterionId, entry]));
+  const criteria = current.criteria.map((criterion) => {
+    const entry = scoreById.get(criterion.id);
+    if (!entry) return criterion;
+    return {
+      ...criterion,
+      score: entry.score === undefined ? criterion.score : entry.score,
+      note: entry.note === undefined ? criterion.note : entry.note,
+    };
+  });
+
+  return {
+    ...current,
+    criteria,
+    currentScore: sumScores(criteria),
+    evidenceChecked: data.evidenceChecked ?? current.evidenceChecked,
+    comments: data.comments ?? current.comments,
+    recommendation: data.recommendation ?? current.recommendation,
+    recommendationReason: data.recommendationReason ?? current.recommendationReason,
+    noConflictOfInterest: data.noConflictOfInterest ?? current.noConflictOfInterest,
+    minimumConditions: current.minimumConditions
+      ? buildMinimumConditions(
+          data.scoreCardTotal === undefined
+            ? current.minimumConditions.scoreCardTotal
+            : data.scoreCardTotal,
+          data.participationPct === undefined
+            ? current.minimumConditions.participationPct
+            : data.participationPct
+        )
+      : null,
+  };
+}
 
 function patch(id: string, updater: (current: Pitching) => Pitching): Pitching | null {
   const index = store.findIndex((item) => item.id === id);

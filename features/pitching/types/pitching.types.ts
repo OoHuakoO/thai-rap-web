@@ -121,8 +121,9 @@ export interface CreatePitchingDto {
   round: PitchingRound;
 }
 
+// The header fields (judge, evaluatedAt, prototypeProduct) are absent on
+// purpose — the API stamps them and rejects them on this payload.
 export interface UpdatePitchingDto {
-  prototypeProduct?: string;
   // Nullable, not merely optional — sending null clears the reading, omitting
   // the key leaves it alone. Mirrors UpdatePitchingDto on the API.
   scoreCardTotal?: number | null;
@@ -132,10 +133,20 @@ export interface UpdatePitchingDto {
   recommendation?: PitchingRecommendation;
   recommendationReason?: string;
   noConflictOfInterest?: boolean;
-  evaluatedAt?: string;
 }
 
 export interface UpdatePitchingScoreDto {
   score?: number | null;
   note?: string;
+}
+
+export interface SubmitPitchingScoreDto extends UpdatePitchingScoreDto {
+  criterionId: number;
+}
+
+// The judge fills the form offline and hands it in once, so submit carries the
+// whole form. An omitted key keeps whatever is stored — mirrors the API's
+// SubmitPitchingDto.
+export interface SubmitPitchingDto extends UpdatePitchingDto {
+  scores?: SubmitPitchingScoreDto[];
 }

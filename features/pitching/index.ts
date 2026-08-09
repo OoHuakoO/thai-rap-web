@@ -6,11 +6,7 @@ export { PitchingForm } from './components/pitching-form';
 export { PitchingReportPanel } from './components/pitching-report-panel';
 export { useMyPitching, useCreatePitching } from './hooks/use-my-pitching';
 export { usePitchingCohort } from './hooks/use-pitching-cohort';
-export {
-  useUpdatePitching,
-  useUpdatePitchingScore,
-  useSubmitPitching,
-} from './hooks/use-pitching-mutations';
+export { useSubmitPitching } from './hooks/use-pitching-mutations';
 export { usePitchingRanking, usePitchingStoreReport } from './hooks/use-pitching-report';
 export {
   useExportPitchingRanking,
@@ -33,6 +29,7 @@ export type {
   PitchingStatus,
   PitchingStoreReport,
   PitchingSummaryRow,
+  SubmitPitchingDto,
   UpdatePitchingDto,
   UpdatePitchingScoreDto,
 } from './types/pitching.types';

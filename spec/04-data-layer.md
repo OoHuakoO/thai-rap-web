@@ -158,15 +158,20 @@ server-side side effect touched, not just its own resource.
 | `useUpdateNotes` | `byStoreRound` |
 | `useUploadEvidence` / `useDeleteEvidence` | `byStoreRound` |
 | `useCreateNews` / `useUpdateNews` / `useDeleteNews` | `newsKeys.all` **and** `dashboardKeys.activities()` — the dashboard activity feed renders the same items |
-| `useCreatePitching`, `useUpdatePitching`, `useUpdatePitchingScore` | **sets** `pitchingKeys.mine(storeId, round)` and `detail(id)` from the response — every pitching write answers with the whole form, so nothing has to be refetched while a judge is still typing |
+| `useCreatePitching` | **sets** `pitchingKeys.mine(storeId, round)` and `detail(id)` from the response — the create answers with the whole (empty) form |
 | `useSubmitPitching` | the same two, plus invalidates `pitchingKeys.all` — the ranking and every store report move when a form lands. It deliberately does **not** touch `storeKeys`: submitting a pitching form never changes `Store.status` |
 | `useApproveUser`, `useRejectUser`, `useAssignStores` | `userKeys.all` |
 | `useAssignOwnedStores` | `userKeys.all` **and** `storeKeys.all` — ownership is what an entrepreneur's store list resolves against |
 
 Writing the response into the cache instead of refetching is used by
-`useUpdateScore` (a patch of one question) and by every pitching write (the
-whole form comes back). Both are for the same reason: refetching after every
-keystroke-sized save is the wrong trade. Everywhere else, invalidate.
+`useUpdateScore` (a patch of one question) and by the two pitching writes (the
+whole form comes back). Both are for the same reason: refetching after a save is
+the wrong trade when the response already carries the new state. Everywhere
+else, invalidate.
+
+The pitching form has exactly one mutation — the judge fills it in local state
+and `useSubmitPitching` writes it once; see
+[features/pitching.md](features/pitching.md).
 
 ## Service conventions
 

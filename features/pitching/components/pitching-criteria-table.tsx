@@ -11,14 +11,12 @@ import type { PitchingCriterionScore } from '../types/pitching.types';
 
 interface PitchingCriteriaTableProps {
   criteria: PitchingCriterionScore[];
-  disabled: boolean;
   onScoreChange: (criterionId: number, score: number | null) => void;
   onNoteChange: (criterionId: number, note: string) => void;
 }
 
 export function PitchingCriteriaTable({
   criteria,
-  disabled,
   onScoreChange,
   onNoteChange,
 }: PitchingCriteriaTableProps) {
@@ -41,7 +39,6 @@ export function PitchingCriteriaTable({
               <CriterionRow
                 key={criterion.id}
                 criterion={criterion}
-                disabled={disabled}
                 onScoreChange={onScoreChange}
                 onNoteChange={onNoteChange}
               />
@@ -55,16 +52,16 @@ export function PitchingCriteriaTable({
 
 interface CriterionRowProps {
   criterion: PitchingCriterionScore;
-  disabled: boolean;
   onScoreChange: (criterionId: number, score: number | null) => void;
   onNoteChange: (criterionId: number, note: string) => void;
 }
 
-function CriterionRow({ criterion, disabled, onScoreChange, onNoteChange }: CriterionRowProps) {
+function CriterionRow({ criterion, onScoreChange, onNoteChange }: CriterionRowProps) {
   // Local echo of the two fields so typing stays responsive while the mutation
   // is in flight; re-synced whenever the server's value for this row changes.
   const [score, setScore] = useState(criterion.score === null ? '' : String(criterion.score));
   const [note, setNote] = useState(criterion.note ?? '');
+  const [isRejected, setIsRejected] = useState(false);
 
   useEffect(() => {
     setScore(criterion.score === null ? '' : String(criterion.score));
@@ -73,10 +70,32 @@ function CriterionRow({ criterion, disabled, onScoreChange, onNoteChange }: Crit
     setNote(criterion.note ?? '');
   }, [criterion.note]);
 
-  const parsed = score === '' ? null : Number(score);
-  const isOutOfRange = parsed !== null && (parsed < 0 || parsed > criterion.maxScore);
   const scoreId = `criterion-${criterion.id}-score`;
+  const scoreErrorId = `criterion-${criterion.id}-score-error`;
   const noteId = `criterion-${criterion.id}-note`;
+
+  // `max` on a number input only blocks the spinner, not typing or pasting, so
+  // the bound is enforced here: a value outside 0..maxScore (or a fraction, which
+  // the API rejects as a non-integer) is refused and the last accepted one stays
+  // in the box. The draft therefore never holds a score the API would 400 on.
+  const handleScoreChange = (raw: string) => {
+    if (raw === '') {
+      setIsRejected(false);
+      setScore('');
+      if (criterion.score !== null) onScoreChange(criterion.id, null);
+      return;
+    }
+
+    const parsed = Number(raw);
+    if (!Number.isInteger(parsed) || parsed < 0 || parsed > criterion.maxScore) {
+      setIsRejected(true);
+      return;
+    }
+
+    setIsRejected(false);
+    setScore(raw);
+    if (parsed !== criterion.score) onScoreChange(criterion.id, parsed);
+  };
 
   return (
     <div className="grid gap-3 rounded-lg border p-3 md:grid-cols-[1fr_9rem]">
@@ -96,37 +115,43 @@ function CriterionRow({ criterion, disabled, onScoreChange, onNoteChange }: Crit
           id={scoreId}
           type="number"
           inputMode="numeric"
+          step={1}
           min={0}
           max={criterion.maxScore}
           value={score}
-          disabled={disabled}
-          className={cn(isOutOfRange && 'border-destructive')}
-          onChange={(event) => setScore(event.target.value)}
-          onBlur={() => {
-            if (isOutOfRange) return;
-            if (parsed === criterion.score) return;
-            onScoreChange(criterion.id, parsed);
-          }}
+          aria-invalid={isRejected}
+          aria-describedby={isRejected ? scoreErrorId : undefined}
+          className={cn(isRejected && 'border-destructive')}
+          onChange={(event) => handleScoreChange(event.target.value)}
+          onBlur={() => setIsRejected(false)}
         />
+        {isRejected && (
+          <p id={scoreErrorId} className="text-xs text-destructive">
+            {PITCHING_TEXT.scoreOutOfRange(criterion.maxScore)}
+          </p>
+        )}
       </div>
 
-      <div className="space-y-1.5 md:col-span-2">
-        <Label htmlFor={noteId} className="text-xs">
-          {PITCHING_TEXT.criterionNoteLabel}
-        </Label>
-        <Textarea
-          id={noteId}
-          rows={2}
-          value={note}
-          disabled={disabled}
-          placeholder={PITCHING_TEXT.criterionNotePlaceholder}
-          onChange={(event) => setNote(event.target.value)}
-          onBlur={() => {
-            if (note === (criterion.note ?? '')) return;
-            onNoteChange(criterion.id, note);
-          }}
-        />
-      </div>
+      {/* Only the acceleration form has a หลักฐาน/ข้อสังเกต column beside each
+          criterion; the pitch deck form scores the row and nothing else. */}
+      {criterion.round === 'ACCELERATION' && (
+        <div className="space-y-1.5 md:col-span-2">
+          <Label htmlFor={noteId} className="text-xs">
+            {PITCHING_TEXT.criterionNoteLabel}
+          </Label>
+          <Textarea
+            id={noteId}
+            rows={2}
+            value={note}
+            placeholder={PITCHING_TEXT.criterionNotePlaceholder}
+            onChange={(event) => setNote(event.target.value)}
+            onBlur={() => {
+              if (note === (criterion.note ?? '')) return;
+              onNoteChange(criterion.id, note);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -1,48 +1,63 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
-import { AlertCard } from '@/components/shared/alert-card';
 import { useConfirm } from '@/components/shared/confirm-dialog';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { extractErrorMessage } from '@/utils/extract-error-message';
-import {
-  PITCHING_LEVEL_BADGE_CLASSES,
-  PITCHING_LEVEL_LABELS,
-  PITCHING_STATUS_LABELS,
-  PITCHING_TEXT,
-} from '../constants/pitching.constants';
-import {
-  useSubmitPitching,
-  useUpdatePitching,
-  useUpdatePitchingScore,
-} from '../hooks/use-pitching-mutations';
-import type { Pitching, UpdatePitchingDto } from '../types/pitching.types';
+import { PITCHING_TEXT } from '../constants/pitching.constants';
+import { useSubmitPitching } from '../hooks/use-pitching-mutations';
+import type {
+  Pitching,
+  PitchingCriterionScore,
+  PitchingRecommendation,
+  SubmitPitchingDto,
+} from '../types/pitching.types';
+import { evaluateMinimumConditions } from '../utils/pitching-minimum';
 import { PitchingComments } from './pitching-comments';
 import { PitchingCriteriaTable } from './pitching-criteria-table';
+import { PitchingLevelBands } from './pitching-level-bands';
 import { PitchingMinimumConditionsPanel } from './pitching-minimum-conditions';
+import { PitchingScoreSummary } from './pitching-score-summary';
 import { PitchingVerdict } from './pitching-verdict';
 
 interface PitchingFormProps {
   pitching: Pitching;
 }
 
+interface PitchingDraft {
+  scoreCardTotal: number | null;
+  participationPct: number | null;
+  evidenceChecked: string[];
+  comments: Record<string, string>;
+  recommendation: PitchingRecommendation | null;
+  recommendationReason: string | null;
+  noConflictOfInterest: boolean;
+  criteria: PitchingCriterionScore[];
+}
+
+/**
+ * The judge fills the whole form offline: every field lives in local state and
+ * nothing reaches the database until ส่งแบบประเมิน, which writes the form in one
+ * transaction. Mounted with `key={pitching.id}`, so the draft is seeded once and
+ * a background refetch can never overwrite what is being typed.
+ */
 export function PitchingForm({ pitching }: PitchingFormProps) {
   const confirm = useConfirm();
   const { round, storeId, id } = pitching;
 
-  const { mutate: updateForm, isPending: isSaving } = useUpdatePitching(id, storeId, round);
-  const { mutate: updateScore } = useUpdatePitchingScore(id, storeId, round);
+  const [draft, setDraft] = useState<PitchingDraft>(() => toDraft(pitching));
   const { mutate: submitForm, isPending: isSubmitting } = useSubmitPitching(id, storeId, round);
 
-  const isLocked = pitching.status === 'SUBMITTED';
+  const patch = (data: Partial<PitchingDraft>) => setDraft((current) => ({ ...current, ...data }));
 
-  const patch = (data: UpdatePitchingDto) =>
-    updateForm(data, { onError: (error) => toast.error(extractErrorMessage(error)) });
+  const patchCriterion = (criterionId: number, data: Partial<PitchingCriterionScore>) =>
+    setDraft((current) => ({
+      ...current,
+      criteria: current.criteria.map((criterion) =>
+        criterion.id === criterionId ? { ...criterion, ...data } : criterion
+      ),
+    }));
 
   const handleSubmit = async () => {
     const confirmed = await confirm({
@@ -52,7 +67,7 @@ export function PitchingForm({ pitching }: PitchingFormProps) {
     });
     if (!confirmed) return;
 
-    submitForm(undefined, {
+    submitForm(toSubmitDto(pitching, draft), {
       onSuccess: () => toast.success(PITCHING_TEXT.submitSuccess),
       onError: (error) => toast.error(extractErrorMessage(error)),
     });
@@ -60,147 +75,86 @@ export function PitchingForm({ pitching }: PitchingFormProps) {
 
   return (
     <div className="space-y-4">
-      {isLocked ? (
-        <AlertCard variant="success" message={PITCHING_TEXT.submittedNotice} />
-      ) : (
-        <AlertCard variant="info" message={PITCHING_TEXT.storeStatusNotice} />
-      )}
-
-      <PitchingFormHeader pitching={pitching} disabled={isLocked} onPatch={patch} />
-
-      {pitching.minimumConditions && (
+      {round === 'ACCELERATION' && (
         <PitchingMinimumConditionsPanel
-          conditions={pitching.minimumConditions}
-          evidenceChecked={pitching.evidenceChecked}
-          disabled={isLocked}
+          conditions={evaluateMinimumConditions(draft.scoreCardTotal, draft.participationPct)}
+          evidenceChecked={draft.evidenceChecked}
           onScoreCardChange={(scoreCardTotal) => patch({ scoreCardTotal })}
           onParticipationChange={(participationPct) => patch({ participationPct })}
           onEvidenceChange={(evidenceChecked) => patch({ evidenceChecked })}
         />
       )}
 
+      <PitchingScoreSummary round={round} criteria={draft.criteria} />
+
       <PitchingCriteriaTable
-        criteria={pitching.criteria}
-        disabled={isLocked}
-        onScoreChange={(criterionId, score) =>
-          updateScore(
-            { criterionId, score },
-            { onError: (error) => toast.error(extractErrorMessage(error)) }
-          )
-        }
-        onNoteChange={(criterionId, note) =>
-          updateScore(
-            { criterionId, note },
-            { onError: (error) => toast.error(extractErrorMessage(error)) }
-          )
-        }
+        criteria={draft.criteria}
+        onScoreChange={(criterionId, score) => patchCriterion(criterionId, { score })}
+        onNoteChange={(criterionId, note) => patchCriterion(criterionId, { note })}
       />
+
+      <PitchingLevelBands round={round} />
 
       <PitchingComments
         round={round}
-        comments={pitching.comments}
-        disabled={isLocked}
-        onCommit={(key, value) => patch({ comments: { ...pitching.comments, [key]: value } })}
+        comments={draft.comments}
+        onCommit={(key, value) => patch({ comments: { ...draft.comments, [key]: value } })}
       />
 
       <PitchingVerdict
         round={round}
-        recommendation={pitching.recommendation}
-        reason={pitching.recommendationReason}
-        noConflictOfInterest={pitching.noConflictOfInterest}
-        disabled={isLocked}
+        recommendation={draft.recommendation}
+        reason={draft.recommendationReason}
+        noConflictOfInterest={draft.noConflictOfInterest}
         onRecommendationChange={(recommendation) => patch({ recommendation })}
         onReasonCommit={(recommendationReason) => patch({ recommendationReason })}
         onConflictChange={(noConflictOfInterest) => patch({ noConflictOfInterest })}
       />
 
-      {!isLocked && (
-        <div className="flex items-center justify-end gap-3">
-          <span className="text-sm text-muted-foreground">
-            {isSaving ? PITCHING_TEXT.saving : ''}
-          </span>
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? PITCHING_TEXT.submitting : PITCHING_TEXT.submit}
-          </Button>
-        </div>
-      )}
+      <div className="flex items-center justify-end gap-3">
+        <span className="text-sm text-muted-foreground">{PITCHING_TEXT.unsavedHint}</span>
+        <Button onClick={handleSubmit} disabled={isSubmitting}>
+          {isSubmitting ? PITCHING_TEXT.submitting : PITCHING_TEXT.submit}
+        </Button>
+      </div>
     </div>
   );
 }
 
-interface PitchingFormHeaderProps {
-  pitching: Pitching;
-  disabled: boolean;
-  onPatch: (data: UpdatePitchingDto) => void;
+function toDraft(pitching: Pitching): PitchingDraft {
+  return {
+    scoreCardTotal: pitching.minimumConditions?.scoreCardTotal ?? null,
+    participationPct: pitching.minimumConditions?.participationPct ?? null,
+    evidenceChecked: pitching.evidenceChecked,
+    comments: pitching.comments,
+    recommendation: pitching.recommendation,
+    recommendationReason: pitching.recommendationReason,
+    noConflictOfInterest: pitching.noConflictOfInterest,
+    criteria: pitching.criteria,
+  };
 }
 
-function PitchingFormHeader({ pitching, disabled, onPatch }: PitchingFormHeaderProps) {
-  const [prototype, setPrototype] = useState(pitching.prototypeProduct ?? '');
-  const evaluatedAt = toDateInputValue(pitching.evaluatedAt);
+function toSubmitDto(pitching: Pitching, draft: PitchingDraft): SubmitPitchingDto {
+  const isAcceleration = pitching.round === 'ACCELERATION';
 
-  useEffect(() => {
-    setPrototype(pitching.prototypeProduct ?? '');
-  }, [pitching.prototypeProduct]);
-
-  return (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between gap-3 space-y-0">
-        <CardTitle className="text-sm font-semibold">{PITCHING_TEXT.headerTitle}</CardTitle>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline">{PITCHING_STATUS_LABELS[pitching.status]}</Badge>
-          {pitching.level && (
-            <Badge variant="outline" className={PITCHING_LEVEL_BADGE_CLASSES[pitching.level]}>
-              {PITCHING_LEVEL_LABELS[pitching.level]}
-            </Badge>
-          )}
-          <span className="text-sm font-semibold text-orange">
-            {PITCHING_TEXT.totalOutOf(pitching.totalScore ?? pitching.currentScore)}
-          </span>
-        </div>
-      </CardHeader>
-      <CardContent className="grid gap-4 md:grid-cols-3">
-        <div className="space-y-1.5">
-          <Label>{PITCHING_TEXT.judgeLabel}</Label>
-          <Input value={pitching.judgeName} readOnly disabled />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="pitching-evaluated-at">{PITCHING_TEXT.evaluatedAtLabel}</Label>
-          <Input
-            id="pitching-evaluated-at"
-            type="date"
-            value={evaluatedAt}
-            disabled={disabled}
-            onChange={(event) => {
-              if (!event.target.value) return;
-              onPatch({ evaluatedAt: new Date(event.target.value).toISOString() });
-            }}
-          />
-        </div>
-
-        {pitching.round === 'ACCELERATION' && (
-          <div className="space-y-1.5">
-            <Label htmlFor="pitching-prototype">{PITCHING_TEXT.prototypeProductLabel}</Label>
-            <Input
-              id="pitching-prototype"
-              value={prototype}
-              disabled={disabled}
-              placeholder={PITCHING_TEXT.prototypeProductPlaceholder}
-              onChange={(event) => setPrototype(event.target.value)}
-              onBlur={() => {
-                if (prototype === (pitching.prototypeProduct ?? '')) return;
-                onPatch({ prototypeProduct: prototype });
-              }}
-            />
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-// <input type="date"> only accepts yyyy-MM-dd, and the API answers an ISO
-// timestamp.
-function toDateInputValue(iso: string | null): string {
-  return iso ? iso.slice(0, 10) : '';
+  return {
+    comments: draft.comments,
+    recommendation: draft.recommendation ?? undefined,
+    recommendationReason: draft.recommendationReason ?? undefined,
+    noConflictOfInterest: draft.noConflictOfInterest,
+    // The two readings, the evidence checklist and หลักฐาน/ข้อสังเกต only exist
+    // on the acceleration form — the API rejects them on a pitch deck payload.
+    ...(isAcceleration
+      ? {
+          scoreCardTotal: draft.scoreCardTotal,
+          participationPct: draft.participationPct,
+          evidenceChecked: draft.evidenceChecked,
+        }
+      : {}),
+    scores: draft.criteria.map((criterion) => ({
+      criterionId: criterion.id,
+      score: criterion.score,
+      ...(isAcceleration ? { note: criterion.note ?? '' } : {}),
+    })),
+  };
 }

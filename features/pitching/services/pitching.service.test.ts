@@ -62,19 +62,12 @@ describe('pitchingService', () => {
     });
   });
 
-  it('calls PUT for a single criterion score', async () => {
-    vi.mocked(api.put).mockResolvedValue({ data: {} });
-
-    await pitchingService.updateScore('pitch-1', 101, { score: 4 });
-
-    expect(api.put).toHaveBeenCalledWith('/pitching/pitch-1/scores/101', { score: 4 });
-  });
-
-  it('submits without a body', async () => {
+  it('submits the whole form in one POST', async () => {
     vi.mocked(api.post).mockResolvedValue({ data: {} });
+    const payload = { recommendation: 'SELECTED' as const, scores: [{ criterionId: 101, score: 4 }] };
 
-    await pitchingService.submit('pitch-1');
+    await pitchingService.submit('pitch-1', payload);
 
-    expect(api.post).toHaveBeenCalledWith('/pitching/pitch-1/submit');
+    expect(api.post).toHaveBeenCalledWith('/pitching/pitch-1/submit', payload);
   });
 });

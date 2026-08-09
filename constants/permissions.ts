@@ -36,7 +36,6 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   // STORE_WRITE is absent (the API has always rejected it: StoreService allows
   // writes from admin roles and the owning ENTREPRENEUR only).
   ASSESSOR: [
-    PERMISSIONS.MANUAL_READ,
     PERMISSIONS.DASHBOARD_READ,
     PERMISSIONS.NEWS_READ,
     PERMISSIONS.STORE_READ,
@@ -56,7 +55,6 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   // pages this app has not built yet. Granting ASSESSMENT_WRITE is not the way
   // to give it a text box; those pages are.
   MENTOR: [
-    PERMISSIONS.MANUAL_READ,
     PERMISSIONS.DASHBOARD_READ,
     PERMISSIONS.NEWS_READ,
     PERMISSIONS.STORE_READ,
@@ -81,7 +79,6 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   // assessment:read either — the scoring page is staff-only, see
   // ROUTE_PERMISSIONS below.
   ENTREPRENEUR: [
-    PERMISSIONS.MANUAL_READ,
     PERMISSIONS.DASHBOARD_READ,
     PERMISSIONS.NEWS_READ,
     PERMISSIONS.STORE_READ_PUBLIC,
@@ -98,7 +95,6 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   // separately on REPORT_ASSESSMENT_ROLES, which this role is not in, and the
   // API 403s it from /reports/* anyway.
   JUDGE: [
-    PERMISSIONS.MANUAL_READ,
     PERMISSIONS.DASHBOARD_READ,
     PERMISSIONS.NEWS_READ,
     PERMISSIONS.STORE_READ,
@@ -108,13 +104,12 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     PERMISSIONS.REPORTS_EXPORT,
   ],
 
-  // ผู้ใช้ทั่วไป — the project overview, ข่าวประชาสัมพันธ์, the manual, and the
-  // store fields the project discloses. news:read is read-only for every role
+  // ผู้ใช้ทั่วไป — the project overview, ข่าวประชาสัมพันธ์, and the store fields
+  // the project discloses. news:read is read-only for every role
   // below the admin pair: news:write / news:delete stay with SUPER_ADMIN and
   // ADMIN, so this role sees announcements and cannot publish one.
   VIEWER: [
     PERMISSIONS.DASHBOARD_READ,
-    PERMISSIONS.MANUAL_READ,
     PERMISSIONS.NEWS_READ,
     PERMISSIONS.STORE_READ_PUBLIC,
   ],
@@ -256,7 +251,6 @@ export const ROUTE_PERMISSIONS: RoutePermissionConfig[] = [
     requiredPermission: PERMISSIONS.USERS_READ,
     allowedRoles: [ROLES.SUPER_ADMIN],
   },
-  { path: ROUTES.MANUAL, requiredPermission: PERMISSIONS.MANUAL_READ },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

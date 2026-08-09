@@ -10,8 +10,7 @@ import type {
   PitchingRound,
   PitchingStoreReport,
   PitchingSummaryRow,
-  UpdatePitchingDto,
-  UpdatePitchingScoreDto,
+  SubmitPitchingDto,
 } from '../types/pitching.types';
 
 function toDownloadedFile(res: { data: Blob; headers: unknown }): DownloadedFile {
@@ -62,11 +61,7 @@ export const pitchingService = {
 
   create: (data: CreatePitchingDto) => api.post<Pitching>('/pitching', data).then((r) => r.data),
 
-  update: (id: string, data: UpdatePitchingDto) =>
-    api.patch<Pitching>(`/pitching/${id}`, data).then((r) => r.data),
-
-  updateScore: (id: string, criterionId: number, data: UpdatePitchingScoreDto) =>
-    api.put<Pitching>(`/pitching/${id}/scores/${criterionId}`, data).then((r) => r.data),
-
-  submit: (id: string) => api.post<Pitching>(`/pitching/${id}/submit`).then((r) => r.data),
+  // The only write the form makes: the whole form lands in one transaction.
+  submit: (id: string, data: SubmitPitchingDto) =>
+    api.post<Pitching>(`/pitching/${id}/submit`, data).then((r) => r.data),
 };

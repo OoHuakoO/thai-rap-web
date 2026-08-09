@@ -10,11 +10,10 @@ import type { PitchingRound } from '../types/pitching.types';
 interface PitchingCommentsProps {
   round: PitchingRound;
   comments: Record<string, string>;
-  disabled: boolean;
   onCommit: (key: string, value: string) => void;
 }
 
-export function PitchingComments({ round, comments, disabled, onCommit }: PitchingCommentsProps) {
+export function PitchingComments({ round, comments, onCommit }: PitchingCommentsProps) {
   return (
     <Card>
       <CardHeader>
@@ -27,7 +26,6 @@ export function PitchingComments({ round, comments, disabled, onCommit }: Pitchi
             fieldKey={field.key}
             label={field.label}
             value={comments[field.key] ?? ''}
-            disabled={disabled}
             onCommit={onCommit}
           />
         ))}
@@ -40,11 +38,10 @@ interface CommentFieldProps {
   fieldKey: string;
   label: string;
   value: string;
-  disabled: boolean;
   onCommit: (key: string, value: string) => void;
 }
 
-function CommentField({ fieldKey, label, value, disabled, onCommit }: CommentFieldProps) {
+function CommentField({ fieldKey, label, value, onCommit }: CommentFieldProps) {
   const [draft, setDraft] = useState(value);
 
   useEffect(() => {
@@ -58,7 +55,6 @@ function CommentField({ fieldKey, label, value, disabled, onCommit }: CommentFie
         id={`pitching-comment-${fieldKey}`}
         rows={3}
         value={draft}
-        disabled={disabled}
         placeholder={PITCHING_TEXT.commentPlaceholder}
         onChange={(event) => setDraft(event.target.value)}
         onBlur={() => {

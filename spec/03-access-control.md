@@ -32,7 +32,6 @@ Permissions are `<resource>:<action>` strings from `PERMISSIONS`.
 | Permission | SUPER_ADMIN | ADMIN | ASSESSOR | MENTOR | ENTREPRENEUR | JUDGE | VIEWER |
 |---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
 | `dashboard:read` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `manual:read` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `news:read` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `news:write` | ✓ | ✓ | | | | | |
 | `news:delete` | ✓ | ✓ | | | | | |
@@ -164,8 +163,8 @@ A plain entry covers itself and everything beneath it (`/users` covers
 `/users/42`); an entry containing `:param` matches segment-by-segment at its own
 depth only. `HOME` matches exactly, never as a prefix.
 
-**`canAccessRoute` is default-deny.** A path with no entry is unreachable —
-which is why `manual:read` exists at all.
+**`canAccessRoute` is default-deny.** A path with no entry is unreachable, so
+every route that should be reachable needs a `ROUTE_PERMISSIONS` entry.
 
 ### Adding a protected route
 

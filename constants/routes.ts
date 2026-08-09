@@ -42,9 +42,6 @@ export const ROUTES = {
   USERS: '/users',
   USER_DETAIL: (id: string) => `/users/${id}`,
 
-  // Help
-  MANUAL: '/manual',
-
   // Error pages
   ERROR_403: '/errors/403',
   ERROR_429: '/errors/429',

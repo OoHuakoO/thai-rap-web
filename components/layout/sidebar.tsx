@@ -7,14 +7,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/utils/cn';
-import { getInitials } from '@/utils/get-initials';
 import { ROUTES } from '@/constants/routes';
-import { getNavItemsForRole, getBottomNavItemsForRole } from '@/constants/nav-config';
+import { getNavItemsForRole } from '@/constants/nav-config';
 import type { NavIcon as NavIconType } from '@/constants/nav-config';
 import { useAuthStore } from '@/stores/auth-store';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
-import { ROLE_LABELS } from '@/types/auth.types';
 
 interface SidebarProps {
   className?: string;
@@ -75,7 +71,6 @@ export function Sidebar({ className }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   const navItems = user ? getNavItemsForRole(user.role) : [];
-  const bottomItems = user ? getBottomNavItemsForRole(user.role) : [];
 
   return (
     <aside
@@ -162,57 +157,6 @@ export function Sidebar({ className }: SidebarProps) {
         )}
         {!collapsed && <span>ย่อแถบเมนู</span>}
       </button>
-
-      {/* Bottom nav (manual, etc.) */}
-      {bottomItems.length > 0 && (
-        <>
-          <Separator className="my-1.5 bg-white/10" />
-          <nav aria-label="Help navigation" className="flex flex-col gap-0.5">
-            {bottomItems.map(({ label, labelTh, href, icon }) => (
-              <SidebarNavLink
-                key={href}
-                href={href}
-                collapsed={collapsed}
-                labelTh={labelTh}
-                padding="py-2"
-                linkClassName="text-gray-300 hover:bg-white/10 hover:text-white"
-              >
-                <NavIcon icon={icon} size={22} className="h-[22px] w-[22px] shrink-0" />
-                {!collapsed && (
-                  <span className="truncate text-xs font-medium">
-                    {labelTh} / {label}
-                  </span>
-                )}
-              </SidebarNavLink>
-            ))}
-          </nav>
-        </>
-      )}
-
-      {/* User info */}
-      {user && (
-        <>
-          <Separator className="my-1.5 bg-white/10" />
-          <div
-            className={cn(
-              'flex items-center gap-2.5 rounded-md py-2',
-              collapsed ? 'justify-center px-0' : 'px-2'
-            )}
-          >
-            <Avatar className="h-8 w-8 shrink-0">
-              <AvatarFallback className="bg-orange text-xs font-bold text-white">
-                {getInitials(user.name)}
-              </AvatarFallback>
-            </Avatar>
-            {!collapsed && (
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-semibold text-white">{user.name}</p>
-                <p className="truncate text-[11px] text-gray-400">{ROLE_LABELS[user.role]}</p>
-              </div>
-            )}
-          </div>
-        </>
-      )}
     </aside>
   );
 }

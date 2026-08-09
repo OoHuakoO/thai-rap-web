@@ -11,10 +11,9 @@ import { ROUTES } from './routes';
 
 describe('permissions', () => {
   describe('role matrix', () => {
-    it('gives a general user the overview, announcements, the manual and disclosed store data', () => {
+    it('gives a general user the overview, announcements and disclosed store data', () => {
       expect(ROLE_PERMISSIONS.VIEWER).toEqual([
         PERMISSIONS.DASHBOARD_READ,
-        PERMISSIONS.MANUAL_READ,
         PERMISSIONS.NEWS_READ,
         PERMISSIONS.STORE_READ_PUBLIC,
       ]);

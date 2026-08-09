@@ -101,5 +101,7 @@ function PitchingFormLoader({ storeId, round }: PitchingFormLoaderProps) {
     );
   }
 
-  return <PitchingForm pitching={pitching} />;
+  // Keyed so the buffered draft is seeded once per form — switching store or
+  // round mounts a fresh one instead of merging into what was being typed.
+  return <PitchingForm key={pitching.id} pitching={pitching} />;
 }

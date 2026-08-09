@@ -18,7 +18,6 @@ interface PitchingVerdictProps {
   recommendation: PitchingRecommendation | null;
   reason: string | null;
   noConflictOfInterest: boolean;
-  disabled: boolean;
   onRecommendationChange: (value: PitchingRecommendation) => void;
   onReasonCommit: (value: string) => void;
   onConflictChange: (value: boolean) => void;
@@ -29,7 +28,6 @@ export function PitchingVerdict({
   recommendation,
   reason,
   noConflictOfInterest,
-  disabled,
   onRecommendationChange,
   onReasonCommit,
   onConflictChange,
@@ -48,7 +46,6 @@ export function PitchingVerdict({
       <CardContent className="space-y-4">
         <RadioGroup
           value={recommendation ?? ''}
-          disabled={disabled}
           onValueChange={(value) => onRecommendationChange(value as PitchingRecommendation)}
           className="space-y-2"
         >
@@ -68,7 +65,6 @@ export function PitchingVerdict({
             id="pitching-verdict-reason"
             rows={3}
             value={draftReason}
-            disabled={disabled}
             placeholder={PITCHING_TEXT.verdictReasonPlaceholder}
             onChange={(event) => setDraftReason(event.target.value)}
             onBlur={() => {
@@ -82,7 +78,6 @@ export function PitchingVerdict({
           <label className="flex items-center gap-2 text-sm">
             <Checkbox
               checked={noConflictOfInterest}
-              disabled={disabled}
               onCheckedChange={(checked) => onConflictChange(checked === true)}
             />
             {PITCHING_TEXT.noConflictLabel}

@@ -9,12 +9,18 @@ import type {
   PitchingRound,
   PitchingStoreReport,
   PitchingSummaryRow,
+  SubmitPitchingDto,
   UpdatePitchingDto,
   UpdatePitchingScoreDto,
 } from '@/features/pitching';
 import type { PaginatedResponse } from '@/types/api.types';
 import { createPitchingFromDto } from '../factories/pitching.factory';
-import { criteriaForRound, levelFor, pitchingDb } from '../fixtures/pitching.fixtures';
+import {
+  criteriaForRound,
+  levelFor,
+  mergeSubmitPayload,
+  pitchingDb,
+} from '../fixtures/pitching.fixtures';
 import { storeDb } from '../fixtures/store.fixtures';
 import {
   forbidden,
@@ -292,12 +298,17 @@ export const pitchingHandlers = [
     return HttpResponse.json<Pitching>(updated);
   }),
 
-  http.post(`${BASE_URL}/:id/submit`, ({ request, params }) => {
+  // Submit carries the whole form — the judge's fields are buffered on the
+  // client until this call, so the preconditions run against the payload.
+  http.post(`${BASE_URL}/:id/submit`, async ({ request, params }) => {
     const scenarioResponse = checkScenario(request);
     if (scenarioResponse) return scenarioResponse;
 
-    const row = pitchingDb.findById(String(params.id));
-    if (!row) return notFound(PITCHING_NOT_FOUND_CODE, PITCHING_NOT_FOUND_MESSAGE);
+    const stored = pitchingDb.findById(String(params.id));
+    if (!stored) return notFound(PITCHING_NOT_FOUND_CODE, PITCHING_NOT_FOUND_MESSAGE);
+
+    const dto = ((await request.json().catch(() => ({}))) ?? {}) as SubmitPitchingDto;
+    const row = mergeSubmitPayload(stored, dto);
 
     const unscored = row.criteria.filter((criterion) => criterion.score === null);
     if (unscored.length > 0) {
@@ -325,6 +336,6 @@ export const pitchingHandlers = [
       );
     }
 
-    return HttpResponse.json<Pitching>(pitchingDb.submit(String(params.id)) as Pitching);
+    return HttpResponse.json<Pitching>(pitchingDb.submit(String(params.id), dto) as Pitching);
   }),
 ];

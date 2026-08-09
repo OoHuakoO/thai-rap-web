@@ -90,7 +90,7 @@ The shell owns the viewport. Consequences:
 
 | Component | Notes |
 |---|---|
-| `Sidebar` | Role-filtered `NAV_ITEMS` on top, `NAV_BOTTOM_ITEMS` (manual) at the bottom, user card last. Collapse state is local `useState` — not persisted. Collapsed links carry `title` as the only readable label. Active state: exact match for `/`, `startsWith` for everything else. |
+| `Sidebar` | Role-filtered `NAV_ITEMS`, then the collapse toggle, then the user card. Collapse state is local `useState` — not persisted. Collapsed links carry `title` as the only readable label. Active state: exact match for `/`, `startsWith` for everything else. |
 | `TopHeader` | Centred partner logo strip (`priority` image), user avatar + `ROLE_LABELS[role]`, logout button. |
 | `ProjectBanner` | Static programme identity. The only dynamic part is `getCurrentFiscalYearBE()` (`utils/get-fiscal-year.ts`). |
 

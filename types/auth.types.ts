@@ -117,10 +117,6 @@ export const PERMISSIONS = {
   NEWS_READ: 'news:read',
   NEWS_WRITE: 'news:write',
   NEWS_DELETE: 'news:delete',
-  // The user manual — every role holds it by default; it exists as a permission
-  // only so ROUTE_PERMISSIONS has an entry to check (canAccessRoute is
-  // default-deny, so a route missing from that table is unreachable).
-  MANUAL_READ: 'manual:read',
   USERS_READ: 'users:read',
   USERS_WRITE: 'users:write',
   USERS_DELETE: 'users:delete',

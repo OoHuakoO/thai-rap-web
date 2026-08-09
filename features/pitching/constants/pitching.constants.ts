@@ -1,5 +1,6 @@
 import { API_MAX_PAGE_LIMIT } from '@/constants';
 import { colors } from '@/styles/tokens';
+import type { ProgressColor } from '@/types';
 import type {
   PitchingLevel,
   PitchingRecommendation,
@@ -30,11 +31,83 @@ export const PITCHING_LEVEL_LABELS: Record<PitchingLevel, string> = {
   NOT_READY: 'ยังไม่พร้อม',
 };
 
+// ส่วนที่ 2 เกณฑ์พิจารณาผลการคัดเลือก on the pitch deck form, and the ช่วงคะแนน
+// table on page 4 of the acceleration form. Same four bands, different guidance
+// — the acceleration wording talks about Acceleration, not Incubation.
+export interface PitchingLevelBand {
+  level: PitchingLevel;
+  range: string;
+  guidance: string;
+}
+
+export const PITCHING_LEVEL_BANDS: Record<PitchingRound, readonly PitchingLevelBand[]> = {
+  PITCH_DECK: [
+    {
+      level: 'HIGHLY_SUITABLE',
+      range: '80–100',
+      guidance: 'ควรได้รับการพิจารณาเข้า Incubation เป็นลำดับต้น',
+    },
+    {
+      level: 'SUITABLE',
+      range: '70–79',
+      guidance: 'มีศักยภาพ ควรพิจารณาเข้า Incubation หากมีความพร้อมและข้อมูลสนับสนุนเพียงพอ',
+    },
+    {
+      level: 'FAIR',
+      range: '60–69',
+      guidance: 'มีศักยภาพบางด้าน แต่ควรพิจารณาเงื่อนไขเพิ่มเติมหรือจัดเป็นรายชื่อสำรอง',
+    },
+    {
+      level: 'NOT_READY',
+      range: 'ต่ำกว่า 60',
+      guidance: 'ควรได้รับคำแนะนำเบื้องต้นก่อนเข้าสู่กระบวนการพัฒนาระยะถัดไป',
+    },
+  ],
+  ACCELERATION: [
+    {
+      level: 'HIGHLY_SUITABLE',
+      range: '80–100',
+      guidance:
+        'ผ่านเกณฑ์และควรพิจารณาเป็นลำดับต้น โดยเรียงคะแนนเฉลี่ยเพื่อคัดเลือกไม่น้อยกว่า 10 กิจการ',
+    },
+    {
+      level: 'SUITABLE',
+      range: '70–79',
+      guidance: 'มีศักยภาพ พิจารณาเป็นรายชื่อสำรองหรือคัดเลือกแบบมีเงื่อนไข',
+    },
+    {
+      level: 'FAIR',
+      range: '60–69',
+      guidance: 'ควรจัดทำแผนปรับปรุงก่อนเข้าสู่ Acceleration',
+    },
+    {
+      level: 'NOT_READY',
+      range: 'ต่ำกว่า 60',
+      guidance: 'ควรได้รับคำแนะนำและพัฒนาต่อในระยะถัดไป',
+    },
+  ],
+};
+
+// Mirrors PITCHING_LEVEL_THRESHOLDS on the API — the same cut points the two
+// PITCHING_LEVEL_BANDS tables above are printed with. Change both repos together.
+export const PITCHING_LEVEL_THRESHOLDS = {
+  HIGHLY_SUITABLE: 80,
+  SUITABLE: 70,
+  FAIR: 60,
+} as const;
+
 export const PITCHING_LEVEL_BADGE_CLASSES: Record<PitchingLevel, string> = {
   HIGHLY_SUITABLE: 'border-score-green/20 bg-score-green/10 text-score-green',
   SUITABLE: 'border-orange/20 bg-orange/10 text-orange',
   FAIR: 'border-amber-500/20 bg-amber-500/10 text-amber-600',
   NOT_READY: 'border-score-red/20 bg-score-red/10 text-score-red',
+};
+
+export const PITCHING_LEVEL_PROGRESS_COLORS: Record<PitchingLevel, ProgressColor> = {
+  HIGHLY_SUITABLE: 'success',
+  SUITABLE: 'default',
+  FAIR: 'warning',
+  NOT_READY: 'danger',
 };
 
 export const PITCHING_RECOMMENDATION_LABELS: Record<PitchingRecommendation, string> = {
@@ -117,6 +190,8 @@ export const PITCHING_SECTION_LABELS: Record<string, string> = {
 export const PITCHING_SCORE_CARD_MAX = 40;
 export const PITCHING_SCORE_CARD_MIN_PASS = 30;
 export const PITCHING_PARTICIPATION_MIN_PASS = 90;
+// The reading is a percentage, so its own ceiling — @Max(100) on the API DTO.
+export const PITCHING_PARTICIPATION_MAX = 100;
 export const PITCHING_TOTAL_MAX = 100;
 
 export const PITCHING_RANKING_PAGE_LIMIT = 25;
@@ -170,14 +245,21 @@ export const PITCHING_TEXT = {
   criteriaTitle: 'เกณฑ์การประเมิน',
   scoreLabel: 'คะแนนที่ได้',
   maxScoreLabel: (max: number) => `เต็ม ${max}`,
+  scoreOutOfRange: (max: number) => `กรอกได้เฉพาะจำนวนเต็ม 0–${max}`,
+  valueOutOfRange: (max: number) => `กรอกได้ 0–${max}`,
   criterionNoteLabel: 'หลักฐาน / ข้อสังเกต',
   criterionNotePlaceholder: 'บันทึกหลักฐานหรือข้อสังเกตของข้อนี้',
+  runningTotalTitle: 'คะแนนรวมปัจจุบัน',
+  runningTotalLevelLabel: 'ระดับผลการประเมินปัจจุบัน',
+  runningTotalScored: (scored: number, total: number) => `กรอกแล้ว ${scored} จาก ${total} ข้อ`,
+  runningTotalIncomplete: 'ยังกรอกไม่ครบทุกข้อ ระดับผลการประเมินจะเปลี่ยนเมื่อกรอกครบ',
+  levelBandsTitle: 'เกณฑ์พิจารณาผลการคัดเลือก',
+  levelBandRangeColumn: 'ช่วงคะแนน',
+  levelBandLevelColumn: 'ระดับผลการประเมิน',
+  levelBandGuidanceColumn: 'ข้อเสนอแนะ',
+  levelBandTieBreak:
+    'กรณีคะแนนเท่ากัน ให้พิจารณาคะแนนหมวด B จากนั้นพิจารณา Market Feasibility และมติคณะกรรมการตามลำดับ',
   totalOutOf: (score: number) => `${score} / ${PITCHING_TOTAL_MAX}`,
-  headerTitle: 'ข้อมูลการประเมิน',
-  prototypeProductLabel: 'ผลิตภัณฑ์ / เมนูต้นแบบ',
-  prototypeProductPlaceholder: 'เช่น น้ำพริกหมึกพร้อมทาน',
-  evaluatedAtLabel: 'วันที่ประเมิน',
-  judgeLabel: 'กรรมการผู้ประเมิน',
   minimumTitle: 'เงื่อนไขขั้นต่ำ',
   minimumHint:
     'ต้องผ่านทั้ง 2 ข้อ หากไม่ผ่านข้อใดข้อหนึ่งให้สรุปว่า “ไม่ผ่านเงื่อนไขขั้นต่ำ” เว้นแต่มีมติเป็นกรณีพิเศษ',
@@ -194,16 +276,14 @@ export const PITCHING_TEXT = {
   verdictReasonLabel: 'เหตุผลประกอบการพิจารณา',
   verdictReasonPlaceholder: 'ระบุเหตุผลประกอบการพิจารณา',
   noConflictLabel: 'ข้าพเจ้าไม่มีส่วนได้เสียกับกิจการที่ประเมิน',
-  saving: 'กำลังบันทึก...',
+  unsavedHint: 'ข้อมูลจะถูกบันทึกเมื่อกดส่งแบบประเมิน',
   submit: 'ส่งแบบประเมิน',
   submitting: 'กำลังส่ง...',
   submitConfirmTitle: 'ส่งแบบประเมิน',
   submitConfirmDescription:
-    'เมื่อส่งแล้วจะแก้ไขไม่ได้ และสถานะร้านค้าจะไม่เปลี่ยนแปลง ต้องการส่งแบบประเมินนี้หรือไม่?',
+    'คะแนนรวมจะถูกบันทึกเข้าอันดับ และสถานะร้านค้าจะไม่เปลี่ยนแปลง ต้องการส่งแบบประเมินนี้หรือไม่?',
   submitConfirmLabel: 'ส่งแบบประเมิน',
   submitSuccess: 'ส่งแบบประเมินเรียบร้อย',
-  submittedNotice: 'แบบประเมินนี้ส่งแล้ว ไม่สามารถแก้ไขได้',
-  storeStatusNotice: 'การส่งแบบประเมินจะไม่เปลี่ยนสถานะของร้านค้า',
   rankingTitle: 'อันดับคะแนนเฉลี่ยกรรมการ',
   provinceLabel: 'จังหวัด',
   provinceAll: 'ทุกจังหวัด',

@@ -1,24 +1,14 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useConfirm } from '@/components/shared/confirm-dialog';
-import {
-  useSubmitPitching,
-  useUpdatePitching,
-  useUpdatePitchingScore,
-} from '../hooks/use-pitching-mutations';
+import { useSubmitPitching } from '../hooks/use-pitching-mutations';
 import type { Pitching, PitchingCriterionScore } from '../types/pitching.types';
 import { PitchingForm } from './pitching-form';
 
 vi.mock('@/components/shared/confirm-dialog', () => ({ useConfirm: vi.fn() }));
-vi.mock('../hooks/use-pitching-mutations', () => ({
-  useUpdatePitching: vi.fn(),
-  useUpdatePitchingScore: vi.fn(),
-  useSubmitPitching: vi.fn(),
-}));
+vi.mock('../hooks/use-pitching-mutations', () => ({ useSubmitPitching: vi.fn() }));
 
-const updateForm = vi.fn();
-const updateScore = vi.fn();
 const submitForm = vi.fn();
 
 function criterion(overrides: Partial<PitchingCriterionScore> = {}): PitchingCriterionScore {
@@ -67,86 +57,210 @@ function pitching(overrides: Partial<Pitching> = {}): Pitching {
   };
 }
 
+function accelerationPitching(overrides: Partial<Pitching> = {}): Pitching {
+  return pitching({
+    round: 'ACCELERATION',
+    minimumConditions: {
+      scoreCardTotal: null,
+      participationPct: null,
+      scoreCardPassed: false,
+      participationPassed: false,
+      passed: false,
+    },
+    criteria: [criterion({ id: 201, round: 'ACCELERATION', code: '1.1', section: 'A' })],
+    ...overrides,
+  });
+}
+
 describe('PitchingForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useConfirm).mockReturnValue(vi.fn().mockResolvedValue(true));
-    vi.mocked(useUpdatePitching).mockReturnValue({
-      mutate: updateForm,
-      isPending: false,
-    } as unknown as ReturnType<typeof useUpdatePitching>);
-    vi.mocked(useUpdatePitchingScore).mockReturnValue({
-      mutate: updateScore,
-      isPending: false,
-    } as unknown as ReturnType<typeof useUpdatePitchingScore>);
     vi.mocked(useSubmitPitching).mockReturnValue({
       mutate: submitForm,
       isPending: false,
     } as unknown as ReturnType<typeof useSubmitPitching>);
   });
 
-  it('saves a criterion score when the field loses focus', async () => {
+  // The judge fills the form offline — nothing may reach the API until submit.
+  it('writes nothing while the judge is filling the form in', async () => {
     render(<PitchingForm pitching={pitching()} />);
 
-    const input = screen.getByLabelText(/คะแนนที่ได้/);
-    await userEvent.type(input, '4');
+    await userEvent.type(screen.getByLabelText(/คะแนนที่ได้/), '4');
     await userEvent.tab();
 
-    expect(updateScore).toHaveBeenCalledWith({ criterionId: 101, score: 4 }, expect.anything());
+    expect(submitForm).not.toHaveBeenCalled();
   });
 
-  it('does not send a score above the criterion maximum', async () => {
+  it('sends every field in one submit payload', async () => {
     render(<PitchingForm pitching={pitching()} />);
 
-    await userEvent.type(screen.getByLabelText(/คะแนนที่ได้/), '9');
-    await userEvent.tab();
+    await userEvent.type(screen.getByLabelText(/คะแนนที่ได้/), '4');
+    await userEvent.type(screen.getByLabelText('จุดแข็งของร้าน'), 'เมนูเด่น');
+    await userEvent.click(screen.getByLabelText('เห็นควรคัดเลือก'));
+    await userEvent.click(screen.getByRole('button', { name: 'ส่งแบบประเมิน' }));
 
-    expect(updateScore).not.toHaveBeenCalled();
+    expect(submitForm).toHaveBeenCalledWith(
+      {
+        comments: { strengths: 'เมนูเด่น' },
+        recommendation: 'SELECTED',
+        recommendationReason: undefined,
+        noConflictOfInterest: false,
+        scores: [{ criterionId: 101, score: 4 }],
+      },
+      expect.anything()
+    );
+  });
+
+  // `max` on a number input does not stop typing, so the bound is enforced in
+  // the change handler: the keystroke is refused outright.
+  it('refuses a score above the criterion maximum', async () => {
+    render(<PitchingForm pitching={pitching({ criteria: [criterion({ score: 4 })] })} />);
+
+    const score = screen.getByLabelText(/คะแนนที่ได้/);
+    await userEvent.clear(score);
+    await userEvent.type(score, '9');
+
+    expect(score).toHaveValue(null);
+    expect(screen.getByText('กรอกได้เฉพาะจำนวนเต็ม 0–5')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'ส่งแบบประเมิน' }));
+
+    expect(submitForm).toHaveBeenCalledWith(
+      expect.objectContaining({ scores: [{ criterionId: 101, score: null }] }),
+      expect.anything()
+    );
+  });
+
+  it('refuses a fractional score the API would reject', async () => {
+    render(<PitchingForm pitching={pitching()} />);
+
+    const score = screen.getByLabelText(/คะแนนที่ได้/);
+    await userEvent.click(score);
+    await userEvent.paste('4.5');
+
+    expect(score).toHaveValue(null);
+    expect(screen.getByText('กรอกได้เฉพาะจำนวนเต็ม 0–5')).toBeInTheDocument();
+  });
+
+  it('refuses a Score Card reading above its maximum', async () => {
+    render(<PitchingForm pitching={accelerationPitching()} />);
+
+    await userEvent.type(screen.getByLabelText('Score Card 8 มิติ (เต็ม 40)'), '41');
+
+    expect(screen.getByLabelText('Score Card 8 มิติ (เต็ม 40)')).toHaveValue(4);
+    expect(screen.getByText('กรอกได้เฉพาะจำนวนเต็ม 0–40')).toBeInTheDocument();
+  });
+
+  it('shows the running total and the band it currently falls in', async () => {
+    render(<PitchingForm pitching={pitching({ criteria: [criterion({ maxScore: 100 })] })} />);
+
+    const summary = within(screen.getByRole('region', { name: 'คะแนนรวมปัจจุบัน' }));
+    expect(summary.getByText('กรอกแล้ว 0 จาก 1 ข้อ')).toBeInTheDocument();
+    expect(
+      summary.getByText('ยังกรอกไม่ครบทุกข้อ ระดับผลการประเมินจะเปลี่ยนเมื่อกรอกครบ')
+    ).toBeInTheDocument();
+
+    await userEvent.type(screen.getByLabelText(/คะแนนที่ได้/), '85');
+
+    expect(summary.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '85');
+    expect(summary.getByText('เหมาะสมมาก')).toBeInTheDocument();
+    expect(summary.getByText('กรอกแล้ว 1 จาก 1 ข้อ')).toBeInTheDocument();
+    expect(
+      summary.queryByText('ยังกรอกไม่ครบทุกข้อ ระดับผลการประเมินจะเปลี่ยนเมื่อกรอกครบ')
+    ).not.toBeInTheDocument();
+  });
+
+  it('carries the acceleration-only sections in the payload', async () => {
+    render(<PitchingForm pitching={accelerationPitching()} />);
+
+    await userEvent.type(screen.getByLabelText('Score Card 8 มิติ (เต็ม 40)'), '32');
+    await userEvent.tab();
+    await userEvent.click(screen.getByRole('button', { name: 'ส่งแบบประเมิน' }));
+
+    expect(submitForm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        scoreCardTotal: 32,
+        participationPct: null,
+        evidenceChecked: [],
+        scores: [{ criterionId: 201, score: null, note: '' }],
+      }),
+      expect.anything()
+    );
+  });
+
+  // หลักฐาน/ข้อสังเกต is a column on the acceleration paper form only.
+  it('hides the per-criterion note field on the pitch deck form', () => {
+    render(<PitchingForm pitching={pitching()} />);
+
+    expect(screen.queryByLabelText('หลักฐาน / ข้อสังเกต')).not.toBeInTheDocument();
+  });
+
+  it('shows the per-criterion note field on the acceleration form', () => {
+    render(<PitchingForm pitching={accelerationPitching()} />);
+
+    expect(screen.getByLabelText('หลักฐาน / ข้อสังเกต')).toBeInTheDocument();
+  });
+
+  it('shows the round’s selection bands', () => {
+    render(<PitchingForm pitching={pitching()} />);
+
+    expect(screen.getByText('เกณฑ์พิจารณาผลการคัดเลือก')).toBeInTheDocument();
+    expect(screen.getByText('ควรได้รับการพิจารณาเข้า Incubation เป็นลำดับต้น')).toBeInTheDocument();
   });
 
   it('offers MINIMUM_NOT_MET only on the acceleration form', () => {
-    const { rerender } = render(<PitchingForm pitching={pitching()} />);
+    const { unmount } = render(<PitchingForm pitching={pitching()} />);
     expect(screen.queryByLabelText('ไม่ผ่านเงื่อนไขขั้นต่ำ')).not.toBeInTheDocument();
+    unmount();
 
-    rerender(
-      <PitchingForm
-        pitching={pitching({
-          round: 'ACCELERATION',
-          minimumConditions: {
-            scoreCardTotal: null,
-            participationPct: null,
-            scoreCardPassed: false,
-            participationPassed: false,
-            passed: false,
-          },
-          criteria: [criterion({ id: 201, round: 'ACCELERATION', code: '1.1', section: 'A' })],
-        })}
-      />
-    );
+    render(<PitchingForm pitching={accelerationPitching()} />);
     expect(screen.getByLabelText('ไม่ผ่านเงื่อนไขขั้นต่ำ')).toBeInTheDocument();
   });
 
-  it('locks every field and hides submit once the form is sent', () => {
-    render(<PitchingForm pitching={pitching({ status: 'SUBMITTED', totalScore: 83 })} />);
+  it('stays editable and resubmittable after the form is sent', async () => {
+    render(
+      <PitchingForm
+        pitching={pitching({
+          status: 'SUBMITTED',
+          totalScore: 83,
+          recommendation: 'SELECTED',
+          criteria: [criterion({ score: 4 })],
+        })}
+      />
+    );
 
-    expect(screen.getByLabelText(/คะแนนที่ได้/)).toBeDisabled();
-    expect(screen.queryByRole('button', { name: 'ส่งแบบประเมิน' })).not.toBeInTheDocument();
-    expect(screen.getByText('แบบประเมินนี้ส่งแล้ว ไม่สามารถแก้ไขได้')).toBeInTheDocument();
+    const score = screen.getByLabelText(/คะแนนที่ได้/);
+    expect(score).toBeEnabled();
+
+    await userEvent.clear(score);
+    await userEvent.type(score, '5');
+    await userEvent.click(screen.getByRole('button', { name: 'ส่งแบบประเมิน' }));
+
+    expect(submitForm).toHaveBeenCalledWith(
+      expect.objectContaining({ scores: [{ criterionId: 101, score: 5 }] }),
+      expect.anything()
+    );
   });
 
-  // The whole point of the feature: a judge's submit is a scoring act, not a
-  // selection act — the store's own status is decided elsewhere.
-  it('tells the judge the store status will not change', () => {
-    render(<PitchingForm pitching={pitching()} />);
+  // The header block (judge, วันที่ประเมิน, ผลิตภัณฑ์ต้นแบบ) is server-side data
+  // now — the form neither renders nor writes it.
+  it('renders no evaluation-header fields', () => {
+    render(<PitchingForm pitching={accelerationPitching()} />);
 
-    expect(screen.getByText('การส่งแบบประเมินจะไม่เปลี่ยนสถานะของร้านค้า')).toBeInTheDocument();
+    expect(screen.queryByText('ข้อมูลการประเมิน')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('วันที่ประเมิน')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('ผลิตภัณฑ์ / เมนูต้นแบบ')).not.toBeInTheDocument();
   });
 
   it('confirms before submitting', async () => {
+    const confirm = vi.fn().mockResolvedValue(false);
+    vi.mocked(useConfirm).mockReturnValue(confirm);
     render(<PitchingForm pitching={pitching()} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'ส่งแบบประเมิน' }));
 
-    expect(submitForm).toHaveBeenCalled();
+    expect(confirm).toHaveBeenCalled();
+    expect(submitForm).not.toHaveBeenCalled();
   });
 });
