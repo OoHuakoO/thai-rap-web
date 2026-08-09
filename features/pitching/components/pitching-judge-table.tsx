@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { Users } from 'lucide-react';
 import { DataTable } from '@/components/shared/data-table';
 import { PaginationBar } from '@/components/shared/pagination-bar';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { TableColumn } from '@/types';
 import { formatThaiDate, formatThaiDateTime } from '@/utils/format-thai-date';
 import {
@@ -16,6 +16,7 @@ import {
   PITCHING_TEXT,
 } from '../constants/pitching.constants';
 import type { Pitching } from '../types/pitching.types';
+import { PitchingPanel } from './pitching-panel';
 
 interface PitchingJudgeTableProps {
   judges: Pitching[];
@@ -105,34 +106,34 @@ export function PitchingJudgeTable({ judges }: PitchingJudgeTableProps) {
   ];
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-semibold">
-          {PITCHING_DASHBOARD_TEXT.judgeTableTitle}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <PitchingPanel
+      title={PITCHING_DASHBOARD_TEXT.judgeTableTitle}
+      icon={Users}
+      accent="charcoal"
+      contentClassName="gap-4"
+    >
+      <div className="flex-1">
         <DataTable
           columns={columns}
           data={pageRows}
           keyField="id"
           emptyMessage={PITCHING_DASHBOARD_TEXT.judgeTableEmpty}
         />
-        {judges.length > 0 && (
-          <PaginationBar
-            page={currentPage}
-            limit={limit}
-            total={judges.length}
-            totalPages={totalPages}
-            onPageChange={setPage}
-            onLimitChange={(next) => {
-              setLimit(next);
-              setPage(1);
-            }}
-            itemLabel={PITCHING_DASHBOARD_TEXT.judgeTableItemLabel}
-          />
-        )}
-      </CardContent>
-    </Card>
+      </div>
+      {judges.length > 0 && (
+        <PaginationBar
+          page={currentPage}
+          limit={limit}
+          total={judges.length}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          onLimitChange={(next) => {
+            setLimit(next);
+            setPage(1);
+          }}
+          itemLabel={PITCHING_DASHBOARD_TEXT.judgeTableItemLabel}
+        />
+      )}
+    </PitchingPanel>
   );
 }

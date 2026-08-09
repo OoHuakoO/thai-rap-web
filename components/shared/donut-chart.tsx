@@ -51,7 +51,7 @@ export function DonutChart({
   );
 
   return (
-    <ChartContainer config={chartConfig} className="mx-auto" style={{ height }}>
+    <ChartContainer config={chartConfig} className="mx-auto w-full" style={{ height }}>
       <PieChart>
         <ChartTooltip content={<ChartTooltipContent hideLabel />} />
         <Pie

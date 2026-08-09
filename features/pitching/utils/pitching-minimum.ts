@@ -11,8 +11,7 @@ export function evaluateMinimumConditions(
   scoreCardTotal: number | null,
   participationPct: number | null
 ): PitchingMinimumConditions {
-  const scoreCardPassed =
-    scoreCardTotal !== null && scoreCardTotal >= PITCHING_SCORE_CARD_MIN_PASS;
+  const scoreCardPassed = scoreCardTotal !== null && scoreCardTotal >= PITCHING_SCORE_CARD_MIN_PASS;
   const participationPassed =
     participationPct !== null && participationPct >= PITCHING_PARTICIPATION_MIN_PASS;
 

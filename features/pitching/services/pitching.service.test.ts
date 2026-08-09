@@ -64,7 +64,10 @@ describe('pitchingService', () => {
 
   it('submits the whole form in one POST', async () => {
     vi.mocked(api.post).mockResolvedValue({ data: {} });
-    const payload = { recommendation: 'SELECTED' as const, scores: [{ criterionId: 101, score: 4 }] };
+    const payload = {
+      recommendation: 'SELECTED' as const,
+      scores: [{ criterionId: 101, score: 4 }],
+    };
 
     await pitchingService.submit('pitch-1', payload);
 

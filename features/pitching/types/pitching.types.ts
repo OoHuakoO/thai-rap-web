@@ -87,6 +87,8 @@ export interface PitchingRankingRow {
   storeCode: string;
   storeName: string;
   province: string | null;
+  /** Storefront photo for the ranking's thumbnail; null when none is uploaded. */
+  coverUrl: string | null;
   rank: number;
   judgeCount: number;
   avgScore: number;

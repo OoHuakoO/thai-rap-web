@@ -108,11 +108,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   // the project discloses. news:read is read-only for every role
   // below the admin pair: news:write / news:delete stay with SUPER_ADMIN and
   // ADMIN, so this role sees announcements and cannot publish one.
-  VIEWER: [
-    PERMISSIONS.DASHBOARD_READ,
-    PERMISSIONS.NEWS_READ,
-    PERMISSIONS.STORE_READ_PUBLIC,
-  ],
+  VIEWER: [PERMISSIONS.DASHBOARD_READ, PERMISSIONS.NEWS_READ, PERMISSIONS.STORE_READ_PUBLIC],
 };
 
 // ─── Role → Data Scope ───────────────────────────────────────────────────────
@@ -231,11 +227,6 @@ export const ROUTE_PERMISSIONS: RoutePermissionConfig[] = [
     // against — never the dashboard's, which would let a read-only seat in.
     path: ROUTES.PITCHING_FORM,
     requiredPermission: PERMISSIONS.PITCHING_WRITE,
-    allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.JUDGE],
-  },
-  {
-    path: ROUTES.PITCHING_RANKING,
-    requiredPermission: PERMISSIONS.PITCHING_READ,
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.JUDGE],
   },
   { path: ROUTES.REPORTS, requiredPermission: PERMISSIONS.REPORTS_READ },

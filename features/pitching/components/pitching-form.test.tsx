@@ -9,6 +9,11 @@ import { PitchingForm } from './pitching-form';
 vi.mock('@/components/shared/confirm-dialog', () => ({ useConfirm: vi.fn() }));
 vi.mock('../hooks/use-pitching-mutations', () => ({ useSubmitPitching: vi.fn() }));
 
+const push = vi.fn();
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push }),
+}));
+
 const submitForm = vi.fn();
 
 function criterion(overrides: Partial<PitchingCriterionScore> = {}): PitchingCriterionScore {
@@ -251,6 +256,15 @@ describe('PitchingForm', () => {
     expect(screen.queryByText('ข้อมูลการประเมิน')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('วันที่ประเมิน')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('ผลิตภัณฑ์ / เมนูต้นแบบ')).not.toBeInTheDocument();
+  });
+
+  it('goes back to the pitching dashboard after a successful submit', async () => {
+    submitForm.mockImplementation((_dto, { onSuccess }) => onSuccess());
+    render(<PitchingForm pitching={pitching()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'ส่งแบบประเมิน' }));
+
+    expect(push).toHaveBeenCalledWith('/pitching');
   });
 
   it('confirms before submitting', async () => {

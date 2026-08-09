@@ -5,7 +5,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/utils/cn';
-import { ChevronDown, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { ROLE_LABELS } from '@/types/auth.types';
 import { useLogout } from '@/features/auth';
 import { getInitials } from '@/utils/get-initials';
@@ -47,9 +47,8 @@ export function TopHeader({ className }: TopHeaderProps) {
               </Avatar>
               <div className="hidden sm:block">
                 <p className="text-xs font-semibold leading-tight">{user.name}</p>
-                <p className="flex items-center gap-0.5 text-[10px] leading-tight text-muted-foreground">
+                <p className="text-[10px] leading-tight text-muted-foreground">
                   {ROLE_LABELS[user.role]}
-                  <ChevronDown className="h-2.5 w-2.5" />
                 </p>
               </div>
             </div>

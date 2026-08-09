@@ -154,7 +154,6 @@ where a permission tier is too wide:
 | `/assessment` | `assessment:read` | SUPER_ADMIN, ADMIN, ASSESSOR, MENTOR |
 | `/pitching` | `pitching:read` | SUPER_ADMIN, ADMIN, JUDGE |
 | `/pitching/form` | `pitching:write` | SUPER_ADMIN, ADMIN, JUDGE |
-| `/pitching/ranking` | `pitching:read` | SUPER_ADMIN, ADMIN, JUDGE |
 | `/users` | `users:read` | SUPER_ADMIN |
 
 Matching (`canAccessRoute`): longest matching entry wins, so `/news/new` is

@@ -1,11 +1,12 @@
 'use client';
 
+import { ChartColumnBig } from 'lucide-react';
 import { AlertCard } from '@/components/shared/alert-card';
 import { BarChart } from '@/components/shared/bar-chart';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { colors } from '@/styles/tokens';
 import { PITCHING_DASHBOARD_TEXT } from '../constants/pitching.constants';
 import type { PitchingCriterionAverage } from '../types/pitching.types';
+import { PitchingPanel } from './pitching-panel';
 
 const SERIES_KEY = 'avgScore';
 // A criterion title is a full sentence on the paper form. Recharts drops any
@@ -29,31 +30,27 @@ export function PitchingCriteriaChart({ criteria }: PitchingCriteriaChartProps) 
   }));
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-semibold">
-          {PITCHING_DASHBOARD_TEXT.criteriaChartTitle}{' '}
-          <span className="font-normal text-muted-foreground">
-            {PITCHING_DASHBOARD_TEXT.criteriaChartSubtitle}
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {data.length === 0 ? (
-          <AlertCard variant="info" message={PITCHING_DASHBOARD_TEXT.criteriaEmpty} />
-        ) : (
-          <BarChart
-            data={data}
-            series={[
-              {
-                key: SERIES_KEY,
-                label: PITCHING_DASHBOARD_TEXT.criteriaChartSeriesLabel,
-                color: colors.purpleBanner,
-              },
-            ]}
-          />
-        )}
-      </CardContent>
-    </Card>
+    <PitchingPanel
+      title={PITCHING_DASHBOARD_TEXT.criteriaChartTitle}
+      subtitle={PITCHING_DASHBOARD_TEXT.criteriaChartSubtitle}
+      icon={ChartColumnBig}
+      accent="purple"
+      contentClassName="justify-center"
+    >
+      {data.length === 0 ? (
+        <AlertCard variant="info" message={PITCHING_DASHBOARD_TEXT.criteriaEmpty} />
+      ) : (
+        <BarChart
+          data={data}
+          series={[
+            {
+              key: SERIES_KEY,
+              label: PITCHING_DASHBOARD_TEXT.criteriaChartSeriesLabel,
+              color: colors.purpleBanner,
+            },
+          ]}
+        />
+      )}
+    </PitchingPanel>
   );
 }

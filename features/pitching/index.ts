@@ -1,7 +1,6 @@
 export { PitchingPageHeader } from './components/pitching-page-header';
 export { PitchingDashboard } from './components/pitching-dashboard';
 export { PitchingFormWorkspace } from './components/pitching-form-workspace';
-export { PitchingRankingWorkspace } from './components/pitching-ranking-workspace';
 export { PitchingForm } from './components/pitching-form';
 export { PitchingReportPanel } from './components/pitching-report-panel';
 export { useMyPitching, useCreatePitching } from './hooks/use-my-pitching';

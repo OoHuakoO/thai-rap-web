@@ -47,7 +47,7 @@ export function BarChart({
   );
 
   return (
-    <ChartContainer config={chartConfig} style={{ height }}>
+    <ChartContainer config={chartConfig} className="w-full" style={{ height }}>
       <RechartsBarChart data={data} barCategoryGap={BAR_CATEGORY_GAP} barGap={BAR_GAP}>
         {showGrid && <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />}
         <XAxis

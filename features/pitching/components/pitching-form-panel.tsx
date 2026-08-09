@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { AlertCard } from '@/components/shared/alert-card';
 import { CardSkeleton } from '@/components/shared/loading';
@@ -27,16 +27,21 @@ const STORE_PAGE_SIZE = 100;
 
 interface PitchingFormPanelProps {
   round: PitchingRound;
+  /** Store to open on, from the dashboard's link. Ignored when out of scope. */
+  initialStoreId?: string;
 }
 
-export function PitchingFormPanel({ round }: PitchingFormPanelProps) {
+export function PitchingFormPanel({ round, initialStoreId = '' }: PitchingFormPanelProps) {
   const { data, isLoading, isError, error } = useStores({ limit: STORE_PAGE_SIZE });
   const stores = data?.items ?? [];
-  const [storeId, setStoreId] = useState('');
+  const [selectedId, setSelectedId] = useState(initialStoreId);
 
-  useEffect(() => {
-    if (!storeId && stores.length > 0) setStoreId(stores[0].id);
-  }, [storeId, stores]);
+  // Derived, not corrected by an effect: a linked-to store the caller may not
+  // score has to be dropped *before* the form below asks the API for it, and an
+  // effect only runs after that render has already fired the request.
+  const storeId = stores.some((store) => store.id === selectedId)
+    ? selectedId
+    : (stores[0]?.id ?? '');
 
   if (isLoading) return <CardSkeleton />;
   if (isError) return <AlertCard variant="error" message={extractErrorMessage(error)} />;
@@ -46,7 +51,7 @@ export function PitchingFormPanel({ round }: PitchingFormPanelProps) {
     <div className="space-y-4">
       <div className="max-w-md space-y-1.5">
         <Label htmlFor="pitching-store">{PITCHING_TEXT.storeLabel}</Label>
-        <Select value={storeId} onValueChange={setStoreId}>
+        <Select value={storeId} onValueChange={setSelectedId}>
           <SelectTrigger id="pitching-store" aria-label={PITCHING_TEXT.storeLabel}>
             <SelectValue placeholder={PITCHING_TEXT.storePlaceholder} />
           </SelectTrigger>

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { API_MAX_PAGE_LIMIT } from '@/constants';
@@ -51,6 +51,7 @@ const RANKING_ROW: PitchingRankingRow = {
   storeCode: 'RAP69-001',
   storeName: 'บ้านริมน้ำ จันทบุรี',
   province: 'จันทบุรี',
+  coverUrl: null,
   rank: 2,
   judgeCount: 2,
   avgScore: 83,
@@ -157,10 +158,7 @@ function signInAs(role: Role) {
 beforeEach(() => {
   vi.clearAllMocks();
   signInAs(ROLES.JUDGE);
-  vi.mocked(storeService.getAll).mockResolvedValue({
-    items: [STORE],
-    meta: { page: 1, limit: API_MAX_PAGE_LIMIT, total: 1, totalPages: 1 },
-  });
+  vi.mocked(storeService.getById).mockResolvedValue(STORE);
   vi.mocked(pitchingService.getRanking).mockResolvedValue({
     items: [RANKING_ROW],
     meta: { page: 1, limit: API_MAX_PAGE_LIMIT, total: 1, totalPages: 1 },
@@ -180,10 +178,15 @@ describe('PitchingDashboard', () => {
     await waitFor(() => expect(pitchingService.getRanking).toHaveBeenCalled());
     const rankingLimit = vi.mocked(pitchingService.getRanking).mock.calls[0][3];
     expect(rankingLimit).toBeLessThanOrEqual(API_MAX_PAGE_LIMIT);
+  });
 
-    await waitFor(() => expect(storeService.getAll).toHaveBeenCalled());
-    const storeLimit = vi.mocked(storeService.getAll).mock.calls[0][0]?.limit;
-    expect(storeLimit).toBeLessThanOrEqual(API_MAX_PAGE_LIMIT);
+  // The ranking already names every store the page can report on, so a page of
+  // full store rows would be fetched to render one of them.
+  it('reads one store record, not the whole store list', async () => {
+    renderWithClient();
+
+    await waitFor(() => expect(storeService.getById).toHaveBeenCalledWith('store-1'));
+    expect(storeService.getAll).not.toHaveBeenCalled();
   });
 
   it('opens on the report, not on a scoring form', async () => {
@@ -203,18 +206,29 @@ describe('PitchingDashboard', () => {
       'href',
       '/pitching/form'
     );
-    expect(screen.getByRole('link', { name: /กรอกคะแนน/ })).toHaveAttribute(
-      'href',
-      '/pitching/form'
-    );
   });
 
-  it('hides the scoring links from a role that cannot write', async () => {
+  it('hides the scoring link from a role that cannot write', async () => {
     signInAs(ROLES.VIEWER);
     renderWithClient();
 
     await waitFor(() => expect(screen.getByText('สรุปผลการประเมิน')).toBeInTheDocument());
     expect(screen.queryByRole('link', { name: /เพิ่มผลการประเมิน/ })).not.toBeInTheDocument();
+  });
+
+  it('carries the shown store and round into the store card’s scoring link', async () => {
+    renderWithClient();
+
+    const link = await waitFor(() => screen.getByRole('link', { name: /กรอกคะแนน/ }));
+    expect(link).toHaveAttribute('href', '/pitching/form?storeId=store-1&round=PITCH_DECK');
+    expect(link).toHaveTextContent('เต็ม 20 คะแนน ต่อเกณฑ์');
+  });
+
+  it('hides the store card’s scoring link from a role that cannot write', async () => {
+    signInAs(ROLES.VIEWER);
+    renderWithClient();
+
+    await waitFor(() => expect(screen.getByText('สรุปผลการประเมิน')).toBeInTheDocument());
     expect(screen.queryByRole('link', { name: /กรอกคะแนน/ })).not.toBeInTheDocument();
   });
 
@@ -230,14 +244,123 @@ describe('PitchingDashboard', () => {
     expect(screen.queryByText('17.1')).not.toBeInTheDocument();
   });
 
-  it('links to the full ranking page', async () => {
+  // Both narrower picks are scoped by the round, so a stale one survives the
+  // change only because the same judge sits on the next store's panel too.
+  it('resets the store and judge picks when the round changes', async () => {
+    vi.mocked(pitchingService.getRanking).mockImplementation((round) =>
+      Promise.resolve({
+        items: [
+          round === 'PITCH_DECK'
+            ? RANKING_ROW
+            : { ...RANKING_ROW, storeId: 'store-9', storeName: 'ร้านรอบเร่งรัด' },
+        ],
+        meta: { page: 1, limit: API_MAX_PAGE_LIMIT, total: 1, totalPages: 1 },
+      })
+    );
+    renderWithClient();
+
+    await waitFor(() => expect(screen.getByText('17.1')).toBeInTheDocument());
+    await userEvent.click(screen.getByRole('combobox', { name: 'กรรมการ' }));
+    await userEvent.click(screen.getByRole('option', { name: 'ดร.กฤษฎา วงษ์สมบัติ' }));
+    await waitFor(() => expect(screen.getByText('18')).toBeInTheDocument());
+
+    await userEvent.click(screen.getByRole('combobox', { name: 'รอบคัดเลือก' }));
+    await userEvent.click(screen.getByRole('option', { name: 'รอบ Incubation สู่ Acceleration' }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('combobox', { name: 'ร้านอาหาร' })).toHaveTextContent('ร้านรอบเร่งรัด')
+    );
+    expect(screen.getByRole('combobox', { name: 'กรรมการ' })).toHaveTextContent(
+      'ทุกกรรมการ (ค่าเฉลี่ย)'
+    );
+  });
+
+  it('resets the judge pick when the store changes', async () => {
+    vi.mocked(pitchingService.getRanking).mockResolvedValue({
+      items: [RANKING_ROW, { ...RANKING_ROW, storeId: 'store-2', storeName: 'ครัวคุณย่า' }],
+      meta: { page: 1, limit: API_MAX_PAGE_LIMIT, total: 2, totalPages: 1 },
+    });
+    renderWithClient();
+
+    await waitFor(() => expect(screen.getByText('17.1')).toBeInTheDocument());
+    await userEvent.click(screen.getByRole('combobox', { name: 'กรรมการ' }));
+    await userEvent.click(screen.getByRole('option', { name: 'ดร.กฤษฎา วงษ์สมบัติ' }));
+    await waitFor(() => expect(screen.getByText('18')).toBeInTheDocument());
+
+    await userEvent.click(screen.getByRole('combobox', { name: 'ร้านอาหาร' }));
+    await userEvent.click(screen.getByRole('option', { name: 'ครัวคุณย่า' }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('combobox', { name: 'กรรมการ' })).toHaveTextContent(
+        'ทุกกรรมการ (ค่าเฉลี่ย)'
+      )
+    );
+    expect(screen.getByText('17.1')).toBeInTheDocument();
+  });
+
+  // Clicking a Top-10 row should render from cache, not open on a skeleton.
+  it('warms the leading stores’ reports once the cohort lands', async () => {
+    vi.mocked(pitchingService.getRanking).mockResolvedValue({
+      items: [2, 3, 4, 5].map((n) => ({
+        ...RANKING_ROW,
+        storeId: `store-${n}`,
+        rank: n - 1,
+      })),
+      meta: { page: 1, limit: API_MAX_PAGE_LIMIT, total: 4, totalPages: 1 },
+    });
     renderWithClient();
 
     await waitFor(() =>
-      expect(screen.getByRole('link', { name: /ดูอันดับทั้งหมด/ })).toHaveAttribute(
-        'href',
-        '/pitching/ranking'
-      )
+      expect(pitchingService.getStoreReport).toHaveBeenCalledWith('store-4', 'PITCH_DECK')
     );
+    const warmed = vi.mocked(pitchingService.getStoreReport).mock.calls.map(([storeId]) => storeId);
+    expect(warmed).toContain('store-2');
+    expect(warmed).toContain('store-3');
+    expect(warmed).not.toContain('store-5');
+  });
+
+  it('opens the whole ranking in a dialog, paged, without another request', async () => {
+    vi.mocked(pitchingService.getRanking).mockResolvedValue({
+      items: Array.from({ length: 12 }, (_, index) => ({
+        ...RANKING_ROW,
+        storeId: `store-${index + 1}`,
+        storeCode: `RAP69-${String(index + 1).padStart(3, '0')}`,
+        storeName: `ร้านที่ ${index + 1}`,
+        rank: index + 1,
+        avgScore: 90 - index,
+      })),
+      meta: { page: 1, limit: API_MAX_PAGE_LIMIT, total: 12, totalPages: 1 },
+    });
+    renderWithClient();
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /ดูอันดับทั้งหมด/ })).toBeEnabled()
+    );
+    const rankingCalls = vi.mocked(pitchingService.getRanking).mock.calls.length;
+    await userEvent.click(screen.getByRole('button', { name: /ดูอันดับทั้งหมด/ }));
+
+    const dialog = await screen.findByRole('dialog');
+    // Page 1 of the dialog holds ten of the twelve rows; the eleventh is on
+    // page 2, which is what proves the list is paged rather than truncated.
+    expect(within(dialog).getByText('ร้านที่ 10')).toBeInTheDocument();
+    expect(within(dialog).queryByText('ร้านที่ 11')).not.toBeInTheDocument();
+
+    await userEvent.click(within(dialog).getByRole('link', { name: '2' }));
+    expect(within(dialog).getByText('ร้านที่ 11')).toBeInTheDocument();
+    expect(vi.mocked(pitchingService.getRanking).mock.calls).toHaveLength(rankingCalls);
+  });
+
+  it('selects the store clicked in the ranking dialog and closes it', async () => {
+    renderWithClient();
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /ดูอันดับทั้งหมด/ })).toBeEnabled()
+    );
+    await userEvent.click(screen.getByRole('button', { name: /ดูอันดับทั้งหมด/ }));
+
+    const dialog = await screen.findByRole('dialog');
+    await userEvent.click(within(dialog).getByRole('button', { name: /บ้านริมน้ำ จันทบุรี/ }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 });

@@ -6,10 +6,14 @@ transcribed from the programme's paper forms; the API is the authority for both
 
 **The landing page is the report, not a form.** `/pitching` is a read-only
 dashboard of one store's result inside its cohort; the scoring form lives at
-`/pitching/form` behind a "เพิ่มผลการประเมิน" / "กรอกคะแนน" button, and the full
-paginated ranking at `/pitching/ranking` behind "ดูอันดับทั้งหมด". This follows
-`design/S__37330959.jpg`, and it is what stops a judge who only wanted to look
-at a result from landing in an editable form.
+`/pitching/form` behind the toolbar's "เพิ่มผลการประเมิน" button and the store
+card's "กรอกคะแนน" tile (which carries `?storeId=&round=` so the form opens on
+the store being shown), and "ดูอันดับทั้งหมด"
+opens the round's whole ranking in a paged dialog over the dashboard. There is
+no standalone ranking route: the province filter and the Excel/PDF downloads
+live on `/reports`' พิชชิ่ง scope, which mounts the same `PitchingReportPanel`.
+This follows `design/S__37330959.jpg`, and it is what stops a judge who only
+wanted to look at a result from landing in an editable form.
 
 | `PitchingRound` | Label in the UI | Shape |
 |---|---|---|
@@ -24,20 +28,22 @@ committee decision taken later on the averaged scores.
 
 ```
 /pitching
-└── PitchingDashboard                  owns round / store / judge / search
-    ├── PitchingDashboardToolbar       รอบ · ร้าน · กรรมการ · ค้นหา · + เพิ่มผลการประเมิน
-    ├── PitchingStoreCard              photo, province, owner, phone, level · กรอกคะแนน
+└── PitchingDashboard                  owns round / store / judge
+    ├── PitchingDashboardToolbar       รอบ · ร้าน · กรรมการ · + เพิ่มผลการประเมิน
+    │   (every card below is a PitchingPanel — icon header + h-full body)
+    ├── PitchingStoreCard              photo, province, owner, phone, level, กรอกคะแนน tile
     ├── PitchingScoreBreakdown         per-criterion bars + total, read-only
     ├── PitchingSummaryTiles           เฉลี่ย · อันดับ · เห็นควรคัดเลือก % · ข้อเสนอแนะสถานะ
     ├── PitchingJudgeOpinion           เหตุผล quote + จุดแข็ง / ประเด็นที่ควรพัฒนา
-    ├── PitchingTopRanking             Top 10 → ดูอันดับทั้งหมด
+    ├── PitchingTopRanking             Top 10 (PitchingRankingList) → ดูอันดับทั้งหมด
+    │   └── PitchingRankingDialog      the whole cohort, paged client-side
     ├── PitchingJudgeTable             Judge-by-Judge, paged client-side
     ├── PitchingCriteriaChart          คะแนนเฉลี่ยรายเกณฑ์ (BarChart)
     └── PitchingScoreDistribution      การกระจายคะแนนรวม (DonutChart)
 
 /pitching/form
 └── PitchingFormWorkspace              round tabs (2)
-    └── PitchingFormPanel              store picker → the caller's own form
+    └── PitchingFormPanel              store picker (seeded from ?storeId) → the caller's own form
         └── PitchingForm
             ├── PitchingMinimumConditionsPanel ACCELERATION only
             ├── PitchingScoreSummary           running total + the band it falls in
@@ -46,34 +52,58 @@ committee decision taken later on the averaged scores.
             ├── PitchingComments               per-round free-text prompts
             └── PitchingVerdict                ความเห็นสรุป + เหตุผล + ไม่มีส่วนได้เสีย
 
-/pitching/ranking
-└── PitchingRankingWorkspace           round tabs (2)
-    └── PitchingReportPanel
-        ├── PitchingRankingTable       province filter, downloads, click a row to drill in
-        └── PitchingStoreReportPanel   averages, per-criterion bars, every judge, downloads
+/reports (พิชชิ่ง scope)
+└── PitchingReportPanel                mounted by features/report/components/report-workspace.tsx
+    ├── PitchingRankingTable           province filter, downloads, click a row to drill in
+    └── PitchingStoreReportPanel       averages, per-criterion bars, every judge, downloads
 ```
 
-The same `PitchingReportPanel` is mounted a second time by
-`features/report/components/report-workspace.tsx` as the พิชชิ่ง scope of
-`/reports`, so the two pages can never show a different report.
+`PitchingReportPanel` has exactly one mount now — `/reports`. It is the only
+surface carrying the province filter and the ranking/report downloads, so a
+change to it changes the only place they exist.
 
 ### What the dashboard reads
 
 | Card | Source |
 |---|---|
-| store card, store picker | `useStores({ search, limit })` — one call, the picker and the card share it |
+| store picker, Top 10, distribution | `usePitchingCohort(round)` — the round's whole ranking in one page |
+| store card | `useStore(storeId)` — the selected store's own record |
 | breakdown, tiles, opinion, judge table, criteria chart | `usePitchingStoreReport(storeId, round)` |
-| Top 10, distribution | `usePitchingCohort(round)` — the round's whole ranking in one page |
 
 `usePitchingCohort` exists so the Top 10 and the donut cannot disagree about the
 cohort: they are two readings of one `GET /pitching/summary` call capped at
-`PITCHING_COHORT_LIMIT` (`API_MAX_PAGE_LIMIT` rows, one per store).
+`PITCHING_COHORT_LIMIT` (`API_MAX_PAGE_LIMIT` rows, one per store). The
+"ดูอันดับทั้งหมด" dialog is a third reading of that same list — it pages the rows
+already in memory (`PITCHING_RANKING_DIALOG_PAGE_LIMIT` a page) instead of
+calling the endpoint again, and picking a row there selects the store and closes
+the dialog — the same store change as the picker's, judge reset included.
+
+**The ranking is also the store picker.** A `PitchingRankingRow` carries
+`storeId` and `storeName`, which is the picker's whole contract, so the page
+reads one store record — the selected one, for the card's photo, owner and
+phone — rather than a page of full store rows to render one of them. The
+consequence is that a store with no submitted form for the round is not in the
+picker: it has no ranking row, and its report would be empty anyway — the empty
+state says so (`noRankedStore`). Scoring one goes through `/pitching/form`,
+whose own picker lists the caller's stores from `GET /stores`.
+
+Once the cohort lands, `usePrefetchTopStoreReports` warms the reports of its
+first `PITCHING_REPORT_PREFETCH_SIZE` stores into the same query key
+`usePitchingStoreReport` reads, so clicking a podium row in the Top 10 renders
+from cache instead of opening on a skeleton. The first of those is the store the
+dashboard already selected, and `prefetchQuery` no-ops on a fresh entry, so the
+warm-up costs the two speculative requests only.
 
 The **กรรมการ picker** selects whose numbers the breakdown and the opinion show —
 "ทุกกรรมการ" renders `report.criteria`'s cross-judge averages, a named judge
-renders that judge's own `criteria[].score` and total. The selection is validated
-against the current report rather than reset by an effect, so a judge picked for
-one store silently falls back to the average on the next.
+renders that judge's own `criteria[].score` and total.
+
+The three pickers narrow each other, so changing one resets the ones below it:
+a new **รอบ** clears both the store (the effect then lands on the new round's
+top-ranked one) and the judge, a new **ร้าน** clears the judge. On top of that
+the judge is still validated against the current report — the new store's report
+arrives after the store changes, and until it does the previous panel's judge
+would otherwise stay selected.
 
 ### Deviations from `design/S__37330959.jpg`
 
@@ -81,12 +111,17 @@ one store silently falls back to the average on the next.
   (`recommendationCounts.SELECTED / judgeCount`). The design's figure is the IRS,
   which lives on `GET /analytics/:storeId` — a JUDGE has no `analytics:read`, so
   the tile would be empty for this page's main audience and the call would 403.
-- **No store thumbnails or trend arrows in the Top 10.** `PitchingRankingRow`
-  carries neither a photo nor a previous rank, and one `GET /stores/:id` per row
-  is not worth a 28px image.
-- **The bottom row is two cards, not three.** The judge table needs ~580px for
-  its six columns and a third of the shell is ~450px, so it takes the row with
-  the criteria chart and the distribution donut sits below it.
+- **No trend arrows in the Top 10.** `PitchingRankingRow` carries no previous
+  rank, and the API has nothing to compare a round against. The store thumbnail
+  is there: `GET /pitching/summary` returns each row's `coverUrl`, so the list
+  costs no extra request per row, and a store with no photo falls back to the
+  store glyph.
+- **The dashboard is four bands of two cards.** store card + tiles, breakdown +
+  Top 10, judge table + opinion, criteria chart + distribution. The pairs are
+  chosen by how tall their content runs, and every card is a `PitchingPanel`
+  (`h-full`), so the two in a band end level instead of one leaving a column of
+  white space. The judge table keeps the wider half of its band — it needs
+  ~580px for its six columns, and a third of the shell is ~450px.
 - **The date column drops the clock time** to `formatThaiDate`, with the full
   `formatThaiDateTime` on the cell's `title`.
 - **Criterion titles on the bar chart's x-axis truncate at 10 characters.**
@@ -109,8 +144,13 @@ is the intended state.
 `/pitching/form` carries `pitching:write` rather than the dashboard's
 `pitching:read`, and `canAccessRoute`'s longest-match rule is what makes that
 entry the one it is checked against. A role that could read but not write would
-get the dashboard without its two "กรอกคะแนน" links and be bounced off the form
-route. No role is in that position today.
+get the dashboard without its "เพิ่มผลการประเมิน" link or the store card's
+"กรอกคะแนน" tile — both are gated on `canRoute(ROUTES.PITCHING_FORM)` — and be
+bounced off the form route. No role is in that position today.
+
+A `?storeId=` the caller may not score is dropped: `PitchingFormPanel` derives
+the selected store from the (already scope-narrowed) picker list, so an
+out-of-scope id falls back to the first store instead of being requested.
 
 The API enforces every one of these independently, and additionally restricts a
 JUDGE to its own form.
@@ -137,6 +177,9 @@ The ผ่าน/ไม่ผ่าน badges on the minimum conditions come fro
 `Pitching.minimumConditions` — the server's copy is a submit behind the readings
 on screen. It mirrors the API's own function; the two thresholds must change
 together.
+
+A successful submit toasts and then pushes to `ROUTES.PITCHING` — the judge lands
+back on the dashboard rather than on the form they just sent.
 
 Submitting requires (all enforced by the API, surfaced as a toast):
 
@@ -231,9 +274,8 @@ absent query param.
 - `GET /pitching/criteria` exists on the API but has no web caller — the form
   gets its criteria from the form payload.
 - The ranking filters by province only — not by level, verdict, or whether the
-  minimum conditions were met. The dashboard's search box narrows the **store
-  picker** (`GET /stores?search=`), not the ranking; `GET /pitching/summary` has
-  no search param.
+  minimum conditions were met. The dashboard has no search box either: the store
+  picker lists one page of the cohort and is narrowed by nothing.
 - `usePitchingCohort` reads one page of `PITCHING_COHORT_LIMIT` rows. A cohort
   larger than that would silently cut the Top 10's tail and the donut's counts —
   there is no guard, because a programme year is ~25 stores. The constant is
@@ -242,8 +284,7 @@ absent query param.
   `pitching-dashboard.test.tsx` asserts the `limit` both of the dashboard's
   calls actually send stays within that ceiling.
 - The dashboard's round selector does not reset the selected store. A store with
-  no submitted form in the newly chosen round shows the report's empty states,
-  which is the same thing `/pitching/ranking` does.
+  no submitted form in the newly chosen round shows the report's empty states.
 - `mocks/handlers/pitching.handlers.ts` is **not role-scoped** — mock mode shows
   every fixture row to every role, the same as the assessment and report
   handlers (see [06-testing-and-mocks.md](../06-testing-and-mocks.md)). Its two

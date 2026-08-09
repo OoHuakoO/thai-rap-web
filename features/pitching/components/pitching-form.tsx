@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useConfirm } from '@/components/shared/confirm-dialog';
 import { Button } from '@/components/ui/button';
+import { ROUTES } from '@/constants/routes';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { PITCHING_TEXT } from '../constants/pitching.constants';
 import { useSubmitPitching } from '../hooks/use-pitching-mutations';
@@ -44,6 +46,7 @@ interface PitchingDraft {
  */
 export function PitchingForm({ pitching }: PitchingFormProps) {
   const confirm = useConfirm();
+  const router = useRouter();
   const { round, storeId, id } = pitching;
 
   const [draft, setDraft] = useState<PitchingDraft>(() => toDraft(pitching));
@@ -68,7 +71,10 @@ export function PitchingForm({ pitching }: PitchingFormProps) {
     if (!confirmed) return;
 
     submitForm(toSubmitDto(pitching, draft), {
-      onSuccess: () => toast.success(PITCHING_TEXT.submitSuccess),
+      onSuccess: () => {
+        toast.success(PITCHING_TEXT.submitSuccess);
+        router.push(ROUTES.PITCHING);
+      },
       onError: (error) => toast.error(extractErrorMessage(error)),
     });
   };

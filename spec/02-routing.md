@@ -37,7 +37,6 @@ app/
 | `/reports` | `REPORTS` | `.../reports/page.tsx` | `ReportPageHeader` + `ReportWorkspace` | `reports:read` |
 | `/pitching` | `PITCHING` | `.../pitching/page.tsx` | `PitchingDashboard` | `pitching:read` + SUPER_ADMIN / ADMIN / JUDGE |
 | `/pitching/form` | `PITCHING_FORM` | `.../pitching/form/page.tsx` | `PitchingFormWorkspace` | `pitching:write` + SUPER_ADMIN / ADMIN / JUDGE |
-| `/pitching/ranking` | `PITCHING_RANKING` | `.../pitching/ranking/page.tsx` | `PitchingRankingWorkspace` | `pitching:read` + SUPER_ADMIN / ADMIN / JUDGE |
 | `/news` | `NEWS` | `.../news/page.tsx` | `NewsPageHeader` + `NewsList` | `news:read` (all roles) |
 | `/news/new` | `NEWS_NEW` | `.../news/new/page.tsx` | `CreateNewsForm` | `news:write` |
 | `/news/[id]/edit` | `NEWS_EDIT(id)` | `.../news/[id]/edit/page.tsx` | `EditNewsForm` | `news:write` |

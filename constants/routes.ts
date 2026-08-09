@@ -24,7 +24,11 @@ export const ROUTES = {
   // Pitching
   PITCHING: '/pitching',
   PITCHING_FORM: '/pitching/form',
-  PITCHING_RANKING: '/pitching/ranking',
+  // The form opened on a store the dashboard was already showing. The query is
+  // a hint, not a guarantee — the form falls back to its own first store when
+  // the caller may not score this one.
+  PITCHING_FORM_FOR: (storeId: string, round: string) =>
+    `/pitching/form?storeId=${encodeURIComponent(storeId)}&round=${encodeURIComponent(round)}`,
 
   // Reports
   REPORTS: '/reports',

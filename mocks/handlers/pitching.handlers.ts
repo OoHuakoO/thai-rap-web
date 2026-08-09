@@ -101,6 +101,7 @@ function buildRanking(round: PitchingRound, province?: string | null): PitchingR
         storeCode: rows[0].storeCode,
         storeName: rows[0].storeName,
         province: rows[0].province,
+        coverUrl: storeDb.findById(rows[0].storeId)?.coverUrl ?? null,
         rank: 0,
         judgeCount: rows.length,
         avgScore,

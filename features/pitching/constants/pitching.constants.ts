@@ -103,6 +103,22 @@ export const PITCHING_LEVEL_BADGE_CLASSES: Record<PitchingLevel, string> = {
   NOT_READY: 'border-score-red/20 bg-score-red/10 text-score-red',
 };
 
+// The badge palette as bare text / surface classes, for the places a level
+// colours something that is not a badge — a score number, a card's left edge.
+export const PITCHING_LEVEL_TEXT_CLASSES: Record<PitchingLevel, string> = {
+  HIGHLY_SUITABLE: 'text-score-green',
+  SUITABLE: 'text-orange',
+  FAIR: 'text-amber-600',
+  NOT_READY: 'text-score-red',
+};
+
+export const PITCHING_LEVEL_EDGE_CLASSES: Record<PitchingLevel, string> = {
+  HIGHLY_SUITABLE: 'border-l-score-green bg-score-green/[0.03]',
+  SUITABLE: 'border-l-orange bg-orange/[0.03]',
+  FAIR: 'border-l-amber-500 bg-amber-500/[0.03]',
+  NOT_READY: 'border-l-score-red bg-score-red/[0.03]',
+};
+
 export const PITCHING_LEVEL_PROGRESS_COLORS: Record<PitchingLevel, ProgressColor> = {
   HIGHLY_SUITABLE: 'success',
   SUITABLE: 'default',
@@ -158,6 +174,23 @@ export const PITCHING_COMMENT_FIELDS: Record<
   ],
 };
 
+// What each comment box is *about*, so the store report can colour a judge's
+// write-up into sections — what went well, what did not, what could grow, what
+// to do next — instead of printing one grey column of labels. Keyed by the same
+// comment keys as PITCHING_COMMENT_FIELDS; an unknown key falls back to advice.
+export type PitchingCommentTone = 'positive' | 'concern' | 'potential' | 'advice';
+
+export const PITCHING_COMMENT_TONES: Record<string, PitchingCommentTone> = {
+  strengths: 'positive',
+  urgentImprovements: 'concern',
+  risks: 'concern',
+  salesCostFeasibility: 'potential',
+  productMarketPotential: 'potential',
+  conditions: 'potential',
+  suggestions: 'advice',
+  fundingSuggestions: 'advice',
+};
+
 // The two comment boxes the dashboard surfaces as จุดแข็ง / ประเด็นที่ควรพัฒนา.
 // Both forms have a strengths box under the same key; each words the second one
 // differently, so the key is per round. Every other box stays on the form and
@@ -206,6 +239,18 @@ export const PITCHING_COHORT_LIMIT = API_MAX_PAGE_LIMIT;
 
 export const PITCHING_TOP_RANKING_SIZE = 10;
 
+// The dialog pages the cohort the dashboard already holds — no second request,
+// so this is a display size only. Ten rows keep the dialog inside its
+// max-height on a laptop instead of scrolling the list and the page at once.
+export const PITCHING_RANKING_DIALOG_PAGE_LIMIT = 10;
+
+// How many of the ranking's leading stores get their report warmed once the
+// cohort lands. The first is the one the dashboard opens on, so only the rest
+// are speculative — kept small because each is a full report request, and a
+// judge who clicks past the podium pays one load rather than the page paying
+// ten up front.
+export const PITCHING_REPORT_PREFETCH_SIZE = 3;
+
 export const PITCHING_JUDGE_TABLE_PAGE_LIMIT = 10;
 
 // การกระจายคะแนนรวม — the bands of the design's donut. Ordered high to low and
@@ -233,8 +278,6 @@ export const PITCHING_TEXT = {
   pageDescription: 'สรุปผลการประเมินของคณะกรรมการ และอันดับคะแนนของทั้งรอบ',
   formPageTitle: 'กรอกแบบประเมินพิชชิ่ง',
   formPageDescription: 'เลือกรอบและร้านที่ต้องการประเมิน แล้วกรอกแบบประเมินของคุณ',
-  rankingPageTitle: 'อันดับคะแนนพิชชิ่ง',
-  rankingPageDescription: 'อันดับคะแนนเฉลี่ยกรรมการของทั้งรอบ เลือกร้านเพื่อดูรายละเอียด',
   backToDashboard: 'กลับไปหน้าคะแนนพิชชิ่ง',
   storeLabel: 'เลือกร้าน',
   storePlaceholder: 'เลือกร้านที่ต้องการประเมิน',
@@ -307,7 +350,10 @@ export const PITCHING_TEXT = {
   judgeCountValue: (count: number) => `${count} คน`,
   criterionAverageTitle: 'คะแนนเฉลี่ยรายเกณฑ์',
   judgeBreakdownTitle: 'ผลการประเมินจากกรรมการ',
+  recommendationCountsTitle: 'มติกรรมการ',
+  recommendationCountValue: (count: number) => `${count} คน`,
   noComment: '—',
+  noCommentHint: 'กรรมการไม่ได้ระบุ',
 } as const;
 
 export const PITCHING_DASHBOARD_TEXT = {
@@ -315,16 +361,14 @@ export const PITCHING_DASHBOARD_TEXT = {
   storeLabel: 'ร้านอาหาร',
   judgeLabel: 'กรรมการ',
   judgeAll: 'ทุกกรรมการ (ค่าเฉลี่ย)',
-  searchLabel: 'ค้นหาร้านอาหาร',
-  searchPlaceholder: 'ค้นหาร้านอาหาร...',
   addScore: 'เพิ่มผลการประเมิน',
 
   storeCardTitle: 'ร้านอาหารที่กำลังประเมิน',
   ownerLabel: 'ผู้สมัคร',
   phoneLabel: 'เบอร์โทร',
-  fillScore: 'กรอกคะแนน',
-  fillScoreHint: 'เปิดแบบประเมินของคุณสำหรับร้านนี้',
   storeUnavailable: 'ไม่พบข้อมูลร้านนี้',
+  fillScore: 'กรอกคะแนน',
+  fillScoreHint: (maxScore: number) => `(เต็ม ${maxScore} คะแนน ต่อเกณฑ์)`,
 
   criteriaTitle: 'เกณฑ์การประเมิน',
   criteriaAverageColumn: 'คะแนนเฉลี่ย',
@@ -352,6 +396,9 @@ export const PITCHING_DASHBOARD_TEXT = {
   topRankingTitle: 'อันดับคะแนนสูงสุด',
   topRankingSubtitle: (size: number) => `(Top ${size})`,
   viewAllRanking: 'ดูอันดับทั้งหมด',
+  rankingDialogTitle: 'อันดับคะแนนทั้งหมด',
+  rankingDialogDescription: 'อันดับคะแนนเฉลี่ยกรรมการของทั้งรอบ เลือกร้านเพื่อดูรายละเอียด',
+  storePhotoAlt: (name: string) => `รูปร้าน ${name}`,
 
   judgeTableTitle: 'ผลการประเมินจากกรรมการ (Judge-by-Judge)',
   judgeIndexColumn: '#',
@@ -374,5 +421,7 @@ export const PITCHING_DASHBOARD_TEXT = {
   distributionEmpty: 'ยังไม่มีร้านที่ส่งแบบประเมินในรอบนี้',
 
   noStoreSelected: 'เลือกร้านอาหารจากด้านบนเพื่อดูผลการประเมิน',
-  noStoreMatch: 'ไม่พบร้านที่ตรงกับคำค้นหา',
+  // The dashboard's picker is the ranking, so an empty picker means no store
+  // has a submitted form in this round — not that the caller has no stores.
+  noRankedStore: 'ยังไม่มีร้านที่ส่งแบบประเมินในรอบนี้',
 } as const;

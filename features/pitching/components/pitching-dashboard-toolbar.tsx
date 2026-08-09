@@ -1,9 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Plus, Search } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -13,7 +12,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ROUTES } from '@/constants/routes';
-import type { Store } from '@/features/store';
 import { useAuthStore } from '@/stores/auth-store';
 import { PERMISSIONS } from '@/types/auth.types';
 import {
@@ -29,17 +27,22 @@ export interface PitchingJudgeOption {
   name: string;
 }
 
+// The picker names stores, it does not render them — the ranking row's id and
+// name are the whole contract, so the toolbar never asks for a full `Store`.
+export interface PitchingStoreOption {
+  id: string;
+  name: string;
+}
+
 interface PitchingDashboardToolbarProps {
   round: PitchingRound;
   onRoundChange: (round: PitchingRound) => void;
-  stores: Store[];
+  stores: PitchingStoreOption[];
   storeId: string;
   onStoreChange: (storeId: string) => void;
   judges: PitchingJudgeOption[];
   judgeId: string;
   onJudgeChange: (judgeId: string) => void;
-  search: string;
-  onSearchChange: (search: string) => void;
 }
 
 export function PitchingDashboardToolbar({
@@ -51,8 +54,6 @@ export function PitchingDashboardToolbar({
   judges,
   judgeId,
   onJudgeChange,
-  search,
-  onSearchChange,
 }: PitchingDashboardToolbarProps) {
   const canWrite = useAuthStore((state) => state.can(PERMISSIONS.PITCHING_WRITE));
 
@@ -111,20 +112,6 @@ export function PitchingDashboardToolbar({
               ))}
             </SelectContent>
           </Select>
-        </div>
-
-        <div className="w-full space-y-1.5 sm:w-56">
-          <Label htmlFor="pitching-search">{PITCHING_DASHBOARD_TEXT.searchLabel}</Label>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              id="pitching-search"
-              className="pl-9"
-              value={search}
-              placeholder={PITCHING_DASHBOARD_TEXT.searchPlaceholder}
-              onChange={(event) => onSearchChange(event.target.value)}
-            />
-          </div>
         </div>
 
         {canWrite && (
