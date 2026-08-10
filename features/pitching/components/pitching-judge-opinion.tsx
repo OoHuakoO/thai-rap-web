@@ -96,9 +96,12 @@ function OpinionList({ title, titleClassName, boxClassName, items, icon }: Opini
   return (
     <div className={cn('space-y-1.5 rounded-xl border p-3', boxClassName)}>
       <p className={cn('text-sm font-semibold', titleClassName)}>{title}</p>
+      {/* Keyed by position: a bullet is free text a judge typed, so two
+          identical lines are ordinary — and duplicate keys would make React
+          reuse the wrong row. */}
       <ul className="space-y-1.5">
-        {items.map((item) => (
-          <li key={item} className="flex gap-2 text-sm text-charcoal">
+        {items.map((item, index) => (
+          <li key={index} className="flex gap-2 text-sm text-charcoal">
             {icon}
             <span>{item}</span>
           </li>

@@ -69,6 +69,8 @@ backend ห่อ response สำเร็จเป็น `{ success: true, data
 - **`refreshAccessToken()`** *(export)* — wrapper กัน concurrent refresh: ถ้ามี request refresh ที่กำลังทำอยู่แล้ว (`refreshPromise`) จะ return promise เดิมแทนที่จะยิงซ้ำ กันเคส 401 หลาย request พร้อมกันแล้วแต่ละอันไปเรียก `/auth/refresh` ของตัวเอง ไฟล์นี้ export ตัวนี้ให้ `app/auth-bootstrap.tsx` เรียกใช้ตอน reload หน้าเว็บด้วย (silent refresh ตอนเปิดแอปใหม่)
 
 ### response interceptor #2 — error handling
+- **`parseBlobErrorBody(error)`** *(private, รันก่อน `mapToApiError`)* — request ที่ตั้ง `responseType: 'blob'` (ทุก export/download) จะได้ error body กลับมาเป็น `Blob` ด้วย เพราะ axios parse JSON ตาม `responseType` ไม่ได้ดูจาก status ถ้าไม่แกะก่อน `mapToApiError` จะหา `body.error.message` ไม่เจอแล้ว fallback ไปใช้ข้อความอังกฤษของ axios (`"Request failed with status code 403"`) แทนข้อความไทยจาก backend ตัวนี้อ่าน Blob เป็น text แล้ว `JSON.parse` ทับ `response.data` ให้ ถ้า parse ไม่ผ่าน (เช่นเจอ HTML error page ของ proxy) ปล่อย Blob ไว้เหมือนเดิมแล้วให้ fallback ตาม status ทำงานต่อ
+
 ทุก error ที่หลุดมาจะถูกแปลงเป็น `ApiError` ผ่าน `mapToApiError()` ก่อน แล้วจัดการตามลำดับ:
 
 1. `isCancelled` → reject เฉยๆ ไม่ทำอะไรเพิ่ม (component ที่ cancel เองรู้อยู่แล้ว)

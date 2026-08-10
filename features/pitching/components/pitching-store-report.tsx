@@ -19,6 +19,7 @@ import { cn } from '@/utils/cn';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import { getInitials } from '@/utils/get-initials';
 import {
+  PITCHING_AVG_SCORE_DECIMALS,
   PITCHING_COMMENT_FIELDS,
   PITCHING_COMMENT_TONES,
   PITCHING_LEVEL_BADGE_CLASSES,
@@ -164,7 +165,7 @@ export function PitchingStoreReportPanel({ storeId, round }: PitchingStoreReport
                       PITCHING_LEVEL_TEXT_CLASSES[criterionLevel]
                     )}
                   >
-                    {criterion.avgScore.toFixed(2)} / {criterion.maxScore}
+                    {criterion.avgScore.toFixed(PITCHING_AVG_SCORE_DECIMALS)} / {criterion.maxScore}
                   </span>
                 </div>
                 <ProgressBar

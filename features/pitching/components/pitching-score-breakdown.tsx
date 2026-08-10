@@ -34,10 +34,14 @@ export function PitchingScoreBreakdown({
         <AlertCard variant="info" message={PITCHING_DASHBOARD_TEXT.criteriaEmpty} />
       ) : (
         <>
-          <div className="flex items-center gap-3 border-b pb-2 text-xs text-muted-foreground">
+          {/* Four spans and the same px-1.5 as a row, so each label sits over
+              the column it names — the bar's own is empty, and the score label
+              belongs to the number beside it, not to the bar. */}
+          <div className="flex items-center gap-3 border-b px-1.5 pb-2 text-xs text-muted-foreground">
             <span className="w-8 flex-shrink-0">{PITCHING_DASHBOARD_TEXT.judgeIndexColumn}</span>
             <span className="min-w-0 flex-1">{PITCHING_TEXT.criteriaTitle}</span>
-            <span className="w-32 flex-shrink-0 text-right">{scoreColumnLabel}</span>
+            <span className="w-32 flex-shrink-0" aria-hidden />
+            <span className="w-20 flex-shrink-0 text-right">{scoreColumnLabel}</span>
           </div>
 
           {/* The rows carry the panel's height: the total strip below is pushed

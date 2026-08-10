@@ -97,9 +97,29 @@ export function refreshAccessToken(): Promise<string | null> {
   return refreshPromise;
 }
 
+// A `responseType: 'blob'` request gets its *error* body as a Blob too — axios
+// only parses JSON when the response type says so, and it says blob for every
+// status. Left alone, `mapToApiError` never sees `{ error: { message } }` and
+// falls back to axios' English "Request failed with status code 403", so every
+// failed download reports the wrong thing. Read it back to JSON first.
+async function parseBlobErrorBody(error: unknown): Promise<void> {
+  if (!axios.isAxiosError(error)) return;
+  const body: unknown = error.response?.data;
+  if (!(body instanceof Blob)) return;
+
+  try {
+    const text = await body.text();
+    if (error.response) error.response.data = JSON.parse(text) as unknown;
+  } catch {
+    // Not JSON — a proxy's HTML error page, say. Leave the Blob in place and
+    // let mapToApiError fall back to the status-derived message.
+  }
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    await parseBlobErrorBody(error);
     const apiError = mapToApiError(error);
 
     if (apiError.isCancelled) return Promise.reject(apiError);

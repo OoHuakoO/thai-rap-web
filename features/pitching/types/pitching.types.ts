@@ -94,7 +94,12 @@ export interface PitchingRankingRow {
   avgScore: number;
   level: PitchingLevel;
   recommendationCounts: PitchingRecommendationCounts;
-  minimumPassedCount: number;
+  /**
+   * How many judges recorded both minimum conditions as met. Null on
+   * PITCH_DECK — that form has no minimum conditions, so the column is dropped
+   * rather than printing "0 / n" for a gate nobody could fail.
+   */
+  minimumPassedCount: number | null;
 }
 
 export interface PitchingCriterionAverage extends PitchingCriterion {

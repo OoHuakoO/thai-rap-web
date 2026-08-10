@@ -4,6 +4,7 @@ import { Award, BarChart3, Gauge, Trophy, Users } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import {
+  PITCHING_AVG_SCORE_DECIMALS,
   PITCHING_DASHBOARD_TEXT,
   PITCHING_LEVEL_LABELS,
   PITCHING_RECOMMENDATION_LABELS,
@@ -56,7 +57,7 @@ export function PitchingSummaryTiles({ report }: PitchingSummaryTilesProps) {
           icon={Gauge}
           tone="orange"
           title={PITCHING_DASHBOARD_TEXT.avgTileTitle}
-          value={(report.avgScore ?? 0).toFixed(1)}
+          value={(report.avgScore ?? 0).toFixed(PITCHING_AVG_SCORE_DECIMALS)}
           unit={PITCHING_DASHBOARD_TEXT.outOf(PITCHING_TOTAL_MAX)}
         />
         <SummaryTile

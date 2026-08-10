@@ -227,6 +227,12 @@ export const PITCHING_PARTICIPATION_MIN_PASS = 90;
 export const PITCHING_PARTICIPATION_MAX = 100;
 export const PITCHING_TOTAL_MAX = 100;
 
+// The API rounds คะแนนเฉลี่ย to 2 dp once (`roundTo2`) so the ranking, the report
+// and the export all carry the same number. Every surface prints those same two
+// decimals — a tile showing 78.5 beside a Top 10 row showing 78.46 reads as two
+// different scores for one store.
+export const PITCHING_AVG_SCORE_DECIMALS = 2;
+
 export const PITCHING_RANKING_PAGE_LIMIT = 25;
 
 // The dashboard reads the round's whole ranking in one page: the Top 10 card
@@ -327,6 +333,18 @@ export const PITCHING_TEXT = {
     'คะแนนรวมจะถูกบันทึกเข้าอันดับ และสถานะร้านค้าจะไม่เปลี่ยนแปลง ต้องการส่งแบบประเมินนี้หรือไม่?',
   submitConfirmLabel: 'ส่งแบบประเมิน',
   submitSuccess: 'ส่งแบบประเมินเรียบร้อย',
+  // Submitting does not freeze the form — a judge revises its own scoring at any
+  // time — so an already-submitted form opens exactly like a draft. Without this
+  // the judge cannot tell the two apart, and "ส่งแบบประเมิน" reads as a first
+  // submission when it is really a correction of what the ranking already holds.
+  resubmitNotice: 'แบบประเมินนี้ส่งแล้ว การแก้ไขจะมีผลกับอันดับเมื่อกดบันทึกการแก้ไข',
+  resubmit: 'บันทึกการแก้ไข',
+  resubmitting: 'กำลังบันทึก...',
+  resubmitConfirmTitle: 'บันทึกการแก้ไข',
+  resubmitConfirmDescription:
+    'คะแนนรวมในอันดับจะถูกคำนวณใหม่จากที่แก้ไข วันที่ส่งเดิมและสถานะร้านค้าจะไม่เปลี่ยนแปลง ต้องการบันทึกหรือไม่?',
+  resubmitConfirmLabel: 'บันทึกการแก้ไข',
+  resubmitSuccess: 'บันทึกการแก้ไขเรียบร้อย',
   rankingTitle: 'อันดับคะแนนเฉลี่ยกรรมการ',
   provinceLabel: 'จังหวัด',
   provinceAll: 'ทุกจังหวัด',

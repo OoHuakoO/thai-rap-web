@@ -19,6 +19,7 @@ import type { TableColumn } from '@/types';
 import { extractErrorMessage } from '@/utils/extract-error-message';
 import {
   ALL_PROVINCES,
+  PITCHING_AVG_SCORE_DECIMALS,
   PITCHING_LEVEL_BADGE_CLASSES,
   PITCHING_LEVEL_LABELS,
   PITCHING_TEXT,
@@ -81,7 +82,11 @@ export function PitchingRankingTable({
     {
       key: 'avgScore',
       header: PITCHING_TEXT.avgScoreColumn,
-      cell: (row) => <span className="font-semibold text-orange">{row.avgScore.toFixed(2)}</span>,
+      cell: (row) => (
+        <span className="font-semibold text-orange">
+          {row.avgScore.toFixed(PITCHING_AVG_SCORE_DECIMALS)}
+        </span>
+      ),
     },
     {
       key: 'level',
@@ -92,11 +97,18 @@ export function PitchingRankingTable({
         </Badge>
       ),
     },
-    {
-      key: 'minimumPassedCount',
-      header: PITCHING_TEXT.minimumPassedColumn,
-      cell: (row) => `${row.minimumPassedCount} / ${row.judgeCount}`,
-    },
+    // เงื่อนไขขั้นต่ำ is on the acceleration form only — the API answers null on
+    // the pitch deck round, and a "0 / 3" column for a gate that form does not
+    // have reads as every judge failing it.
+    ...(round === 'ACCELERATION'
+      ? [
+          {
+            key: 'minimumPassedCount',
+            header: PITCHING_TEXT.minimumPassedColumn,
+            cell: (row: PitchingRankingRow) => `${row.minimumPassedCount ?? 0} / ${row.judgeCount}`,
+          },
+        ]
+      : []),
   ];
 
   if (isError) return <AlertCard variant="error" message={extractErrorMessage(error)} />;

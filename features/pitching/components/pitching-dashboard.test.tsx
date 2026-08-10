@@ -268,7 +268,9 @@ describe('PitchingDashboard', () => {
     await userEvent.click(screen.getByRole('option', { name: 'รอบ Incubation สู่ Acceleration' }));
 
     await waitFor(() =>
-      expect(screen.getByRole('combobox', { name: 'ร้านอาหาร' })).toHaveTextContent('ร้านรอบเร่งรัด')
+      expect(screen.getByRole('combobox', { name: 'ร้านอาหาร' })).toHaveTextContent(
+        'ร้านรอบเร่งรัด'
+      )
     );
     expect(screen.getByRole('combobox', { name: 'กรรมการ' })).toHaveTextContent(
       'ทุกกรรมการ (ค่าเฉลี่ย)'

@@ -3,7 +3,11 @@
 import { Store as StoreIcon } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { buildFileUrl } from '@/utils/build-file-url';
-import { PITCHING_DASHBOARD_TEXT, PITCHING_TEXT } from '../constants/pitching.constants';
+import {
+  PITCHING_AVG_SCORE_DECIMALS,
+  PITCHING_DASHBOARD_TEXT,
+  PITCHING_TEXT,
+} from '../constants/pitching.constants';
 import type { PitchingRankingRow } from '../types/pitching.types';
 
 // Podium colours for the first three places; every other rank renders plain.
@@ -78,7 +82,7 @@ export function PitchingRankingList({
               </span>
 
               <span className="flex-shrink-0 text-sm font-semibold tabular-nums text-orange">
-                {row.avgScore.toFixed(2)}
+                {row.avgScore.toFixed(PITCHING_AVG_SCORE_DECIMALS)}
               </span>
             </button>
           </li>

@@ -181,6 +181,14 @@ together.
 A successful submit toasts and then pushes to `ROUTES.PITCHING` — the judge lands
 back on the dashboard rather than on the form they just sent.
 
+**A submitted form reopens as a correction, not as a draft.** Submitting freezes
+nothing, so `status === 'SUBMITTED'` renders exactly the same fields — but the
+form says so: an info `AlertCard` above it, and the button, its confirm dialog
+and its success toast switch from ส่งแบบประเมิน to บันทึกการแก้ไข
+(`RESUBMIT_TEXT` in `pitching-form.tsx`). The correction wording is what the API
+actually does — `totalScore` is re-frozen into the ranking while `submittedAt`,
+`status` and `Store.status` are left alone.
+
 Submitting requires (all enforced by the API, surfaced as a toast):
 
 1. every criterion scored — `PITCH_005`
@@ -263,6 +271,11 @@ The ranking takes a province, and `rank` stays each store's position in the
 because Radix `Select` has no empty-string value; the table turns it back into an
 absent query param.
 
+The ผ่านขั้นต่ำ column is built **only for `ACCELERATION`**. `PITCH_DECK` has no
+เงื่อนไขขั้นต่ำ, so the API answers `minimumPassedCount: null` there and a
+"0 / 3" column would read as every judge failing a gate that form cannot record.
+Both API export writers drop the same column on that round.
+
 ## Gaps
 
 - Both rounds average, rank and export the same way. `PITCH_DECK` additionally
@@ -271,8 +284,6 @@ absent query param.
   `thai-rap-api/spec/09-pitching.md` §Gaps.
 - No ranking-finalise flow: nothing turns a cohort ranking into a decision or a
   `Store.status`.
-- `GET /pitching/criteria` exists on the API but has no web caller — the form
-  gets its criteria from the form payload.
 - The ranking filters by province only — not by level, verdict, or whether the
   minimum conditions were met. The dashboard has no search box either: the store
   picker lists one page of the cohort and is narrowed by nothing.
@@ -283,8 +294,12 @@ absent query param.
   cohort needs the API's `PaginationDto` raised, not this number bumped.
   `pitching-dashboard.test.tsx` asserts the `limit` both of the dashboard's
   calls actually send stays within that ceiling.
-- The dashboard's round selector does not reset the selected store. A store with
-  no submitted form in the newly chosen round shows the report's empty states.
+- The dashboard's ranking, and therefore its store picker, is scoped to the
+  stores the caller may read — for a JUDGE (`ASSIGNED`) that is its assignment
+  list, so the Top 10, the donut and the picker cover those stores only. The
+  `rank` and `rankedStoreCount` printed beside them are the **whole round's**,
+  because the API ranks before it narrows; a judge with three stores can
+  therefore read a rank of 12 out of 45 and see three rows.
 - `mocks/handlers/pitching.handlers.ts` is **not role-scoped** — mock mode shows
   every fixture row to every role, the same as the assessment and report
   handlers (see [06-testing-and-mocks.md](../06-testing-and-mocks.md)). Its two

@@ -223,7 +223,9 @@ describe('PitchingForm', () => {
     expect(screen.getByLabelText('ไม่ผ่านเงื่อนไขขั้นต่ำ')).toBeInTheDocument();
   });
 
-  it('stays editable and resubmittable after the form is sent', async () => {
+  // Submitting does not freeze the form, so a sent one opens like a draft —
+  // it has to say so, or the judge cannot tell a correction from a first send.
+  it('stays editable after the form is sent, and says it is a correction', async () => {
     render(
       <PitchingForm
         pitching={pitching({
@@ -235,17 +237,27 @@ describe('PitchingForm', () => {
       />
     );
 
+    expect(screen.getByText(/แบบประเมินนี้ส่งแล้ว/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'ส่งแบบประเมิน' })).not.toBeInTheDocument();
+
     const score = screen.getByLabelText(/คะแนนที่ได้/);
     expect(score).toBeEnabled();
 
     await userEvent.clear(score);
     await userEvent.type(score, '5');
-    await userEvent.click(screen.getByRole('button', { name: 'ส่งแบบประเมิน' }));
+    await userEvent.click(screen.getByRole('button', { name: 'บันทึกการแก้ไข' }));
 
     expect(submitForm).toHaveBeenCalledWith(
       expect.objectContaining({ scores: [{ criterionId: 101, score: 5 }] }),
       expect.anything()
     );
+  });
+
+  it('keeps the first-submission wording on a draft', () => {
+    render(<PitchingForm pitching={pitching()} />);
+
+    expect(screen.getByRole('button', { name: 'ส่งแบบประเมิน' })).toBeInTheDocument();
+    expect(screen.queryByText(/แบบประเมินนี้ส่งแล้ว/)).not.toBeInTheDocument();
   });
 
   // The header block (judge, วันที่ประเมิน, ผลิตภัณฑ์ต้นแบบ) is server-side data

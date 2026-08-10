@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { AlertCard } from '@/components/shared/alert-card';
 import { useConfirm } from '@/components/shared/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
@@ -27,6 +28,26 @@ interface PitchingFormProps {
   pitching: Pitching;
 }
 
+// The same five slots, worded for a first submission and for a correction of
+// one already in the ranking.
+const SUBMIT_TEXT = {
+  action: PITCHING_TEXT.submit,
+  pending: PITCHING_TEXT.submitting,
+  confirmTitle: PITCHING_TEXT.submitConfirmTitle,
+  confirmDescription: PITCHING_TEXT.submitConfirmDescription,
+  confirmLabel: PITCHING_TEXT.submitConfirmLabel,
+  success: PITCHING_TEXT.submitSuccess,
+} as const;
+
+const RESUBMIT_TEXT = {
+  action: PITCHING_TEXT.resubmit,
+  pending: PITCHING_TEXT.resubmitting,
+  confirmTitle: PITCHING_TEXT.resubmitConfirmTitle,
+  confirmDescription: PITCHING_TEXT.resubmitConfirmDescription,
+  confirmLabel: PITCHING_TEXT.resubmitConfirmLabel,
+  success: PITCHING_TEXT.resubmitSuccess,
+} as const;
+
 interface PitchingDraft {
   scoreCardTotal: number | null;
   participationPct: number | null;
@@ -48,6 +69,11 @@ export function PitchingForm({ pitching }: PitchingFormProps) {
   const confirm = useConfirm();
   const router = useRouter();
   const { round, storeId, id } = pitching;
+  // Submitting does not lock the form, so a resubmit is a correction of a score
+  // the ranking already averages — it needs its own wording, not a first
+  // submission's.
+  const isResubmit = pitching.status === 'SUBMITTED';
+  const text = isResubmit ? RESUBMIT_TEXT : SUBMIT_TEXT;
 
   const [draft, setDraft] = useState<PitchingDraft>(() => toDraft(pitching));
   const { mutate: submitForm, isPending: isSubmitting } = useSubmitPitching(id, storeId, round);
@@ -62,17 +88,23 @@ export function PitchingForm({ pitching }: PitchingFormProps) {
       ),
     }));
 
+  // Merged off `current`, not off the `draft` this render closed over: each
+  // comment box commits on blur, and a blur that lands before React has
+  // re-rendered would otherwise write a map missing the previous box's answer.
+  const patchComment = (key: string, value: string) =>
+    setDraft((current) => ({ ...current, comments: { ...current.comments, [key]: value } }));
+
   const handleSubmit = async () => {
     const confirmed = await confirm({
-      title: PITCHING_TEXT.submitConfirmTitle,
-      description: PITCHING_TEXT.submitConfirmDescription,
-      confirmLabel: PITCHING_TEXT.submitConfirmLabel,
+      title: text.confirmTitle,
+      description: text.confirmDescription,
+      confirmLabel: text.confirmLabel,
     });
     if (!confirmed) return;
 
     submitForm(toSubmitDto(pitching, draft), {
       onSuccess: () => {
-        toast.success(PITCHING_TEXT.submitSuccess);
+        toast.success(text.success);
         router.push(ROUTES.PITCHING);
       },
       onError: (error) => toast.error(extractErrorMessage(error)),
@@ -81,6 +113,8 @@ export function PitchingForm({ pitching }: PitchingFormProps) {
 
   return (
     <div className="space-y-4">
+      {isResubmit && <AlertCard variant="info" message={PITCHING_TEXT.resubmitNotice} />}
+
       {round === 'ACCELERATION' && (
         <PitchingMinimumConditionsPanel
           conditions={evaluateMinimumConditions(draft.scoreCardTotal, draft.participationPct)}
@@ -101,11 +135,7 @@ export function PitchingForm({ pitching }: PitchingFormProps) {
 
       <PitchingLevelBands round={round} />
 
-      <PitchingComments
-        round={round}
-        comments={draft.comments}
-        onCommit={(key, value) => patch({ comments: { ...draft.comments, [key]: value } })}
-      />
+      <PitchingComments round={round} comments={draft.comments} onCommit={patchComment} />
 
       <PitchingVerdict
         round={round}
@@ -120,7 +150,7 @@ export function PitchingForm({ pitching }: PitchingFormProps) {
       <div className="flex items-center justify-end gap-3">
         <span className="text-sm text-muted-foreground">{PITCHING_TEXT.unsavedHint}</span>
         <Button onClick={handleSubmit} disabled={isSubmitting}>
-          {isSubmitting ? PITCHING_TEXT.submitting : PITCHING_TEXT.submit}
+          {isSubmitting ? text.pending : text.action}
         </Button>
       </div>
     </div>

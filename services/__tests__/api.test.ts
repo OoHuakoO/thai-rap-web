@@ -246,6 +246,38 @@ describe('response interceptor — error handling', () => {
 
     expect(window.location.href).toBe(ROUTES.ERROR_503);
   });
+
+  // Every export/download sets responseType: 'blob', which makes axios hand the
+  // *error* body back as a Blob too — without parsing it the download reports
+  // axios' English status line instead of the backend's Thai message.
+  it("reads the backend message out of a blob request's error body", async () => {
+    server.use(
+      http.get(`${API_URL}/download`, () =>
+        HttpResponse.json(
+          { success: false, error: { code: 'PERM_001', message: 'ไม่มีสิทธิ์ดาวน์โหลด' } },
+          { status: 400 }
+        )
+      )
+    );
+
+    await expect(api.get('/download', { responseType: 'blob' })).rejects.toMatchObject({
+      statusCode: 400,
+      message: 'ไม่มีสิทธิ์ดาวน์โหลด',
+    });
+  });
+
+  it('falls back to the status message when a blob error body is not JSON', async () => {
+    server.use(
+      http.get(
+        `${API_URL}/download`,
+        () => new HttpResponse('<html>Bad Gateway</html>', { status: 502 })
+      )
+    );
+
+    await expect(api.get('/download', { responseType: 'blob' })).rejects.toMatchObject({
+      statusCode: 502,
+    });
+  });
 });
 
 describe('refreshAccessToken', () => {

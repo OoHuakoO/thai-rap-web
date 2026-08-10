@@ -3,7 +3,6 @@ import { API_URL } from '@/constants';
 import type {
   CreatePitchingDto,
   Pitching,
-  PitchingCriterion,
   PitchingRankingRow,
   PitchingRecommendationCounts,
   PitchingRound,
@@ -107,7 +106,12 @@ function buildRanking(round: PitchingRound, province?: string | null): PitchingR
         avgScore,
         level: levelFor(avgScore),
         recommendationCounts: countRecommendations(rows),
-        minimumPassedCount: rows.filter((row) => row.minimumConditions?.passed).length,
+        // Null on PITCH_DECK, like the API: that form has no minimum conditions
+        // to count, so the ranking column is dropped rather than shown as 0.
+        minimumPassedCount:
+          round === 'ACCELERATION'
+            ? rows.filter((row) => row.minimumConditions?.passed).length
+            : null,
       };
     })
     .sort((a, b) => b.avgScore - a.avgScore || a.storeCode.localeCompare(b.storeCode));
@@ -133,12 +137,6 @@ function toSummaryRow(row: Pitching): PitchingSummaryRow {
 }
 
 export const pitchingHandlers = [
-  http.get(`${BASE_URL}/criteria`, ({ request }) => {
-    const scenarioResponse = checkScenario(request);
-    if (scenarioResponse) return scenarioResponse;
-    return HttpResponse.json<PitchingCriterion[]>(criteriaForRound(readRound(request)));
-  }),
-
   // The export routes answer a Blob, so the fixture only has to prove the URL,
   // params and headers line up — the real writers live on the API.
   http.get(`${BASE_URL}/summary/export`, ({ request }) => {
