@@ -25,7 +25,7 @@ app/
 | `/login` | `LOGIN` | `app/(auth)/login/page.tsx` | `LoginForm` in `<Suspense>` | authenticated → bounce out |
 | `/register` | `REGISTER` | `app/(auth)/register/page.tsx` | `RegisterForm` | same |
 | `/forgot-password` | `FORGOT_PASSWORD` | `app/(auth)/forgot-password/page.tsx` | `ForgotPasswordForm` | same |
-| `/` | `HOME` | `app/(dashboard)/page.tsx` | 7 dashboard cards | `dashboard:read` |
+| `/` | `HOME` | `app/(dashboard)/page.tsx` | 7 dashboard cards | `dashboard:read` (every role but JUDGE) |
 | `/stores` | `STORES` | `.../stores/page.tsx` | `StoreExplorer` | `store:read` + SUPER_ADMIN/ADMIN/ENTREPRENEUR |
 | `/stores/new` | `STORE_NEW` | `.../stores/new/page.tsx` | `StoreFormHeader` + `CreateStoreForm` | inherits `/stores` |
 | `/stores/[id]` | `STORE_DETAIL(id)` | `.../stores/[id]/page.tsx` | `StoreDetail` + `StoreAnalyticsSection` + `StoreReportSection` | inherits `/stores` |
@@ -37,7 +37,7 @@ app/
 | `/reports` | `REPORTS` | `.../reports/page.tsx` | `ReportPageHeader` + `ReportWorkspace` | `reports:read` |
 | `/pitching` | `PITCHING` | `.../pitching/page.tsx` | `PitchingDashboard` | `pitching:read` + SUPER_ADMIN / ADMIN / JUDGE |
 | `/pitching/form` | `PITCHING_FORM` | `.../pitching/form/page.tsx` | `PitchingFormWorkspace` | `pitching:write` + SUPER_ADMIN / ADMIN / JUDGE |
-| `/news` | `NEWS` | `.../news/page.tsx` | `NewsPageHeader` + `NewsList` | `news:read` (all roles) |
+| `/news` | `NEWS` | `.../news/page.tsx` | `NewsPageHeader` + `NewsList` | `news:read` (every role but JUDGE) |
 | `/news/new` | `NEWS_NEW` | `.../news/new/page.tsx` | `CreateNewsForm` | `news:write` |
 | `/news/[id]/edit` | `NEWS_EDIT(id)` | `.../news/[id]/edit/page.tsx` | `EditNewsForm` | `news:write` |
 | `/users` | `USERS` | `.../users/page.tsx` | `UserPageHeader` + `UserList` | `users:read` + SUPER_ADMIN only |

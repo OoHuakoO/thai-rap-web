@@ -1,36 +1,19 @@
 'use client';
 
-import {
-  CircleAlert,
-  CircleCheck,
-  Lightbulb,
-  MessageSquareQuote,
-  TrendingUp,
-  type LucideIcon,
-} from 'lucide-react';
 import { AlertCard } from '@/components/shared/alert-card';
 import { DownloadButtons } from '@/components/shared/download-buttons';
 import { CardSkeleton } from '@/components/shared/loading';
 import { ProgressBar } from '@/components/shared/progress-bar';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { ProgressColor } from '@/types';
 import { cn } from '@/utils/cn';
 import { extractErrorMessage } from '@/utils/extract-error-message';
-import { getInitials } from '@/utils/get-initials';
 import {
   PITCHING_AVG_SCORE_DECIMALS,
-  PITCHING_COMMENT_FIELDS,
-  PITCHING_COMMENT_TONES,
-  PITCHING_LEVEL_BADGE_CLASSES,
   PITCHING_LEVEL_EDGE_CLASSES,
-  PITCHING_LEVEL_LABELS,
   PITCHING_LEVEL_PROGRESS_COLORS,
   PITCHING_LEVEL_TEXT_CLASSES,
-  PITCHING_RECOMMENDATION_BADGE_CLASSES,
-  PITCHING_RECOMMENDATION_LABELS,
   PITCHING_TEXT,
-  type PitchingCommentTone,
 } from '../constants/pitching.constants';
 import { useExportPitchingStoreReport } from '../hooks/use-export-pitching';
 import { usePitchingStoreReport } from '../hooks/use-pitching-report';
@@ -42,36 +25,18 @@ import type {
   PitchingRound,
 } from '../types/pitching.types';
 import { getPitchingLevel } from '../utils/pitching-level';
+import { readJudgeOpinion } from '../utils/pitching-opinion';
+import { PitchingCommentBox } from './pitching-comment-box';
+import { PitchingJudgeIdentity } from './pitching-judge-identity';
+import { PitchingLevelBadge } from './pitching-level-badge';
+import { PitchingMinimumConditionsStrip } from './pitching-minimum-strip';
+import { PitchingReasonQuote } from './pitching-reason-quote';
+import { PitchingRecommendationBadge } from './pitching-recommendation-badge';
 
 interface PitchingStoreReportPanelProps {
   storeId: string;
   round: PitchingRound;
 }
-
-// A comment box's colour is what it is about, not who wrote it: green for what
-// works, red for what does not, purple for upside, orange for the next step.
-const TONE_STYLES: Record<PitchingCommentTone, { box: string; text: string; icon: LucideIcon }> = {
-  positive: {
-    box: 'border-score-green/25 bg-score-green/[0.06]',
-    text: 'text-score-green',
-    icon: CircleCheck,
-  },
-  concern: {
-    box: 'border-score-red/25 bg-score-red/[0.06]',
-    text: 'text-score-red',
-    icon: CircleAlert,
-  },
-  potential: {
-    box: 'border-purple-banner/25 bg-purple-banner/[0.06]',
-    text: 'text-purple-banner',
-    icon: TrendingUp,
-  },
-  advice: {
-    box: 'border-orange/25 bg-orange/[0.06]',
-    text: 'text-orange',
-    icon: Lightbulb,
-  },
-};
 
 const RECOMMENDATION_ORDER: readonly PitchingRecommendation[] = [
   'SELECTED',
@@ -106,11 +71,7 @@ export function PitchingStoreReportPanel({ storeId, round }: PitchingStoreReport
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {report.level && (
-              <Badge variant="outline" className={PITCHING_LEVEL_BADGE_CLASSES[report.level]}>
-                {PITCHING_LEVEL_LABELS[report.level]}
-              </Badge>
-            )}
+            {report.level && <PitchingLevelBadge level={report.level} />}
             <span
               className={cn('text-2xl font-bold tabular-nums', PITCHING_LEVEL_TEXT_CLASSES[level])}
             >
@@ -150,7 +111,12 @@ export function PitchingStoreReportPanel({ storeId, round }: PitchingStoreReport
           {report.criteria.map((criterion) => {
             // The band a criterion's own percentage falls in — the same cut
             // points as a total, so a weak criterion reads red on a green card.
+            // Only the score text carries the band in ACCELERATION; its bars
+            // stay one colour, because 16 criteria in four colours read as a
+            // legend the reader has to decode instead of a length comparison.
             const criterionLevel = getPitchingLevel(criterion.avgPct);
+            const progressColor: ProgressColor =
+              round === 'ACCELERATION' ? 'danger' : PITCHING_LEVEL_PROGRESS_COLORS[criterionLevel];
 
             return (
               <div key={criterion.id} className="space-y-1">
@@ -168,10 +134,7 @@ export function PitchingStoreReportPanel({ storeId, round }: PitchingStoreReport
                     {criterion.avgScore.toFixed(PITCHING_AVG_SCORE_DECIMALS)} / {criterion.maxScore}
                   </span>
                 </div>
-                <ProgressBar
-                  value={criterion.avgPct}
-                  color={PITCHING_LEVEL_PROGRESS_COLORS[criterionLevel]}
-                />
+                <ProgressBar value={criterion.avgPct} color={progressColor} />
               </div>
             );
           })}
@@ -186,7 +149,7 @@ export function PitchingStoreReportPanel({ storeId, round }: PitchingStoreReport
         </CardHeader>
         <CardContent className="space-y-3">
           {report.judges.map((judge) => (
-            <JudgeResult key={judge.id} judge={judge} round={round} />
+            <JudgeResult key={judge.id} judge={judge} />
           ))}
         </CardContent>
       </Card>
@@ -205,10 +168,11 @@ function RecommendationCounts({ counts }: { counts: PitchingRecommendationCounts
         {PITCHING_TEXT.recommendationCountsTitle}
       </span>
       {voted.map((key) => (
-        <Badge key={key} variant="outline" className={PITCHING_RECOMMENDATION_BADGE_CLASSES[key]}>
-          {PITCHING_RECOMMENDATION_LABELS[key]} ·{' '}
-          {PITCHING_TEXT.recommendationCountValue(counts[key])}
-        </Badge>
+        <PitchingRecommendationBadge
+          key={key}
+          recommendation={key}
+          suffix={` · ${PITCHING_TEXT.recommendationCountValue(counts[key])}`}
+        />
       ))}
     </div>
   );
@@ -216,11 +180,11 @@ function RecommendationCounts({ counts }: { counts: PitchingRecommendationCounts
 
 interface JudgeResultProps {
   judge: Pitching;
-  round: PitchingRound;
 }
 
-function JudgeResult({ judge, round }: JudgeResultProps) {
+function JudgeResult({ judge }: JudgeResultProps) {
   const level: PitchingLevel = judge.level ?? getPitchingLevel(judge.totalScore ?? 0);
+  const { summary, fields } = readJudgeOpinion(judge);
 
   return (
     <article
@@ -230,28 +194,12 @@ function JudgeResult({ judge, round }: JudgeResultProps) {
       )}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <Avatar className="h-9 w-9">
-            <AvatarFallback className="bg-purple-banner/10 text-purple-banner">
-              {getInitials(judge.judgeName)}
-            </AvatarFallback>
-          </Avatar>
-          <p className="min-w-0 truncate text-sm font-semibold text-text-main">{judge.judgeName}</p>
-        </div>
+        <PitchingJudgeIdentity judgeName={judge.judgeName} />
         <div className="flex flex-wrap items-center gap-2">
           {judge.recommendation && (
-            <Badge
-              variant="outline"
-              className={PITCHING_RECOMMENDATION_BADGE_CLASSES[judge.recommendation]}
-            >
-              {PITCHING_RECOMMENDATION_LABELS[judge.recommendation]}
-            </Badge>
+            <PitchingRecommendationBadge recommendation={judge.recommendation} />
           )}
-          {judge.level && (
-            <Badge variant="outline" className={PITCHING_LEVEL_BADGE_CLASSES[judge.level]}>
-              {PITCHING_LEVEL_LABELS[judge.level]}
-            </Badge>
-          )}
+          {judge.level && <PitchingLevelBadge level={judge.level} />}
           <span
             className={cn('text-lg font-bold tabular-nums', PITCHING_LEVEL_TEXT_CLASSES[level])}
           >
@@ -261,90 +209,21 @@ function JudgeResult({ judge, round }: JudgeResultProps) {
       </div>
 
       {judge.minimumConditions && (
-        <p
-          className={cn(
-            'flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border px-3 py-2 text-xs',
-            judge.minimumConditions.passed
-              ? 'border-score-green/25 bg-score-green/[0.06] text-score-green'
-              : 'border-score-red/25 bg-score-red/[0.06] text-score-red'
-          )}
-        >
-          {judge.minimumConditions.passed ? (
-            <CircleCheck className="h-4 w-4 flex-shrink-0" />
-          ) : (
-            <CircleAlert className="h-4 w-4 flex-shrink-0" />
-          )}
-          <span className="font-semibold">
-            {judge.minimumConditions.passed
-              ? PITCHING_TEXT.minimumPassed
-              : PITCHING_TEXT.minimumFailed}
-          </span>
-          <span className="text-charcoal">
-            {PITCHING_TEXT.scoreCardLabel}: {judge.minimumConditions.scoreCardTotal ?? '—'}
-            {' · '}
-            {PITCHING_TEXT.participationLabel}: {judge.minimumConditions.participationPct ?? '—'}
-          </span>
-        </p>
+        <PitchingMinimumConditionsStrip conditions={judge.minimumConditions} />
       )}
 
-      {judge.recommendationReason && (
-        <blockquote className="rounded-lg border-l-2 border-charcoal/30 bg-charcoal/[0.04] px-3 py-2.5">
-          <p className="mb-1 flex items-center gap-1.5 text-xs font-medium text-charcoal">
-            <MessageSquareQuote className="h-3.5 w-3.5" />
-            {PITCHING_TEXT.verdictReasonLabel}
-          </p>
-          <p className="whitespace-pre-line text-sm leading-relaxed text-text-main">
-            {judge.recommendationReason}
-          </p>
-        </blockquote>
-      )}
+      {summary && <PitchingReasonQuote reason={summary} accent="charcoal" />}
 
       <div className="grid gap-3 md:grid-cols-2">
-        {PITCHING_COMMENT_FIELDS[round].map((field) => (
-          <CommentBox
+        {fields.map((field) => (
+          <PitchingCommentBox
             key={field.key}
             label={field.label}
-            value={judge.comments[field.key]}
-            tone={PITCHING_COMMENT_TONES[field.key] ?? 'advice'}
+            value={field.text}
+            tone={field.tone}
           />
         ))}
       </div>
     </article>
-  );
-}
-
-interface CommentBoxProps {
-  label: string;
-  value: string | undefined;
-  tone: PitchingCommentTone;
-}
-
-/**
- * One comment box. A box the judge left blank still shows — a missing answer is
- * itself a finding — but drops to a dashed grey outline so a scan reads the
- * filled ones first.
- */
-function CommentBox({ label, value, tone }: CommentBoxProps) {
-  const text = value?.trim() ?? '';
-  const style = TONE_STYLES[tone];
-  const Icon = style.icon;
-
-  if (!text) {
-    return (
-      <div className="space-y-1 rounded-lg border border-dashed bg-muted/30 p-3">
-        <p className="text-xs font-medium text-muted-foreground">{label}</p>
-        <p className="text-sm text-muted-foreground">{PITCHING_TEXT.noCommentHint}</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className={cn('space-y-1 rounded-lg border p-3', style.box)}>
-      <p className={cn('flex items-center gap-1.5 text-xs font-semibold', style.text)}>
-        <Icon className="h-3.5 w-3.5 flex-shrink-0" />
-        {label}
-      </p>
-      <p className="whitespace-pre-line text-sm leading-relaxed text-text-main">{text}</p>
-    </div>
   );
 }

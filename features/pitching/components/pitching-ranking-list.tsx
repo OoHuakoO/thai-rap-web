@@ -1,14 +1,13 @@
 'use client';
 
-import { Store as StoreIcon } from 'lucide-react';
 import { cn } from '@/utils/cn';
-import { buildFileUrl } from '@/utils/build-file-url';
 import {
   PITCHING_AVG_SCORE_DECIMALS,
   PITCHING_DASHBOARD_TEXT,
   PITCHING_TEXT,
 } from '../constants/pitching.constants';
 import type { PitchingRankingRow } from '../types/pitching.types';
+import { PitchingStoreThumbnail } from './pitching-store-thumbnail';
 
 // Podium colours for the first three places; every other rank renders plain.
 // Bronze uses the brand orange tokens, not Tailwind's `orange-*` scale — the
@@ -70,7 +69,11 @@ export function PitchingRankingList({
                 {row.rank}
               </span>
 
-              <StoreThumbnail coverUrl={row.coverUrl} storeName={row.storeName} />
+              <PitchingStoreThumbnail
+                coverUrl={row.coverUrl}
+                alt={PITCHING_DASHBOARD_TEXT.storePhotoAlt(row.storeName)}
+                size="sm"
+              />
 
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm text-text-main">{row.storeName}</span>
@@ -89,27 +92,5 @@ export function PitchingRankingList({
         ))}
       </ul>
     </>
-  );
-}
-
-interface StoreThumbnailProps {
-  coverUrl: string | null;
-  storeName: string;
-}
-
-function StoreThumbnail({ coverUrl, storeName }: StoreThumbnailProps) {
-  return (
-    <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border border-orange/15 bg-cream">
-      {coverUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={buildFileUrl(coverUrl)}
-          alt={PITCHING_DASHBOARD_TEXT.storePhotoAlt(storeName)}
-          className="h-full w-full object-cover"
-        />
-      ) : (
-        <StoreIcon className="h-4 w-4 text-orange/50" />
-      )}
-    </span>
   );
 }

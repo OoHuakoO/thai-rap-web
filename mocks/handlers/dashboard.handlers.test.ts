@@ -13,7 +13,7 @@ import type {
 
 // Seed users these tests lean on: '5' is an ENTREPRENEUR owning store '1', '2'
 // an ASSESSOR assigned stores 1/3/5, '3' a MENTOR assigned stores 2/4, '1' an
-// ADMIN, '4' a JUDGE.
+// ADMIN, '4' a JUDGE, '8' a VIEWER.
 const ENTREPRENEUR_ID = '5';
 const OWNED_STORE_ID = '1';
 const ASSESSOR_ID = '2';
@@ -22,6 +22,7 @@ const MENTOR_ID = '3';
 const MENTOR_STORE_IDS = ['2', '4'];
 const ADMIN_ID = '1';
 const JUDGE_ID = '4';
+const VIEWER_ID = '8';
 
 const server = setupServer(...dashboardHandlers);
 
@@ -111,12 +112,32 @@ describe('dashboardHandlers scoping', () => {
     );
   });
 
-  // JUDGE reads no assessment, so no report exists for it — an empty list, not
-  // a 403, so the dashboard card still renders.
+  // A VIEWER reads no assessment, so no report exists for it — an empty list,
+  // not a 403, so the dashboard card still renders.
   it('offers no reports to a role that cannot read assessments', async () => {
-    const reports = await get<ReportStatusItem[]>('/reports-status', JUDGE_ID);
+    const reports = await get<ReportStatusItem[]>('/reports-status', VIEWER_ID);
 
     expect(reports).toEqual([]);
+  });
+
+  // A judge is on the panel, not in the programme: no card is computed for it
+  // at all, matching OVERVIEW_READ_ROLES on the API.
+  it('refuses every overview endpoint to a judge', async () => {
+    for (const path of [
+      '/kpis',
+      '/province-distribution',
+      '/top20',
+      '/incubation-progress',
+      '/province-comparison',
+      '/store-scores',
+      '/store-scores/export',
+      '/activities',
+      '/reports-status',
+    ]) {
+      const res = await fetch(`${API_URL}/dashboard${path}`, as(JUDGE_ID));
+
+      expect(res.status).toBe(403);
+    }
   });
 
   // The feed carries no store to narrow on, matching GET /news.

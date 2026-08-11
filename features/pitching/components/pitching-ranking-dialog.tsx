@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { AlertCard } from '@/components/shared/alert-card';
 import { PaginationBar } from '@/components/shared/pagination-bar';
 import {
@@ -15,6 +14,7 @@ import {
   PITCHING_RANKING_DIALOG_PAGE_LIMIT,
   PITCHING_TEXT,
 } from '../constants/pitching.constants';
+import { usePagedRows } from '../hooks/use-paged-rows';
 import type { PitchingRankingRow } from '../types/pitching.types';
 import { PitchingRankingList } from './pitching-ranking-list';
 
@@ -39,27 +39,17 @@ export function PitchingRankingDialog({
   selectedStoreId,
   onSelectStore,
 }: PitchingRankingDialogProps) {
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState<number>(PITCHING_RANKING_DIALOG_PAGE_LIMIT);
-
-  const total = rows.length;
-  const totalPages = Math.max(1, Math.ceil(total / limit));
   // A round switched behind the open dialog can leave the cohort shorter than
-  // the page being read, which would render an empty list with no way back.
-  useEffect(() => {
-    if (page > totalPages) setPage(1);
-  }, [page, totalPages]);
-
-  const pageRows = rows.slice((page - 1) * limit, page * limit);
+  // the page being read; the hook clamps to the last page that exists rather
+  // than rendering an empty list with no way back.
+  const { pageRows, page, limit, total, totalPages, setPage, setLimit } = usePagedRows(
+    rows,
+    PITCHING_RANKING_DIALOG_PAGE_LIMIT
+  );
 
   const handleSelectStore = (storeId: string) => {
     onSelectStore(storeId);
     onOpenChange(false);
-  };
-
-  const handleLimitChange = (nextLimit: number) => {
-    setLimit(nextLimit);
-    setPage(1);
   };
 
   return (
@@ -91,7 +81,7 @@ export function PitchingRankingDialog({
               total={total}
               totalPages={totalPages}
               onPageChange={setPage}
-              onLimitChange={handleLimitChange}
+              onLimitChange={setLimit}
               itemLabel={PITCHING_TEXT.rankingItemLabel}
             />
           </>

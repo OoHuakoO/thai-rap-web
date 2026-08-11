@@ -221,7 +221,6 @@ describe('PitchingDashboard', () => {
 
     const link = await waitFor(() => screen.getByRole('link', { name: /กรอกคะแนน/ }));
     expect(link).toHaveAttribute('href', '/pitching/form?storeId=store-1&round=PITCH_DECK');
-    expect(link).toHaveTextContent('เต็ม 20 คะแนน ต่อเกณฑ์');
   });
 
   it('hides the store card’s scoring link from a role that cannot write', async () => {
@@ -242,6 +241,42 @@ describe('PitchingDashboard', () => {
 
     await waitFor(() => expect(screen.getByText('18')).toBeInTheDocument());
     expect(screen.queryByText('17.1')).not.toBeInTheDocument();
+  });
+
+  // Comments are free text, so the average view has nothing to average — it
+  // shows one judge's, and a silent first judge must not hide a panel that has
+  // written comments on it.
+  it('shows the first judge who wrote something while on the cross-judge average', async () => {
+    const silent = judge('pitch-1', 'ดร.กฤษฎา วงษ์สมบัติ', 83, 18);
+    vi.mocked(pitchingService.getStoreReport).mockResolvedValue({
+      ...REPORT,
+      judges: [
+        { ...silent, comments: {}, recommendationReason: null },
+        judge('pitch-2', 'ผศ.ดร.เบญจมาศ', 80, 16),
+      ],
+    });
+
+    renderWithClient();
+
+    // The bullet only exists on the opinion panel, and only the second judge wrote it.
+    await waitFor(() => expect(screen.getByText('เมนูมีเอกลักษณ์')).toBeInTheDocument());
+    expect(screen.queryByText('กรรมการยังไม่ได้บันทึกความเห็น')).not.toBeInTheDocument();
+  });
+
+  // The panel used to print two of the five boxes, so a judge's write-up could
+  // only be read in full on the store report.
+  it('prints every comment box of the round, blank ones included', async () => {
+    renderWithClient();
+
+    await waitFor(() => expect(screen.getByText('จุดแข็งของร้าน')).toBeInTheDocument());
+    expect(screen.getByText('จุดที่ควรปรับปรุงเร่งด่วน')).toBeInTheDocument();
+    expect(
+      screen.getByText('ความเป็นไปได้ในการพัฒนายอดขาย / ลดต้นทุน / เพิ่มประสิทธิภาพ')
+    ).toBeInTheDocument();
+    expect(screen.getByText('ศักยภาพในการต่อยอดผลิตภัณฑ์หรือขยายตลาด')).toBeInTheDocument();
+    expect(screen.getByText('ข้อเสนอแนะจากคณะกรรมการ')).toBeInTheDocument();
+    // The judge in this fixture left the last three blank.
+    expect(screen.getAllByText('กรรมการไม่ได้ระบุ')).toHaveLength(3);
   });
 
   // Both narrower picks are scoped by the round, so a stale one survives the

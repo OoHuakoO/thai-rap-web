@@ -1,20 +1,21 @@
 # Feature: News
 
-`features/news/` — ข่าวประชาสัมพันธ์. Announcements every role can read and only
-the admin pair can publish.
+`features/news/` — ข่าวประชาสัมพันธ์. Announcements every role but JUDGE can
+read, and only the admin pair can publish.
 
 ## Routes
 
 | Route | Page composition | Permission |
 |---|---|---|
-| `/news` | `NewsPageHeader mode="list"` + `NewsList` | `news:read` — **every role** |
+| `/news` | `NewsPageHeader mode="list"` + `NewsList` | `news:read` — **every role but JUDGE** |
 | `/news/new` | `NewsPageHeader mode="create"` + `CreateNewsForm` | `news:write` — SUPER_ADMIN, ADMIN |
 | `/news/[id]/edit` | `NewsPageHeader mode="edit"` + `EditNewsForm` | `news:write` |
 
-`/news` carries no `allowedRoles` gate — it is the one section open to everyone,
-including VIEWER. The two write pages sit **below** it in the path, so
-`canAccessRoute`'s longest-match rule checks them against `news:write` rather
-than inheriting `/news`'s `news:read`. `/news/[id]/edit` matches through
+`/news` carries no `allowedRoles` gate — `news:read` alone decides, and every
+role but JUDGE holds it, VIEWER included. The two write pages sit **below** it
+in the path, so `canAccessRoute`'s longest-match rule checks them against
+`news:write` rather than inheriting `/news`'s `news:read`. `/news/[id]/edit`
+matches through
 `ROUTES.NEWS_EDIT_PATTERN` (`/news/:id/edit`), because a route function cannot
 be matched against a visited path.
 

@@ -31,8 +31,8 @@ Permissions are `<resource>:<action>` strings from `PERMISSIONS`.
 
 | Permission | SUPER_ADMIN | ADMIN | ASSESSOR | MENTOR | ENTREPRENEUR | JUDGE | VIEWER |
 |---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-| `dashboard:read` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `news:read` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `dashboard:read` | ✓ | ✓ | ✓ | ✓ | ✓ | | ✓ |
+| `news:read` | ✓ | ✓ | ✓ | ✓ | ✓ | | ✓ |
 | `news:write` | ✓ | ✓ | | | | | |
 | `news:delete` | ✓ | ✓ | | | | | |
 | `store:read` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
@@ -185,8 +185,10 @@ runtime. Never rely on nav filtering for safety — a user can type the URL.
 
 `getDefaultRouteForRole()` therefore re-checks its candidate with
 `canAccessRoute()` and falls back to `ROUTES.ERROR_403`, never `ROUTES.HOME`
-(which is itself gated on `dashboard:read`). Any redirect target must survive
-the same check that runs on arrival, or the layout loops forever.
+(which is itself gated on `dashboard:read`, and JUDGE does not hold it). Any
+redirect target must survive the same check that runs on arrival, or the layout
+loops forever. In practice every role lands on `/` except JUDGE, whose first
+reachable nav entry is `/pitching`.
 
 ## Component-level gating
 

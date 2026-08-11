@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Users } from 'lucide-react';
 import { DataTable } from '@/components/shared/data-table';
 import { PaginationBar } from '@/components/shared/pagination-bar';
@@ -10,13 +9,13 @@ import { formatThaiDate, formatThaiDateTime } from '@/utils/format-thai-date';
 import {
   PITCHING_DASHBOARD_TEXT,
   PITCHING_JUDGE_TABLE_PAGE_LIMIT,
-  PITCHING_RECOMMENDATION_BADGE_CLASSES,
-  PITCHING_RECOMMENDATION_LABELS,
   PITCHING_STATUS_LABELS,
   PITCHING_TEXT,
 } from '../constants/pitching.constants';
+import { usePagedRows } from '../hooks/use-paged-rows';
 import type { Pitching } from '../types/pitching.types';
 import { PitchingPanel } from './pitching-panel';
+import { PitchingRecommendationBadge } from './pitching-recommendation-badge';
 
 interface PitchingJudgeTableProps {
   judges: Pitching[];
@@ -27,12 +26,10 @@ interface PitchingJudgeTableProps {
  * here rather than asked for — there is no per-judge endpoint to page against.
  */
 export function PitchingJudgeTable({ judges }: PitchingJudgeTableProps) {
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(PITCHING_JUDGE_TABLE_PAGE_LIMIT);
-
-  const totalPages = Math.max(1, Math.ceil(judges.length / limit));
-  const currentPage = Math.min(page, totalPages);
-  const pageRows = judges.slice((currentPage - 1) * limit, currentPage * limit);
+  const { pageRows, page, limit, total, totalPages, setPage, setLimit } = usePagedRows(
+    judges,
+    PITCHING_JUDGE_TABLE_PAGE_LIMIT
+  );
 
   const columns: TableColumn<Pitching>[] = [
     {
@@ -93,12 +90,7 @@ export function PitchingJudgeTable({ judges }: PitchingJudgeTableProps) {
       // falls back to the form's own status rather than rendering an empty cell.
       cell: (row) =>
         row.recommendation ? (
-          <Badge
-            variant="outline"
-            className={PITCHING_RECOMMENDATION_BADGE_CLASSES[row.recommendation]}
-          >
-            {PITCHING_RECOMMENDATION_LABELS[row.recommendation]}
-          </Badge>
+          <PitchingRecommendationBadge recommendation={row.recommendation} />
         ) : (
           <Badge variant="outline">{PITCHING_STATUS_LABELS[row.status]}</Badge>
         ),
@@ -120,17 +112,14 @@ export function PitchingJudgeTable({ judges }: PitchingJudgeTableProps) {
           emptyMessage={PITCHING_DASHBOARD_TEXT.judgeTableEmpty}
         />
       </div>
-      {judges.length > 0 && (
+      {total > 0 && (
         <PaginationBar
-          page={currentPage}
+          page={page}
           limit={limit}
-          total={judges.length}
+          total={total}
           totalPages={totalPages}
           onPageChange={setPage}
-          onLimitChange={(next) => {
-            setLimit(next);
-            setPage(1);
-          }}
+          onLimitChange={setLimit}
           itemLabel={PITCHING_DASHBOARD_TEXT.judgeTableItemLabel}
         />
       )}

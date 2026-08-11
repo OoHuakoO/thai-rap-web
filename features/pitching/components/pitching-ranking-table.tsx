@@ -4,7 +4,6 @@ import { AlertCard } from '@/components/shared/alert-card';
 import { DataTable } from '@/components/shared/data-table';
 import { DownloadButtons } from '@/components/shared/download-buttons';
 import { PaginationBar } from '@/components/shared/pagination-bar';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import {
@@ -20,13 +19,12 @@ import { extractErrorMessage } from '@/utils/extract-error-message';
 import {
   ALL_PROVINCES,
   PITCHING_AVG_SCORE_DECIMALS,
-  PITCHING_LEVEL_BADGE_CLASSES,
-  PITCHING_LEVEL_LABELS,
   PITCHING_TEXT,
 } from '../constants/pitching.constants';
 import { useExportPitchingRanking } from '../hooks/use-export-pitching';
 import { usePitchingRanking } from '../hooks/use-pitching-report';
 import type { PitchingRankingRow, PitchingRound } from '../types/pitching.types';
+import { PitchingLevelBadge } from './pitching-level-badge';
 
 interface PitchingRankingTableProps {
   round: PitchingRound;
@@ -91,11 +89,7 @@ export function PitchingRankingTable({
     {
       key: 'level',
       header: PITCHING_TEXT.levelColumn,
-      cell: (row) => (
-        <Badge variant="outline" className={PITCHING_LEVEL_BADGE_CLASSES[row.level]}>
-          {PITCHING_LEVEL_LABELS[row.level]}
-        </Badge>
-      ),
+      cell: (row) => <PitchingLevelBadge level={row.level} />,
     },
     // เงื่อนไขขั้นต่ำ is on the acceleration form only — the API answers null on
     // the pitch deck round, and a "0 / 3" column for a gate that form does not

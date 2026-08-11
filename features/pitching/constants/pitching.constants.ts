@@ -191,16 +191,6 @@ export const PITCHING_COMMENT_TONES: Record<string, PitchingCommentTone> = {
   fundingSuggestions: 'advice',
 };
 
-// The two comment boxes the dashboard surfaces as จุดแข็ง / ประเด็นที่ควรพัฒนา.
-// Both forms have a strengths box under the same key; each words the second one
-// differently, so the key is per round. Every other box stays on the form and
-// in the store report — these two are the pair a committee reads at a glance.
-export const PITCHING_STRENGTHS_KEY = 'strengths';
-export const PITCHING_CONCERN_KEYS: Record<PitchingRound, string> = {
-  PITCH_DECK: 'urgentImprovements',
-  ACCELERATION: 'risks',
-};
-
 // หลักฐานที่ตรวจสอบ — acceleration form only.
 export const PITCHING_EVIDENCE_OPTIONS: readonly { key: string; label: string }[] = [
   { key: 'SCORE_CARD', label: 'Score Card 8 มิติ' },
@@ -386,7 +376,6 @@ export const PITCHING_DASHBOARD_TEXT = {
   phoneLabel: 'เบอร์โทร',
   storeUnavailable: 'ไม่พบข้อมูลร้านนี้',
   fillScore: 'กรอกคะแนน',
-  fillScoreHint: (maxScore: number) => `(เต็ม ${maxScore} คะแนน ต่อเกณฑ์)`,
 
   criteriaTitle: 'เกณฑ์การประเมิน',
   criteriaAverageColumn: 'คะแนนเฉลี่ย',
@@ -407,9 +396,9 @@ export const PITCHING_DASHBOARD_TEXT = {
   selectedShareDescription: (selected: number, total: number) => `${selected} จาก ${total} คน`,
 
   judgeOpinionTitle: 'ความคิดเห็นกรรมการ',
-  strengthsTitle: 'จุดแข็ง (Strengths)',
-  concernsTitle: 'ประเด็นที่ควรพัฒนา (Concerns)',
   opinionEmpty: 'กรรมการยังไม่ได้บันทึกความเห็น',
+  opinionAutoJudgeHint:
+    'ความเห็นเป็นข้อความรายคน จึงแสดงทีละท่าน — เลือกกรรมการจากตัวกรองด้านบนเพื่อดูของท่านอื่น',
 
   topRankingTitle: 'อันดับคะแนนสูงสุด',
   topRankingSubtitle: (size: number) => `(Top ${size})`,

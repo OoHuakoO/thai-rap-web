@@ -31,12 +31,13 @@ export const NAV_ITEMS: NavItem[] = [
     labelTh: 'ภาพรวมโครงการ',
     href: ROUTES.HOME,
     icon: NAV_ICONS.overview,
+    // Every role except JUDGE — a judge sees the panel it sits on, not the
+    // programme around it (see ROLE_PERMISSIONS).
     allowedRoles: [
       ROLES.SUPER_ADMIN,
       ROLES.ADMIN,
       ROLES.ASSESSOR,
       ROLES.MENTOR,
-      ROLES.JUDGE,
       ROLES.ENTREPRENEUR,
       ROLES.VIEWER,
     ],
@@ -95,15 +96,15 @@ export const NAV_ITEMS: NavItem[] = [
     labelTh: 'ข่าวประชาสัมพันธ์',
     href: ROUTES.NEWS,
     icon: Megaphone,
-    // Every role — announcements are read-only for all but the admin pair, who
-    // are the only ones news:write lets past the create/edit pages.
+    // Every role except JUDGE, which holds no news:read — announcements are
+    // read-only for all the rest but the admin pair, who are the only ones
+    // news:write lets past the create/edit pages.
     allowedRoles: [
       ROLES.SUPER_ADMIN,
       ROLES.ADMIN,
       ROLES.ASSESSOR,
       ROLES.MENTOR,
       ROLES.ENTREPRENEUR,
-      ROLES.JUDGE,
       ROLES.VIEWER,
     ],
   },

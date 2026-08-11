@@ -94,9 +94,12 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   // รายงานและส่งออก only; every assessment scope of that page is gated
   // separately on REPORT_ASSESSMENT_ROLES, which this role is not in, and the
   // API 403s it from /reports/* anyway.
+  //
+  // No dashboard:read and no news:read: a judge is a guest on the panel, not a
+  // participant in the programme, so ภาพรวมโครงการ and ข่าวประชาสัมพันธ์ are not
+  // its business. That makes it the only role without the overview, and
+  // getDefaultRouteForRole therefore lands it on คะแนนพิชชิ่ง instead.
   JUDGE: [
-    PERMISSIONS.DASHBOARD_READ,
-    PERMISSIONS.NEWS_READ,
     PERMISSIONS.STORE_READ,
     PERMISSIONS.PITCHING_READ,
     PERMISSIONS.PITCHING_WRITE,
@@ -230,7 +233,8 @@ export const ROUTE_PERMISSIONS: RoutePermissionConfig[] = [
     allowedRoles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.JUDGE],
   },
   { path: ROUTES.REPORTS, requiredPermission: PERMISSIONS.REPORTS_READ },
-  // Announcements are readable by every role — no allowedRoles gate. Publishing
+  // Announcements are readable by every role holding news:read — no
+  // allowedRoles gate on top. Publishing
   // is not: the two pages that write one require news:write, which only
   // SUPER_ADMIN and ADMIN hold, and they sit below /news so their longer paths
   // win the match below.

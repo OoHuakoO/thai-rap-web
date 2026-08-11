@@ -15,9 +15,9 @@ import { CardFooterLink } from './card-footer-link';
 
 export function ActivityFeedCard() {
   const { data: activities, isLoading, isError, error } = useActivities();
-  // Every role holds news:read, so the link shows for all of them today. The
-  // check stays so the footer follows whatever /news is gated on, not a copy
-  // of it.
+  // Every role that reaches this card holds news:read, so the link shows for
+  // all of them today. The check stays so the footer follows whatever /news is
+  // gated on, not a copy of it.
   const canOpenNews = useAuthStore((s) => s.canRoute(ROUTES.NEWS));
 
   return (

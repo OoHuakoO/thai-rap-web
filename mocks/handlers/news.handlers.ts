@@ -6,9 +6,19 @@ import type {
   NewsType,
   UpdateNewsDto,
 } from '@/features/news/types/news.types';
+import { hasPermission } from '@/constants/permissions';
+import { PERMISSIONS } from '@/types/auth.types';
 import { createNewsFromDto } from '../factories/news.factory';
 import { newsDb } from '../fixtures/news.fixtures';
-import { forbidden, getScenario, notFound, serverError, unauthorized } from '../utils/scenario';
+import { userDb } from '../fixtures/user.fixtures';
+import {
+  forbidden,
+  getMockUserId,
+  getScenario,
+  notFound,
+  serverError,
+  unauthorized,
+} from '../utils/scenario';
 
 const BASE_URL = `${API_URL}/news`;
 
@@ -25,10 +35,21 @@ function checkScenario(request: Request): Response | null {
   return null;
 }
 
+// Mirrors OVERVIEW_READ_ROLES on the API: the announcement feed rides the same
+// role list as the overview it is published to, so a JUDGE is refused both
+// reads. A request with no mock token stays open — the handler tests call these
+// endpoints without signing in, and every real call carries a token.
+function refuseWithoutNewsRead(request: Request): Response | null {
+  const id = getMockUserId(request);
+  const caller = id ? userDb.findById(id) : null;
+  if (caller && !hasPermission(caller.role, PERMISSIONS.NEWS_READ)) return forbidden();
+  return null;
+}
+
 export const newsHandlers = [
   http.get(BASE_URL, ({ request }) => {
-    const scenarioResponse = checkScenario(request);
-    if (scenarioResponse) return scenarioResponse;
+    const refusal = checkScenario(request) ?? refuseWithoutNewsRead(request);
+    if (refusal) return refusal;
 
     const params = new URL(request.url).searchParams;
     const type = NEWS_TYPES.find((value) => value === params.get('type'));
@@ -42,8 +63,8 @@ export const newsHandlers = [
   }),
 
   http.get(`${BASE_URL}/:id`, ({ request, params }) => {
-    const scenarioResponse = checkScenario(request);
-    if (scenarioResponse) return scenarioResponse;
+    const refusal = checkScenario(request) ?? refuseWithoutNewsRead(request);
+    if (refusal) return refusal;
 
     const item = newsDb.findById(String(params.id));
     if (!item) return notFound(NEWS_NOT_FOUND_CODE, NEWS_NOT_FOUND_MESSAGE);

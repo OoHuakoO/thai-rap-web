@@ -3,18 +3,14 @@
 import Link from 'next/link';
 import { ClipboardPen, MapPin, Phone, Store as StoreIcon, User, Utensils } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { STORE_UNSPECIFIED_LABEL } from '@/constants';
 import { ROUTES } from '@/constants/routes';
 import type { Store } from '@/features/store';
 import { useAuthStore } from '@/stores/auth-store';
-import { buildFileUrl } from '@/utils/build-file-url';
-import {
-  PITCHING_DASHBOARD_TEXT,
-  PITCHING_LEVEL_BADGE_CLASSES,
-  PITCHING_LEVEL_LABELS,
-} from '../constants/pitching.constants';
+import { PITCHING_DASHBOARD_TEXT } from '../constants/pitching.constants';
 import type { PitchingLevel, PitchingRound } from '../types/pitching.types';
+import { PitchingLevelBadge } from './pitching-level-badge';
+import { PitchingStoreThumbnail } from './pitching-store-thumbnail';
 import { PitchingPanel } from './pitching-panel';
 
 interface PitchingStoreCardProps {
@@ -22,16 +18,9 @@ interface PitchingStoreCardProps {
   level: PitchingLevel | null;
   /** The round the tile opens the form on — the one the dashboard is showing. */
   round: PitchingRound;
-  /** Per-criterion maximum, for the tile's hint. Null until a report loads. */
-  criterionMaxScore: number | null;
 }
 
-export function PitchingStoreCard({
-  store,
-  level,
-  round,
-  criterionMaxScore,
-}: PitchingStoreCardProps) {
+export function PitchingStoreCard({ store, level, round }: PitchingStoreCardProps) {
   const cover = store.coverUrl ?? store.storePhotos[0] ?? null;
   // A link, so it is gated on the route rather than on `pitching:write` alone —
   // the form route admits a narrower set of roles than the permission does.
@@ -45,29 +34,14 @@ export function PitchingStoreCard({
       contentClassName="gap-4 bg-gradient-to-br from-cream-light to-white"
     >
       <div className="flex flex-wrap items-start gap-4">
-        <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-orange/15 bg-cream shadow-sm">
-          {cover ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={buildFileUrl(cover)}
-              alt={store.name}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <StoreIcon className="h-7 w-7 text-orange/50" />
-          )}
-        </div>
+        <PitchingStoreThumbnail coverUrl={cover} alt={store.name} size="lg" />
 
         <div className="min-w-0 flex-1 space-y-1.5">
           <p className="truncate text-lg font-bold text-text-main" title={store.name}>
             {store.name}
           </p>
           <p className="font-mono text-xs text-muted-foreground">{store.code}</p>
-          {level && (
-            <Badge variant="outline" className={PITCHING_LEVEL_BADGE_CLASSES[level]}>
-              {PITCHING_LEVEL_LABELS[level]}
-            </Badge>
-          )}
+          {level && <PitchingLevelBadge level={level} />}
         </div>
 
         {canRoute(ROUTES.PITCHING_FORM) && (
@@ -78,15 +52,8 @@ export function PitchingStoreCard({
             <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-orange/10 text-orange">
               <ClipboardPen className="h-4 w-4" />
             </span>
-            <span className="min-w-0">
-              <span className="block text-sm font-semibold text-text-main">
-                {PITCHING_DASHBOARD_TEXT.fillScore}
-              </span>
-              {criterionMaxScore !== null && (
-                <span className="block text-[11px] leading-tight text-muted-foreground">
-                  {PITCHING_DASHBOARD_TEXT.fillScoreHint(criterionMaxScore)}
-                </span>
-              )}
+            <span className="min-w-0 text-sm font-semibold text-text-main">
+              {PITCHING_DASHBOARD_TEXT.fillScore}
             </span>
           </Link>
         )}

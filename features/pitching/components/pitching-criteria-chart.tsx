@@ -16,16 +16,19 @@ const SERIES_KEY = 'avgScore';
 // every criterion labelled.
 const AXIS_LABEL_MAX_CHARS = 10;
 
+// Truncate at the axis, not in the data — the tooltip reads the same field and
+// is the one place with room for the whole sentence.
+function toAxisLabel(title: string): string {
+  return title.length > AXIS_LABEL_MAX_CHARS ? `${title.slice(0, AXIS_LABEL_MAX_CHARS)}…` : title;
+}
+
 interface PitchingCriteriaChartProps {
   criteria: PitchingCriterionAverage[];
 }
 
 export function PitchingCriteriaChart({ criteria }: PitchingCriteriaChartProps) {
   const data = criteria.map((criterion) => ({
-    label:
-      criterion.title.length > AXIS_LABEL_MAX_CHARS
-        ? `${criterion.title.slice(0, AXIS_LABEL_MAX_CHARS)}…`
-        : criterion.title,
+    label: criterion.title,
     [SERIES_KEY]: Number(criterion.avgScore.toFixed(1)),
   }));
 
@@ -42,6 +45,7 @@ export function PitchingCriteriaChart({ criteria }: PitchingCriteriaChartProps) 
       ) : (
         <BarChart
           data={data}
+          xTickFormatter={toAxisLabel}
           series={[
             {
               key: SERIES_KEY,

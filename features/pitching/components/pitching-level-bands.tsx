@@ -1,4 +1,3 @@
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -8,13 +7,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  PITCHING_LEVEL_BADGE_CLASSES,
-  PITCHING_LEVEL_BANDS,
-  PITCHING_LEVEL_LABELS,
-  PITCHING_TEXT,
-} from '../constants/pitching.constants';
+import { PITCHING_LEVEL_BANDS, PITCHING_TEXT } from '../constants/pitching.constants';
 import type { PitchingRound } from '../types/pitching.types';
+import { PitchingLevelBadge } from './pitching-level-badge';
 
 interface PitchingLevelBandsProps {
   round: PitchingRound;
@@ -41,9 +36,7 @@ export function PitchingLevelBands({ round }: PitchingLevelBandsProps) {
                 <TableRow key={band.level}>
                   <TableCell className="whitespace-nowrap font-medium">{band.range}</TableCell>
                   <TableCell>
-                    <Badge variant="outline" className={PITCHING_LEVEL_BADGE_CLASSES[band.level]}>
-                      {PITCHING_LEVEL_LABELS[band.level]}
-                    </Badge>
+                    <PitchingLevelBadge level={band.level} />
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">{band.guidance}</TableCell>
                 </TableRow>

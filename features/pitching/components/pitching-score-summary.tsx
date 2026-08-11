@@ -1,15 +1,13 @@
 import { ProgressBar } from '@/components/shared/progress-bar';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  PITCHING_LEVEL_BADGE_CLASSES,
   PITCHING_LEVEL_BANDS,
-  PITCHING_LEVEL_LABELS,
   PITCHING_LEVEL_PROGRESS_COLORS,
   PITCHING_TEXT,
 } from '../constants/pitching.constants';
 import type { PitchingCriterionScore, PitchingRound } from '../types/pitching.types';
 import { summarizePitchingScore } from '../utils/pitching-level';
+import { PitchingLevelBadge } from './pitching-level-badge';
 
 interface PitchingScoreSummaryProps {
   round: PitchingRound;
@@ -41,9 +39,7 @@ export function PitchingScoreSummary({ round, criteria }: PitchingScoreSummaryPr
           </p>
           <div className="space-y-1 text-right">
             <p className="text-xs text-muted-foreground">{PITCHING_TEXT.runningTotalLevelLabel}</p>
-            <Badge variant="outline" className={PITCHING_LEVEL_BADGE_CLASSES[level]}>
-              {PITCHING_LEVEL_LABELS[level]}
-            </Badge>
+            <PitchingLevelBadge level={level} />
           </div>
         </div>
 

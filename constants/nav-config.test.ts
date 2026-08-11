@@ -10,7 +10,12 @@ describe('nav-config', () => {
       // dashboard:read lands there — an ENTREPRENEUR included, since the API
       // now scopes /dashboard/* to the stores it owns instead of refusing it.
       expect(getDefaultRouteForRole(ROLES.ENTREPRENEUR)).toBe(ROUTES.HOME);
-      expect(getDefaultRouteForRole(ROLES.JUDGE)).toBe(ROUTES.HOME);
+    });
+
+    // A judge holds neither dashboard:read nor news:read, so it skips past the
+    // overview to the one page it is on the panel for.
+    it('sends a judge to the pitching page', () => {
+      expect(getDefaultRouteForRole(ROLES.JUDGE)).toBe(ROUTES.PITCHING);
     });
 
     // Announcements went admin-only, leaving the project overview as the one

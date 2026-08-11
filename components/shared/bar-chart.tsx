@@ -24,6 +24,8 @@ interface BarChartProps {
   height?: number;
   showGrid?: boolean;
   showLegend?: boolean;
+  /** Shortens the axis tick only — the tooltip keeps the full value from `data`. */
+  xTickFormatter?: (value: string) => string;
 }
 
 const DEFAULT_COLORS = [colors.orange, colors.charcoal, colors.orangeLight, colors.scoreGreen];
@@ -37,6 +39,7 @@ export function BarChart({
   height = 280,
   showGrid = true,
   showLegend = true,
+  xTickFormatter,
 }: BarChartProps) {
   const chartConfig = buildChartConfig(
     series,
@@ -53,11 +56,16 @@ export function BarChart({
         <XAxis
           dataKey={xKey}
           tick={{ fontSize: 11, fill: colors.charcoal }}
+          tickFormatter={xTickFormatter}
           axisLine={false}
           tickLine={false}
         />
         <YAxis tick={{ fontSize: 11, fill: colors.charcoal }} axisLine={false} tickLine={false} />
-        <ChartTooltip content={<ChartTooltipContent />} />
+        {/* The tooltip is where a truncated axis tick gets read in full, so its
+            label wraps instead of stretching the card off-screen. */}
+        <ChartTooltip
+          content={<ChartTooltipContent className="max-w-64" labelClassName="whitespace-normal" />}
+        />
         {showLegend && <ChartLegend content={<ChartLegendContent />} />}
         {series.map((s) => (
           <Bar key={s.key} dataKey={s.key} fill={`var(--color-${s.key})`} radius={[3, 3, 0, 0]} />

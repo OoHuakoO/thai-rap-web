@@ -34,7 +34,8 @@ committee decision taken later on the averaged scores.
     ├── PitchingStoreCard              photo, province, owner, phone, level, กรอกคะแนน tile
     ├── PitchingScoreBreakdown         per-criterion bars + total, read-only
     ├── PitchingSummaryTiles           เฉลี่ย · อันดับ · เห็นควรคัดเลือก % · ข้อเสนอแนะสถานะ
-    ├── PitchingJudgeOpinion           เหตุผล quote + จุดแข็ง / ประเด็นที่ควรพัฒนา
+    ├── PitchingJudgeOpinion           ป้ายความเห็นสรุป + เงื่อนไขขั้นต่ำ (PitchingMinimumConditionsStrip,
+    │                                  ACCELERATION only) + เหตุผล quote + ทุกช่องความเห็นของรอบ
     ├── PitchingTopRanking             Top 10 (PitchingRankingList) → ดูอันดับทั้งหมด
     │   └── PitchingRankingDialog      the whole cohort, paged client-side
     ├── PitchingJudgeTable             Judge-by-Judge, paged client-side
@@ -57,6 +58,28 @@ committee decision taken later on the averaged scores.
     ├── PitchingRankingTable           province filter, downloads, click a row to drill in
     └── PitchingStoreReportPanel       averages, per-criterion bars, every judge, downloads
 ```
+
+In `PitchingStoreReportPanel` the per-criterion bars are banded by colour on
+PITCH_DECK but flat red on ACCELERATION; the score text beside them carries the
+band in both rounds.
+
+### Shared pieces
+
+The three surfaces above overlap, so the repeated pieces are their own
+components rather than a copy per surface:
+
+| Piece | Used by |
+|---|---|
+| `PitchingLevelBadge` | store report (x2), store card, ranking table, score summary, level bands |
+| `PitchingRecommendationBadge` | judge opinion, judge table, store report (verdict + the panel tally, via `suffix`) |
+| `PitchingJudgeIdentity` | judge opinion, store report's per-judge card |
+| `PitchingReasonQuote` | judge opinion (`purple`), store report's per-judge card (`charcoal`) |
+| `PitchingMinimumConditionsStrip` | judge opinion, store report's per-judge card — the read-only twin of `PitchingMinimumConditionsPanel` on the form |
+| `PitchingStoreThumbnail` | ranking list (`sm`), store card (`lg`) |
+| `usePagedRows` | judge table, ranking dialog — client-side paging over rows one query already returned |
+
+The judge's comment boxes come from `readJudgeOpinion` on both surfaces, so
+neither re-derives the round's field list or its tone map.
 
 `PitchingReportPanel` has exactly one mount now — `/reports`. It is the only
 surface carrying the province filter and the ranking/report downloads, so a
@@ -98,6 +121,18 @@ The **กรรมการ picker** selects whose numbers the breakdown and the
 "ทุกกรรมการ" renders `report.criteria`'s cross-judge averages, a named judge
 renders that judge's own `criteria[].score` and total.
 
+Comments are free text and cannot be averaged, so under "ทุกกรรมการ" the opinion
+panel falls back to a single judge — the first who actually wrote something
+(`pickOpinionJudge`, `utils/pitching-opinion.ts`), or the first judge on the
+panel when nobody did. The panel names that judge in both cases and adds a hint
+that the filter is showing one judge at a time.
+
+It prints **every comment box of the round**, not a chosen pair —
+`readJudgeOpinion` reads `PITCHING_COMMENT_FIELDS[round]` and the boxes render
+through `PitchingCommentBox`, the same component and tone colours the store
+report uses, blank boxes included as a dashed "กรรมการไม่ได้ระบุ". The two views
+therefore show a judge's write-up identically.
+
 The three pickers narrow each other, so changing one resets the ones below it:
 a new **รอบ** clears both the store (the effect then lands on the new round's
 top-ranked one) and the judge, a new **ร้าน** clears the judge. On top of that
@@ -126,7 +161,9 @@ would otherwise stay selected.
   `formatThaiDateTime` on the cell's `title`.
 - **Criterion titles on the bar chart's x-axis truncate at 10 characters.**
   Recharts drops a tick that would overlap its neighbour, so a longer label
-  silently removes criteria from the axis.
+  silently removes criteria from the axis. The truncation is `BarChart`'s
+  `xTickFormatter`, not the data — the tooltip carries the whole title, wrapped
+  inside a 16rem cap.
 
 ## Access
 

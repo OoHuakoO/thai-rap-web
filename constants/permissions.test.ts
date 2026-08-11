@@ -21,9 +21,9 @@ describe('permissions', () => {
       expect(hasPermission(ROLES.VIEWER, PERMISSIONS.ASSESSMENT_READ)).toBe(false);
     });
 
-    it('lets every role read announcements but only the admin roles publish them', () => {
+    it('lets every role but a judge read announcements, and only the admin roles publish them', () => {
       for (const role of Object.values(ROLES)) {
-        expect(hasPermission(role, PERMISSIONS.NEWS_READ)).toBe(true);
+        expect(hasPermission(role, PERMISSIONS.NEWS_READ)).toBe(role !== ROLES.JUDGE);
       }
 
       expect(hasPermission(ROLES.SUPER_ADMIN, PERMISSIONS.NEWS_WRITE)).toBe(true);
@@ -118,10 +118,22 @@ describe('permissions', () => {
       expect(canAccessRoute(ROLES.VIEWER, ROUTES.STORES)).toBe(false);
     });
 
-    it('opens announcements to every role', () => {
+    it('opens announcements to every role but a judge', () => {
       for (const role of Object.values(ROLES)) {
-        expect(canAccessRoute(role, ROUTES.NEWS)).toBe(true);
+        expect(canAccessRoute(role, ROUTES.NEWS)).toBe(role !== ROLES.JUDGE);
       }
+    });
+
+    // A judge is on the panel, not in the programme: it opens พิชชิ่ง and its
+    // own report, and neither ภาพรวมโครงการ nor ข่าวประชาสัมพันธ์.
+    it('keeps the overview and announcements away from a judge', () => {
+      expect(hasPermission(ROLES.JUDGE, PERMISSIONS.DASHBOARD_READ)).toBe(false);
+      expect(hasPermission(ROLES.JUDGE, PERMISSIONS.NEWS_READ)).toBe(false);
+      expect(canAccessRoute(ROLES.JUDGE, ROUTES.HOME)).toBe(false);
+      expect(canAccessRoute(ROLES.JUDGE, ROUTES.NEWS)).toBe(false);
+
+      expect(canAccessRoute(ROLES.JUDGE, ROUTES.PITCHING)).toBe(true);
+      expect(canAccessRoute(ROLES.JUDGE, ROUTES.REPORTS)).toBe(true);
     });
 
     it('keeps the create and edit announcement pages to the roles holding news:write', () => {

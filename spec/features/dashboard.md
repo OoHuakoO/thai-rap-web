@@ -6,7 +6,8 @@ the page.
 
 ## Route
 
-`app/(dashboard)/page.tsx`, permission `dashboard:read` — every role has it.
+`app/(dashboard)/page.tsx`, permission `dashboard:read` — every role but JUDGE
+has it; a judge is on the panel, not in the programme, and lands on `/pitching`.
 The page is pure composition:
 
 ```

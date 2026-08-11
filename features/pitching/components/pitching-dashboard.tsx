@@ -16,6 +16,7 @@ import {
 import { usePitchingCohort } from '../hooks/use-pitching-cohort';
 import { usePitchingStoreReport, usePrefetchTopStoreReports } from '../hooks/use-pitching-report';
 import { PITCHING_ROUNDS, type PitchingRound } from '../types/pitching.types';
+import { pickOpinionJudge } from '../utils/pitching-opinion';
 import { PitchingCriteriaChart } from './pitching-criteria-chart';
 import { PitchingDashboardToolbar } from './pitching-dashboard-toolbar';
 import { PitchingJudgeOpinion } from './pitching-judge-opinion';
@@ -58,6 +59,9 @@ export function PitchingDashboard() {
   // report for a newly picked store arrives after the store changes, so between
   // the two the previous panel's judge would otherwise still be selected.
   const activeJudge = judges.find((judge) => judge.judgeId === judgeId) ?? null;
+  // Comments can't be averaged, so "ทุกกรรมการ" shows one judge's — the first
+  // who actually wrote something.
+  const opinionJudge = activeJudge ?? pickOpinionJudge(judges);
 
   // A round change invalidates both narrower picks — its cohort is a different
   // set of stores, and each store has its own judge panel. Clearing the store
@@ -126,12 +130,7 @@ export function PitchingDashboard() {
         <div className="lg:col-span-5">
           {storeQuery.isLoading && <CardSkeleton />}
           {store && (
-            <PitchingStoreCard
-              store={store}
-              level={report?.level ?? null}
-              round={round}
-              criterionMaxScore={scoreRows[0]?.maxScore ?? null}
-            />
+            <PitchingStoreCard store={store} level={report?.level ?? null} round={round} />
           )}
           {!storeId && (
             <AlertCard variant="info" message={PITCHING_DASHBOARD_TEXT.noStoreSelected} />
@@ -184,8 +183,8 @@ export function PitchingDashboard() {
           <PitchingJudgeTable judges={judges} />
         </div>
         <div className="lg:col-span-5">
-          {(activeJudge ?? judges[0]) && (
-            <PitchingJudgeOpinion pitching={activeJudge ?? judges[0]} />
+          {opinionJudge && (
+            <PitchingJudgeOpinion pitching={opinionJudge} isJudgeAutoPicked={!activeJudge} />
           )}
         </div>
       </div>

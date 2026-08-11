@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { API_URL } from '@/constants';
-import { isAssignmentScopedRole } from '@/constants/permissions';
-import { ROLES } from '@/types/auth.types';
+import { hasPermission, isAssignmentScopedRole } from '@/constants/permissions';
+import { PERMISSIONS, ROLES } from '@/types/auth.types';
 import type {
   ActivityItem,
   AssessmentRound,
@@ -60,6 +60,15 @@ function getCaller(request: Request): User | null {
   return id ? userDb.findById(id) : null;
 }
 
+// Mirrors OVERVIEW_READ_ROLES on the API: a JUDGE holds no dashboard:read and
+// is refused every card, rather than being handed an empty one. Same
+// no-token-stays-open rule as scopedStores below.
+function refuseWithoutOverview(request: Request): Response | null {
+  const caller = getCaller(request);
+  if (caller && !hasPermission(caller.role, PERMISSIONS.DASHBOARD_READ)) return forbidden();
+  return null;
+}
+
 // Mirrors DashboardService's resolveStoreScope: an ENTREPRENEUR's overview
 // covers the stores it owns, an assignment-scoped role's (ASSESSOR, MENTOR,
 // JUDGE) the ones assigned to it, and every staff role keeps the project-wide
@@ -108,31 +117,40 @@ function toStoreScoresCsv(rows: DashboardStore[]): string {
 
 export const dashboardHandlers = [
   http.get(`${BASE_URL}/kpis`, ({ request }) => {
-    return checkScenario(request) ?? HttpResponse.json(buildKpis(scopedStores(request)));
+    return (
+      checkScenario(request) ??
+      refuseWithoutOverview(request) ??
+      HttpResponse.json(buildKpis(scopedStores(request)))
+    );
   }),
 
   http.get(`${BASE_URL}/province-distribution`, ({ request }) => {
     return (
-      checkScenario(request) ?? HttpResponse.json(buildProvinceDistribution(scopedStores(request)))
+      checkScenario(request) ??
+      refuseWithoutOverview(request) ??
+      HttpResponse.json(buildProvinceDistribution(scopedStores(request)))
     );
   }),
 
   http.get(`${BASE_URL}/top20`, ({ request }) => {
     return (
       checkScenario(request) ??
+      refuseWithoutOverview(request) ??
       HttpResponse.json(buildTop20(scopedStores(request), parseRound(request)))
     );
   }),
 
   http.get(`${BASE_URL}/incubation-progress`, ({ request }) => {
     return (
-      checkScenario(request) ?? HttpResponse.json(buildIncubationProgress(scopedStores(request)))
+      checkScenario(request) ??
+      refuseWithoutOverview(request) ??
+      HttpResponse.json(buildIncubationProgress(scopedStores(request)))
     );
   }),
 
   http.get(`${BASE_URL}/province-comparison`, ({ request }) => {
-    const scenarioResponse = checkScenario(request);
-    if (scenarioResponse) return scenarioResponse;
+    const refusal = checkScenario(request) ?? refuseWithoutOverview(request);
+    if (refusal) return refusal;
 
     const params = new URL(request.url).searchParams;
     return HttpResponse.json(
@@ -146,7 +164,9 @@ export const dashboardHandlers = [
 
   http.get(`${BASE_URL}/store-scores`, ({ request }) => {
     return (
-      checkScenario(request) ?? HttpResponse.json(buildStoreRoundScores(scopedStores(request)))
+      checkScenario(request) ??
+      refuseWithoutOverview(request) ??
+      HttpResponse.json(buildStoreRoundScores(scopedStores(request)))
     );
   }),
 
@@ -154,8 +174,8 @@ export const dashboardHandlers = [
   // web app deliberately doesn't carry. The client names the file from
   // Content-Disposition, so the download stays openable in mock mode.
   http.get(`${BASE_URL}/store-scores/export`, ({ request }) => {
-    const scenarioResponse = checkScenario(request);
-    if (scenarioResponse) return scenarioResponse;
+    const refusal = checkScenario(request) ?? refuseWithoutOverview(request);
+    if (refusal) return refusal;
 
     return new HttpResponse(toStoreScoresCsv(scopedStores(request)), {
       headers: {
@@ -167,10 +187,11 @@ export const dashboardHandlers = [
 
   // Mirrors the API: the feed is whatever admins published on /news, nothing
   // else — so creating or deleting a news item really does change this card.
-  // Not scoped, matching GET /news: it carries no store to narrow on.
+  // Not scoped, matching GET /news: it carries no store to narrow on — the
+  // role check is the whole of the gate.
   http.get(`${BASE_URL}/activities`, ({ request }) => {
-    const scenarioResponse = checkScenario(request);
-    if (scenarioResponse) return scenarioResponse;
+    const refusal = checkScenario(request) ?? refuseWithoutOverview(request);
+    if (refusal) return refusal;
 
     const published: ActivityItem[] = newsDb.getAll().map((item) => ({
       type: NEWS_TYPE_TO_ACTIVITY[item.type],
@@ -183,14 +204,16 @@ export const dashboardHandlers = [
     return HttpResponse.json(published);
   }),
 
-  // JUDGE and VIEWER read no assessment, so no report exists for them — an empty
-  // list, not a 403, keeps the card rendering (ReportService.listAvailableReports).
+  // A VIEWER reads no assessment, so no report exists for it — an empty list,
+  // not a 403, keeps the card rendering (ReportService.listAvailableReports).
+  // A JUDGE never reaches the card at all; refuseWithoutOverview turns it away
+  // above.
   http.get(`${BASE_URL}/reports-status`, ({ request }) => {
-    const scenarioResponse = checkScenario(request);
-    if (scenarioResponse) return scenarioResponse;
+    const refusal = checkScenario(request) ?? refuseWithoutOverview(request);
+    if (refusal) return refusal;
 
     const caller = getCaller(request);
-    if (caller && (caller.role === ROLES.JUDGE || caller.role === ROLES.VIEWER)) {
+    if (caller && caller.role === ROLES.VIEWER) {
       return HttpResponse.json([]);
     }
 
