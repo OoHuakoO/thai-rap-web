@@ -40,6 +40,10 @@ app/
 | `/news` | `NEWS` | `.../news/page.tsx` | `NewsPageHeader` + `NewsList` | `news:read` (every role but JUDGE) |
 | `/news/new` | `NEWS_NEW` | `.../news/new/page.tsx` | `CreateNewsForm` | `news:write` |
 | `/news/[id]/edit` | `NEWS_EDIT(id)` | `.../news/[id]/edit/page.tsx` | `EditNewsForm` | `news:write` |
+| `/activities` | `ACTIVITIES` | `.../activities/page.tsx` | `ActivityPageHeader` + `ActivityList` | `activity:read` (every role) |
+| `/activities/[id]` | `ACTIVITY_DETAIL(id)` | `.../activities/[id]/page.tsx` | `ActivityDetail` | inherits `/activities` |
+| `/activities/new` | `ACTIVITY_NEW` | `.../activities/new/page.tsx` | `CreateActivityForm` | `activity:write` |
+| `/activities/[id]/edit` | `ACTIVITY_EDIT(id)` | `.../activities/[id]/edit/page.tsx` | `EditActivityForm` | `activity:write` |
 | `/users` | `USERS` | `.../users/page.tsx` | `UserPageHeader` + `UserList` | `users:read` + SUPER_ADMIN only |
 | `/errors/403` | `ERROR_403` | `app/errors/403/page.tsx` | `ErrorPage` | none |
 | `/errors/429` | `ERROR_429` | `app/errors/429/page.tsx` | `ErrorPage` | none |
@@ -57,12 +61,16 @@ app/
 Do not stub it. Building it means building it properly, with its page,
 permission check, and feature folder.
 
-### `NEWS_EDIT_PATTERN`
+### `NEWS_EDIT_PATTERN` / `ACTIVITY_EDIT_PATTERN`
 
-`ROUTES.NEWS_EDIT` is a function, so it cannot be matched against a visited
-path. `ROUTES.NEWS_EDIT_PATTERN = '/news/:id/edit'` is the static twin that
-`ROUTE_PERMISSIONS` uses. Any future parameterised protected route needs the
-same pair.
+`ROUTES.NEWS_EDIT` and `ROUTES.ACTIVITY_EDIT` are functions, so neither can be
+matched against a visited path. `ROUTES.NEWS_EDIT_PATTERN = '/news/:id/edit'`
+and `ROUTES.ACTIVITY_EDIT_PATTERN = '/activities/:id/edit'` are the static twins
+that `ROUTE_PERMISSIONS` uses. Any future parameterised protected route needs
+the same pair.
+
+`/activities/[id]` needs no such twin — it is a read at the same permission as
+its parent, so the plain `/activities` entry covers it by prefix.
 
 ## Page file conventions
 

@@ -96,8 +96,8 @@ The shell owns the viewport. Consequences:
 
 Nav icons are PNGs from `public/icons/nav/` referenced through `NAV_ICONS`;
 `NavItem.icon` accepts either such a path **or** a Lucide component, for items
-whose brand asset does not exist yet (`Megaphone` for news, `UserCog` for
-users). `NavIcon` in `sidebar.tsx` branches on `typeof icon === 'string'`.
+whose brand asset does not exist yet (`Megaphone` for news, `Images` for the
+activity gallery, `UserCog` for users). `NavIcon` in `sidebar.tsx` branches on `typeof icon === 'string'`.
 
 ## Component inventory
 

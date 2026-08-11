@@ -1,7 +1,7 @@
-import { Megaphone, UserCog } from 'lucide-react';
+import { Images, Megaphone, UserCog } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { Role } from '@/types/auth.types';
-import { ROLES } from '@/types/auth.types';
+import { ALL_ROLES, ROLES } from '@/types/auth.types';
 import { canAccessRoute } from './permissions';
 import { ROUTES } from './routes';
 
@@ -107,6 +107,16 @@ export const NAV_ITEMS: NavItem[] = [
       ROLES.ENTREPRENEUR,
       ROLES.VIEWER,
     ],
+  },
+  {
+    label: 'Activity Gallery',
+    labelTh: 'ประมวลภาพกิจกรรม',
+    href: ROUTES.ACTIVITIES,
+    icon: Images,
+    // The one programme-wide page every role reaches, JUDGE included — the
+    // album records what the programme ran and carries no store's data.
+    // Managing one still needs activity:write, which only the admin pair holds.
+    allowedRoles: [...ALL_ROLES],
   },
   {
     label: 'Users & Roles',

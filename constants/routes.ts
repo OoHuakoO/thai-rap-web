@@ -42,6 +42,15 @@ export const ROUTES = {
   // above cannot give it.
   NEWS_EDIT_PATTERN: '/news/:id/edit',
 
+  // Activity gallery / ประมวลภาพกิจกรรม
+  ACTIVITIES: '/activities',
+  ACTIVITY_NEW: '/activities/new',
+  ACTIVITY_DETAIL: (id: string) => `/activities/${id}`,
+  ACTIVITY_EDIT: (id: string) => `/activities/${id}/edit`,
+  // Same static twin as NEWS_EDIT_PATTERN — ROUTE_PERMISSIONS matches a visited
+  // path against a string, which the function above cannot give it.
+  ACTIVITY_EDIT_PATTERN: '/activities/:id/edit',
+
   // User management
   USERS: '/users',
   USER_DETAIL: (id: string) => `/users/${id}`,

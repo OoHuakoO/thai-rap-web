@@ -136,6 +136,7 @@ Keys are always built from a `*Keys` object — never inline.
 | analytics | `analyticsKeys` (`hooks/analytics-keys.ts`) | `all`, `store(storeId, params)` |
 | report | `reportKeys` (`hooks/report-keys.ts`) | `all`, `round(storeId, round)`, `overview(storeId)`, `matrix(round, params)` |
 | news | `newsKeys` (`hooks/news-keys.ts`) | `all`, `list(query)`, `detail(id)` |
+| activity | `activityKeys` (`hooks/activity-keys.ts`) | `all`, `list(query)`, `detail(id)` |
 | pitching | `pitchingKeys` (`hooks/pitching-keys.ts`) | `all`, `detail(id)`, `mine(storeId, round)`, `ranking(round, province, page, limit)`, `cohort(round)`, `storeReport(storeId, round)` |
 | user | `userKeys` (`hooks/use-users.ts`) | `all`, `list(params)`, `stats()`, `detail(id)` |
 | province | `provinceKeys` | `all` |
@@ -158,6 +159,7 @@ server-side side effect touched, not just its own resource.
 | `useUpdateNotes` | `byStoreRound` |
 | `useUploadEvidence` / `useDeleteEvidence` | `byStoreRound` |
 | `useCreateNews` / `useUpdateNews` / `useDeleteNews` | `newsKeys.all` **and** `dashboardKeys.activities()` — the dashboard activity feed renders the same items |
+| `useCreateActivity` / `useUpdateActivity` / `useDeleteActivity`, and the two photo writes | `activityKeys.all` — a photo write moves the album *and* its list row (`photoCount`, the cover), so the whole namespace goes |
 | `useCreatePitching` | **sets** `pitchingKeys.mine(storeId, round)` and `detail(id)` from the response — the create answers with the whole (empty) form |
 | `useSubmitPitching` | the same two, plus invalidates `pitchingKeys.all` — the ranking and every store report move when a form lands. It deliberately does **not** touch `storeKeys`: submitting a pitching form never changes `Store.status` |
 | `useApproveUser`, `useRejectUser`, `useAssignStores` | `userKeys.all` |
@@ -191,6 +193,9 @@ export const storeService = {
   `uploadCover`, `uploadMenuPhoto`, `uploadEvidence`), each building a
   `FormData` with key `'file'` and setting `Content-Type: multipart/form-data`
   explicitly — the JSON default would make axios serialise the FormData.
+  `activityService.uploadPhotos` is the one exception to the `'file'` key: the
+  API takes a batch under a repeated `'files'` part, so it appends every file to
+  one `FormData` and posts it once.
 - Deletes get their own method too, never a boolean flag on the upload.
 - Services never `try/catch`. Errors propagate to the hook layer.
 
@@ -198,7 +203,7 @@ export const storeService = {
 
 | Shape | Used by |
 |---|---|
-| `PaginatedResponse<T>` = `{ items, meta: { page, limit, total, totalPages } }` | `/stores`, `/users`, `/assessments` |
+| `PaginatedResponse<T>` = `{ items, meta: { page, limit, total, totalPages } }` | `/stores`, `/users`, `/assessments`, `/activities` |
 | Plain array | `/news`, `/dimensions`, `/provinces`, `/store-types`, all `/dashboard/*` list endpoints |
 | Single object | detail endpoints, all `/analytics/*`, all `/reports/*` |
 | `Blob` + `content-disposition` | every export endpoint |

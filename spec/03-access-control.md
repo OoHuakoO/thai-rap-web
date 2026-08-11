@@ -35,6 +35,9 @@ Permissions are `<resource>:<action>` strings from `PERMISSIONS`.
 | `news:read` | ✓ | ✓ | ✓ | ✓ | ✓ | | ✓ |
 | `news:write` | ✓ | ✓ | | | | | |
 | `news:delete` | ✓ | ✓ | | | | | |
+| `activity:read` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `activity:write` | ✓ | ✓ | | | | | |
+| `activity:delete` | ✓ | ✓ | | | | | |
 | `store:read` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
 | `store:read:public` | ✓ | ✓ | | | ✓ | | ✓ |
 | `store:write` | ✓ | ✓ | | | ✓ | | |
@@ -63,6 +66,10 @@ Decisions worth knowing, all documented in comments at the definition:
   entrepreneur.
 - **ENTREPRENEUR has no `analytics:read`.** วิเคราะห์ศักยภาพ is staff tooling.
   It does hold `reports:read`/`reports:export`, scoped to its own stores.
+- **`activity:read` is the only permission every role holds.** ประมวลภาพกิจกรรม
+  is the programme's record of what it ran — no store's data, nothing a judge is
+  a guest to — so it is the one page a JUDGE reaches alongside พิชชิ่ง. It has
+  no data scope for the same reason: there are no records to narrow.
 - **`users:*` is SUPER_ADMIN-only twice over.** `hasPermission()` re-checks
   `SUPER_ADMIN_ONLY_PERMISSIONS` independently of the table, so a bad edit to
   `ROLE_PERMISSIONS` still cannot hand out account management.
@@ -155,6 +162,11 @@ where a permission tier is too wide:
 | `/pitching` | `pitching:read` | SUPER_ADMIN, ADMIN, JUDGE |
 | `/pitching/form` | `pitching:write` | SUPER_ADMIN, ADMIN, JUDGE |
 | `/users` | `users:read` | SUPER_ADMIN |
+
+`/activities` has no `allowedRoles` row here: every role holds `activity:read`,
+so the permission alone is the whole gate. Its two write pages
+(`/activities/new`, `/activities/:id/edit`) require `activity:write` and carry
+no role gate either.
 
 Matching (`canAccessRoute`): longest matching entry wins, so `/news/new` is
 checked against its own `news:write` entry rather than `/news`'s `news:read`.

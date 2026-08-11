@@ -11,10 +11,11 @@ import { ROUTES } from './routes';
 
 describe('permissions', () => {
   describe('role matrix', () => {
-    it('gives a general user the overview, announcements and disclosed store data', () => {
+    it('gives a general user the overview, announcements, activity albums and disclosed store data', () => {
       expect(ROLE_PERMISSIONS.VIEWER).toEqual([
         PERMISSIONS.DASHBOARD_READ,
         PERMISSIONS.NEWS_READ,
+        PERMISSIONS.ACTIVITY_READ,
         PERMISSIONS.STORE_READ_PUBLIC,
       ]);
       expect(hasPermission(ROLES.VIEWER, PERMISSIONS.STORE_READ)).toBe(false);
@@ -145,6 +146,34 @@ describe('permissions', () => {
       expect(canAccessRoute(ROLES.VIEWER, ROUTES.NEWS_NEW)).toBe(false);
       expect(canAccessRoute(ROLES.ENTREPRENEUR, ROUTES.NEWS_EDIT('42'))).toBe(false);
       expect(canAccessRoute(ROLES.JUDGE, ROUTES.NEWS_EDIT('42'))).toBe(false);
+    });
+
+    // ประมวลภาพกิจกรรม is the one programme-wide page with no role shut out —
+    // a judge reaches it even though the overview and announcements are closed
+    // to it.
+    it('opens the activity gallery to every role, judge included', () => {
+      for (const role of Object.values(ROLES)) {
+        expect(hasPermission(role, PERMISSIONS.ACTIVITY_READ)).toBe(true);
+        expect(canAccessRoute(role, ROUTES.ACTIVITIES)).toBe(true);
+        expect(canAccessRoute(role, ROUTES.ACTIVITY_DETAIL('42'))).toBe(true);
+      }
+    });
+
+    it('keeps the create and edit activity pages to the roles holding activity:write', () => {
+      expect(canAccessRoute(ROLES.ADMIN, ROUTES.ACTIVITY_NEW)).toBe(true);
+      expect(canAccessRoute(ROLES.SUPER_ADMIN, ROUTES.ACTIVITY_EDIT('42'))).toBe(true);
+
+      for (const role of [
+        ROLES.ASSESSOR,
+        ROLES.MENTOR,
+        ROLES.ENTREPRENEUR,
+        ROLES.JUDGE,
+        ROLES.VIEWER,
+      ]) {
+        expect(hasPermission(role, PERMISSIONS.ACTIVITY_WRITE)).toBe(false);
+        expect(canAccessRoute(role, ROUTES.ACTIVITY_NEW)).toBe(false);
+        expect(canAccessRoute(role, ROUTES.ACTIVITY_EDIT('42'))).toBe(false);
+      }
     });
   });
 

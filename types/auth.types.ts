@@ -117,6 +117,11 @@ export const PERMISSIONS = {
   NEWS_READ: 'news:read',
   NEWS_WRITE: 'news:write',
   NEWS_DELETE: 'news:delete',
+  // ประมวลภาพกิจกรรม — the activity photo albums. Read by every role, managed
+  // by the admin pair only.
+  ACTIVITY_READ: 'activity:read',
+  ACTIVITY_WRITE: 'activity:write',
+  ACTIVITY_DELETE: 'activity:delete',
   USERS_READ: 'users:read',
   USERS_WRITE: 'users:write',
   USERS_DELETE: 'users:delete',

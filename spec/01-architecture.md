@@ -68,7 +68,7 @@ service + types only; that is correct, not incomplete.
 
 Two hook-key conventions coexist and both are fine:
 
-- a dedicated `<domain>-keys.ts` (`dashboard`, `analytics`, `news`, `report`, `pitching`)
+- a dedicated `<domain>-keys.ts` (`dashboard`, `analytics`, `news`, `activity`, `report`, `pitching`)
 - keys exported from the hooks file itself (`store`, `user`, `assessment`)
 
 What is not fine is an inline `queryKey: ['stores']` at a call site.

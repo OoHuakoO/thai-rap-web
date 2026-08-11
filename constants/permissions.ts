@@ -38,6 +38,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   ASSESSOR: [
     PERMISSIONS.DASHBOARD_READ,
     PERMISSIONS.NEWS_READ,
+    PERMISSIONS.ACTIVITY_READ,
     PERMISSIONS.STORE_READ,
     PERMISSIONS.ASSESSMENT_READ,
     PERMISSIONS.ASSESSMENT_WRITE,
@@ -57,6 +58,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   MENTOR: [
     PERMISSIONS.DASHBOARD_READ,
     PERMISSIONS.NEWS_READ,
+    PERMISSIONS.ACTIVITY_READ,
     PERMISSIONS.STORE_READ,
     PERMISSIONS.ASSESSMENT_READ,
     PERMISSIONS.ANALYTICS_READ,
@@ -81,6 +83,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   ENTREPRENEUR: [
     PERMISSIONS.DASHBOARD_READ,
     PERMISSIONS.NEWS_READ,
+    PERMISSIONS.ACTIVITY_READ,
     PERMISSIONS.STORE_READ_PUBLIC,
     PERMISSIONS.STORE_READ,
     PERMISSIONS.STORE_WRITE,
@@ -99,7 +102,11 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   // participant in the programme, so ภาพรวมโครงการ and ข่าวประชาสัมพันธ์ are not
   // its business. That makes it the only role without the overview, and
   // getDefaultRouteForRole therefore lands it on คะแนนพิชชิ่ง instead.
+  // activity:read is the one programme-wide surface a judge does hold: the
+  // photo album is a record of what the programme ran, not committee material
+  // or a store's private data, and the brief asks for every role to reach it.
   JUDGE: [
+    PERMISSIONS.ACTIVITY_READ,
     PERMISSIONS.STORE_READ,
     PERMISSIONS.PITCHING_READ,
     PERMISSIONS.PITCHING_WRITE,
@@ -111,7 +118,12 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   // the project discloses. news:read is read-only for every role
   // below the admin pair: news:write / news:delete stay with SUPER_ADMIN and
   // ADMIN, so this role sees announcements and cannot publish one.
-  VIEWER: [PERMISSIONS.DASHBOARD_READ, PERMISSIONS.NEWS_READ, PERMISSIONS.STORE_READ_PUBLIC],
+  VIEWER: [
+    PERMISSIONS.DASHBOARD_READ,
+    PERMISSIONS.NEWS_READ,
+    PERMISSIONS.ACTIVITY_READ,
+    PERMISSIONS.STORE_READ_PUBLIC,
+  ],
 };
 
 // ─── Role → Data Scope ───────────────────────────────────────────────────────
@@ -241,6 +253,14 @@ export const ROUTE_PERMISSIONS: RoutePermissionConfig[] = [
   { path: ROUTES.NEWS, requiredPermission: PERMISSIONS.NEWS_READ },
   { path: ROUTES.NEWS_NEW, requiredPermission: PERMISSIONS.NEWS_WRITE },
   { path: ROUTES.NEWS_EDIT_PATTERN, requiredPermission: PERMISSIONS.NEWS_WRITE },
+  // ประมวลภาพกิจกรรม reads the same way for every role — including JUDGE, which
+  // is why there is no allowedRoles gate here. The two pages that write an album
+  // sit below /activities and win the longest match with activity:write, the
+  // same shape as the news entries above. The album detail page has no entry of
+  // its own: it is a read, so /activities covers it.
+  { path: ROUTES.ACTIVITIES, requiredPermission: PERMISSIONS.ACTIVITY_READ },
+  { path: ROUTES.ACTIVITY_NEW, requiredPermission: PERMISSIONS.ACTIVITY_WRITE },
+  { path: ROUTES.ACTIVITY_EDIT_PATTERN, requiredPermission: PERMISSIONS.ACTIVITY_WRITE },
   {
     path: ROUTES.USERS,
     requiredPermission: PERMISSIONS.USERS_READ,

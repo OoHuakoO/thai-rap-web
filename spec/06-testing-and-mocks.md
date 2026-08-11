@@ -20,19 +20,23 @@ too, not into individual tests.
 Tests are excluded from `tsconfig.json`'s `include`, so `npm run type-check`
 does not cover them; Vitest type-checks them at run time via esbuild.
 
+One file opts out of jsdom with a `// @vitest-environment node` docblock:
+`mocks/handlers/activity.handlers.test.ts` posts a multipart body, and a `File`
+built under jsdom is not the class undici's parser accepts.
+
 ## What is tested
 
-56 test files, concentrated where a mistake is expensive and cheap to catch:
+68 test files, concentrated where a mistake is expensive and cheap to catch:
 
 | Area | Files | Example |
 |---|---|---|
 | Access control | 2 | `constants/permissions.test.ts`, `constants/nav-config.test.ts` — the matrices and the redirect-loop guarantees |
 | API client | 3 | `services/__tests__/api.test.ts` (refresh, retry, redirects), `api-error.test.ts`, `extract-error-message.test.ts` |
 | Pure domain utils | 12 | scoring (`dimension-score`, `overall-summary`, `zone`, `round`, `status`), analytics formatting, dashboard formatting |
-| Services | 6 | assessment, auth, dashboard, news, pitching, report — URL, params, response shaping |
+| Services | 7 | activity, assessment, auth, dashboard, news, pitching, report — URL, params, response shaping |
 | Hooks | 5 | `use-assessment`, `use-login`, `use-logout`, `use-register`, `use-top20` |
-| Components | 23 | forms, list/table rendering, empty and error states, permission-driven rendering |
-| MSW handlers | 7 | role-aware handlers are logic, so they get their own tests |
+| Components | 25 | forms, list/table rendering, empty and error states, permission-driven rendering |
+| MSW handlers | 9 | role-aware handlers are logic, so they get their own tests |
 
 Rules of thumb from `.claude/rules/testing.md`:
 
@@ -55,13 +59,13 @@ mocks/
 ├── browser.ts               setupWorker(...handlers)
 ├── handlers/
 │   ├── index.ts             merges every domain's handlers
-│   └── <domain>.handlers.ts one file per domain (12 today)
+│   └── <domain>.handlers.ts one file per domain (13 today)
 ├── factories/               createXxx() / createXxxFromDto()
 ├── fixtures/                in-memory stateful stores
 └── utils/scenario.ts        shared X-Mock-Scenario helpers
 ```
 
-Domains covered: `auth`, `dashboard`, `news`, `report`, `user`, `store`,
+Domains covered: `auth`, `dashboard`, `news`, `activity`, `report`, `user`, `store`,
 `assessment`, `analytics`, `province`, `store-type`, `upload`.
 
 ### Turning them on

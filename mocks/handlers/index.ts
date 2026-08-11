@@ -2,6 +2,7 @@ import { userHandlers } from './user.handlers';
 import { authHandlers } from './auth.handlers';
 import { dashboardHandlers } from './dashboard.handlers';
 import { newsHandlers } from './news.handlers';
+import { activityHandlers } from './activity.handlers';
 import { pitchingHandlers } from './pitching.handlers';
 import { reportHandlers } from './report.handlers';
 import { storeHandlers } from './store.handlers';
@@ -15,6 +16,7 @@ export const handlers = [
   ...authHandlers,
   ...dashboardHandlers,
   ...newsHandlers,
+  ...activityHandlers,
   ...pitchingHandlers,
   ...reportHandlers,
   ...userHandlers,
